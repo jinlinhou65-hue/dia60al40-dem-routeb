@@ -6,6 +6,7 @@ on:
       - 'python/**'
       - 'liggghts/**'
       - '.github/workflows/dia60al40-dem.yml'
+      - 'scripts/**'
 
 jobs:
   dem:
@@ -15,17 +16,32 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install LIGGGHTS
         run: |
+          set -euxo pipefail
           sudo apt-get update
           sudo apt-get install -y liggghts python3 python3-pip
-          liggghts -h | head -40 || true
+          which liggghts || true
+          liggghts -h 2>&1 | head -80 || true
       - name: Prepare meshes
-        run: python3 python/prepare_meshes.py
+        run: |
+          set -euxo pipefail
+          python3 python/prepare_meshes.py
+          find liggghts/meshes -maxdepth 1 -type f -ls
       - name: Run DEM preload
         working-directory: liggghts
         run: |
+          set -euxo pipefail
           mkdir -p DEM
-          liggghts -in in.dia60al40_dem_preload.liggghts | tee dia60al40_liggghts.run.log
+          echo '[PWD]' "$PWD"
+          echo '[INPUT HEAD]'
+          sed -n '1,120p' in.dia60al40_dem_preload.liggghts
+          echo '[RUN LIGGGHTS]'
+          liggghts < in.dia60al40_dem_preload.liggghts 2>&1 | tee dia60al40_liggghts.run.log
+          echo '[OUTPUT TREE]'
+          find . -maxdepth 3 -type f -ls | sort -k11
+          test -s dia60al40_liggghts.run.log
+          ls DEM/dia60al40_*.vtk
       - name: Upload DEM artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dia60al40-dem-artifacts
