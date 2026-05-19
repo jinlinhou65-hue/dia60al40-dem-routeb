@@ -29,7 +29,19 @@ fix             cof all property/global coefficientFriction peratomtypepair 3 0.
 
 pair_style      gran model hertz tangential history
 pair_coeff      * *
+
+# Artificial 100x earth gravity in -Y. Y is the vertical axis here.
+# 980 cm/s^2 = 1g; 98000 = 100g for fast settling.
+# DEM-only; COMSOL FEM does not inherit this.
+fix             grav all gravity 98000 vector 0.0 -1.0 0.0
+
 fix             integr all nve/sphere
+
+# Quasi-2D constraint: pin all particle centers to the z=0 mid-plane by
+# zeroing the z-component of force. Combined with v_z(t=0)=0 from
+# insert/pack, particles never move in z, so the projection to 2D
+# (used by the COMSOL converter) is exact.
+fix             zlock all setforce NULL NULL 0.0
 
 fix             die all mesh/surface file meshes/DieBox.stl type 3 scale 1.0
 fix             top all mesh/surface file meshes/TopPlate.stl type 3 scale 1.0
