@@ -39,7 +39,7 @@ jobs:
           echo '[OUTPUT TREE]'
           find . -maxdepth 3 -type f -ls | sort -k11
           test -s dia60al40_liggghts.run.log
-          ls DEM/dia60al40_*.vtk
+          ls DEM/dia60al40_*.dump
       - name: Upload DEM artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,3 +49,5 @@ jobs:
             liggghts/DEM/**
             liggghts/*.log
             liggghts/meshes/*.stl
+
+
