@@ -1,0 +1,35 @@
+﻿name: dia60al40-dem
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'python/**'
+      - 'liggghts/**'
+      - '.github/workflows/dia60al40-dem.yml'
+
+jobs:
+  dem:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LIGGGHTS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y liggghts python3 python3-pip
+          liggghts -h | head -40 || true
+      - name: Prepare meshes
+        run: python3 python/prepare_meshes.py
+      - name: Run DEM preload
+        working-directory: liggghts
+        run: |
+          mkdir -p DEM
+          liggghts -in in.dia60al40_dem_preload.liggghts | tee dia60al40_liggghts.run.log
+      - name: Upload DEM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dia60al40-dem-artifacts
+          path: |
+            liggghts/DEM/**
+            liggghts/*.log
+            liggghts/meshes/*.stl

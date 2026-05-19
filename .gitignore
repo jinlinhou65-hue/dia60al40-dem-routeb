@@ -1,0 +1,6 @@
+﻿# Ignore generated heavy outputs
+liggghts/DEM/
+*.restart
+*.log
+*.class
+*.mph
