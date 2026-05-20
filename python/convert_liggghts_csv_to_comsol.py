@@ -9,7 +9,7 @@ produce a clean-looking CSV and silently corrupt the downstream FEM run.
 Use --allow-incomplete only for diagnostic dumps that should NOT be fed to COMSOL.
 """
 from __future__ import annotations
-import argparse, csv, sys
+import argparse, csv, sys, math
 from pathlib import Path
 
 UM_PER_CM = 10000.0
@@ -75,6 +75,33 @@ def main():
         shape = 'Al' if typ == 1 else ('DL' if rad > 30 else 'DS')
         counts[shape] = counts.get(shape, 0) + 1
         out.append({'id': pick(r, 'id', 'ID'), 'type': typ, 'shape': shape, 'x_um': x, 'y_um': y, 'r_um': rad})
+
+    # 2D handoff validity gate: Route-B collapses DEM to x-y. If centers are not
+    # already on z=0, or if the projection creates severe overlaps, COMSOL receives
+    # an impossible initial geometry and will fail at uTop=0.
+    zvals = []
+    severe = []
+    for i, a in enumerate(rows):
+        try:
+            zvals.append(float(a.get('z', 0.0)) * UM_PER_CM)
+        except Exception:
+            zvals.append(0.0)
+        ax, ay, ar = float(pick(a, 'x', 'Points:0', 'Points_0'))*UM_PER_CM, float(pick(a, 'y', 'Points:1', 'Points_1'))*UM_PER_CM, float(pick(a, 'radius', 'Radius'))*UM_PER_CM
+        for b in rows[i+1:]:
+            bx, by, br = float(pick(b, 'x', 'Points:0', 'Points_0'))*UM_PER_CM, float(pick(b, 'y', 'Points:1', 'Points_1'))*UM_PER_CM, float(pick(b, 'radius', 'Radius'))*UM_PER_CM
+            gap = math.hypot(ax-bx, ay-by) - (ar+br)
+            if gap < -1.0:
+                severe.append((gap, pick(a, 'id', 'ID'), pick(b, 'id', 'ID')))
+    zmax = max((abs(z) for z in zvals), default=0.0)
+    geom_bad = zmax > 0.05 or bool(severe)
+    if geom_bad:
+        print(f'[VERIFY] 2D handoff invalid: max|z|={zmax:.6g} um severe_overlaps={len(severe)}', file=sys.stderr)
+        if severe:
+            severe.sort()
+            print(f'[VERIFY] worst projected overlap gap={severe[0][0]:.6g} um pair={severe[0][1]}-{severe[0][2]}', file=sys.stderr)
+        if not args.allow_incomplete:
+            print('[FAIL] refusing to write CSV because projected DEM geometry is invalid for 2D COMSOL.', file=sys.stderr)
+            raise SystemExit(1)
 
     # Composition gate — runs BEFORE any file is written, so a failing dump cannot
     # silently produce a COMSOL-ready CSV. This is the second-line defense (the first

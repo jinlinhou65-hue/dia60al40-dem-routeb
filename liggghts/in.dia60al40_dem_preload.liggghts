@@ -48,7 +48,7 @@ fix             integr all nve/sphere
 # zeroing the z-component of force. Combined with v_z(t=0)=0 from
 # insert/pack, particles never move in z, so the projection to 2D
 # (used by the COMSOL converter) is exact.
-fix             zlock all setforce NULL NULL 0.0
+fix             zlock all enforce2d
 
 fix             die all mesh/surface file meshes/DieBox.stl type 3 scale 1.0
 fix             top all mesh/surface file meshes/TopPlate.stl type 3 scale 1.0
@@ -70,12 +70,15 @@ fix             pddDL all particledistribution/discrete/numberbased 67867967 1 p
 region          particles_in_region block 0.0013 0.0387 0.0013 0.0207 -0.000001 0.000001 units box
 fix             insDL all insert/pack seed 49979687 distributiontemplate pddDL maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 4 region particles_in_region ntry_mc 20000
 run             1
+set             group all z 0.0
 unfix           insDL
 fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 12 region particles_in_region ntry_mc 20000
 run             1
+set             group all z 0.0
 unfix           insDS
 fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 46 region particles_in_region ntry_mc 20000
 run             1
+set             group all z 0.0
 unfix           insAl
 
 # settle briefly, then move top down: 400000*5e-9*1 cm/s = 20 um
