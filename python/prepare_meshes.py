@@ -1,7 +1,7 @@
 ﻿"""Generate STL boundary meshes for the Dia60/Al40 quasi-2D DEM preload.
 
 Coordinates are CGS centimeters for LIGGGHTS.
-Physical cavity: 400 um wide x 220 um high x 84 um thick.
+Physical cavity: 400 um wide x 220 um high x 90 um thick.
 Meshes:
   - DieBox.stl: five fixed walls (left, right, bottom, front, back), open at top
   - TopPlate.stl: moving upper plate at y=220 um
@@ -13,7 +13,7 @@ from pathlib import Path
 UM_TO_CM = 1e-4
 W = 400 * UM_TO_CM      # x width
 H = 220 * UM_TO_CM      # y height
-T = 84 * UM_TO_CM       # z thickness: quasi-2D single layer
+T = 90 * UM_TO_CM       # z thickness: quasi-2D single layer, > 84 um DL diameter
 WALL = 20 * UM_TO_CM
 TOP_THICK = 18 * UM_TO_CM
 OUT = Path(__file__).resolve().parents[1] / "liggghts" / "meshes"

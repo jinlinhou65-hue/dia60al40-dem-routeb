@@ -8,13 +8,13 @@ newton          off
 communicate     single vel yes
 units           cgs
 
-variable        Tcm equal 0.0084
+variable        Tcm equal 0.0090
 variable        Wcm equal 0.04
 variable        Hcm equal 0.022
 variable        topVel equal 1.0
 variable        dt equal 5.0e-9
 
-region          simreg block -0.002 0.042 -0.004 0.024 -0.0042 0.0042 units box
+region          simreg block -0.002 0.042 -0.004 0.024 -0.0045 0.0045 units box
 create_box      3 simreg
 neighbor        0.00012 bin
 neigh_modify    delay 0
@@ -62,15 +62,19 @@ fix             pddAl all particledistribution/discrete/numberbased 32452843 1 p
 fix             pddDS all particledistribution/discrete/numberbased 32452867 1 ptsDS 1.0
 fix             pddDL all particledistribution/discrete/numberbased 67867967 1 ptsDL 1.0
 
-# Centers constrained to the mid-plane: quasi-2D single layer; all_in no allows large spheres to touch z walls.
-region          particles_in_region block 0.0013 0.0387 0.0013 0.0207 -0.00001 0.00001 units box
+# Centers constrained to the mid-plane: quasi-2D single layer. Thickness is 90 um
+# (slightly larger than the 84 um DL diameter) so large particles do not overlap the
+# front/back mesh due to random nonzero z at insertion. `particles_in_region` is a
+# TOTAL target count, not a per-call insertion count, so the sequential targets are
+# cumulative: 4 DL, then 12 total after DS, then 46 total after Al.
+region          particles_in_region block 0.0013 0.0387 0.0013 0.0207 -0.000001 0.000001 units box
 fix             insDL all insert/pack seed 49979687 distributiontemplate pddDL maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 4 region particles_in_region ntry_mc 20000
 run             1
 unfix           insDL
-fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 8 region particles_in_region ntry_mc 20000
+fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 12 region particles_in_region ntry_mc 20000
 run             1
 unfix           insDS
-fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 34 region particles_in_region ntry_mc 20000
+fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 46 region particles_in_region ntry_mc 20000
 run             1
 unfix           insAl
 

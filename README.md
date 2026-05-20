@@ -12,7 +12,7 @@ Outputs:
 - `D:\CodexProjects\liggghts\meshes\TopPlate.stl`
 - `D:\CodexProjects\liggghts\meshes\InsertFace.stl`
 
-All STL coordinates are cgs centimeters. The quasi-2D thickness is `Tcm=0.0084`.
+All STL coordinates are cgs centimeters. The quasi-2D thickness is `Tcm=0.0090` (slightly larger than the 84 µm DL diameter to give the largest particles geometric headroom against the front/back walls).
 
 ## 2. Run DEM preload
 

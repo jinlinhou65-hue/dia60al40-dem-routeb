@@ -107,22 +107,14 @@ jobs:
           # Gate 2: at least one timestep dump must exist (file presence).
           ls DEM/dia60al40_*.dump
 
-          # Gate 3: the FINAL dump must actually contain particles.
-          # This is the explicit defense against the documented "green-but-empty-artifact" false success:
-          # if insert/pack placed zero particles the dump still gets written, just with NUMBER OF ATOMS=0.
-          # We target 46 (4 DL + 8 DS + 34 Al). Allow some slack (insertion can drop a few due to overlap),
-          # but anything under 30 means the deck is broken, not just unlucky.
+          # Gate 3: the FINAL dump must contain the exact target composition.
+          # `insert/pack particles_in_region` is easy to misuse because the value is a
+          # total target count, not the number inserted by that specific fix. The previous
+          # loose >=30 gate allowed a green run with 26 Al + 8 DS + 0 DL. This gate forbids
+          # that second-order false success.
           LAST_DUMP=$(ls -1 DEM/dia60al40_*.dump | sort -V | tail -1)
           echo "[VERIFY] last dump: $LAST_DUMP"
-          NATOMS=$(awk '/^ITEM: NUMBER OF ATOMS$/{getline; gsub(/[[:space:]]/,""); print; exit}' "$LAST_DUMP")
-          echo "[VERIFY] NUMBER OF ATOMS in last dump = ${NATOMS:-<unparsed>}"
-          if ! [[ "$NATOMS" =~ ^[0-9]+$ ]]; then
-            echo "[FATAL] could not parse atom count from $LAST_DUMP"; exit 1
-          fi
-          if [ "$NATOMS" -lt 30 ]; then
-            echo "[FATAL] expected >=30 particles (target 46), got $NATOMS — deck/insertion regression."
-            exit 1
-          fi
+          python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" --expect-al 34 --expect-ds 8 --expect-dl 4
 
       - name: Upload DEM artifacts
         if: always()
