@@ -22,7 +22,14 @@ neigh_modify    delay 0
 timestep        ${dt}
 
 # type 1 = Al, type 2 = Diamond, type 3 = die/tool mesh material
-fix             mprop all property/global youngsModulus peratomtype 6.259e9 1.0e11 6.0e10
+# LIGGGHTS in CGS units caps youngsModulus at 1e10 dyne/cm^2 (=1 GPa) — this is the
+# DEM soft-modulus convention tuned for ~ns timesteps. The cap is consistent with
+# the dt=5e-9 chosen above. Diamond (real ~1100 GPa) and die-steel (real ~200 GPa)
+# are softened to the cap; the DEM stage only needs to produce sensible packed
+# particle positions for COMSOL FEM, which inherits realistic stiffness later.
+# If realistic absolute stiffness were needed here, add `hard_particles yes` and
+# drop dt to ~5e-10 to keep contact integration stable.
+fix             mprop all property/global youngsModulus peratomtype 6.259e9 1.0e10 1.0e10
 fix             pprop all property/global poissonsRatio peratomtype 0.33 0.10 0.31
 fix             cor all property/global coefficientRestitution peratomtypepair 3 0.20 0.15 0.15  0.15 0.10 0.10  0.15 0.10 0.10
 fix             cof all property/global coefficientFriction peratomtypepair 3 0.30 0.30 0.08  0.30 0.10 0.08  0.08 0.08 0.08
