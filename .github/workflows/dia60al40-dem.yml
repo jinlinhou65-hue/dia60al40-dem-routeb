@@ -52,13 +52,24 @@ jobs:
           which liggghts
           ls -la /usr/local/bin/liggghts
           # Sanity-check: must respond and identify itself as LIGGGHTS.
-          liggghts -h 2>&1 | head -40
+          # NOTE: do NOT pipe `liggghts -h` directly into `head` — with `set -o pipefail`,
+          # `head` closes stdin after 40 lines and liggghts dies with SIGPIPE (exit 141),
+          # which would fail the whole step even though the binary is perfectly fine.
+          # Spill to a file first, then preview + assert.
+          liggghts -h >/tmp/liggghts_help.txt 2>&1 || true
+          head -40 /tmp/liggghts_help.txt
+          grep -q "LIGGGHTS" /tmp/liggghts_help.txt
 
       - name: Prepare meshes
         run: |
           set -euxo pipefail
           python3 python/prepare_meshes.py
           find liggghts/meshes -maxdepth 1 -type f -ls
+          # Hard-assert all three STLs were produced and are non-empty.
+          # Catches silent regressions in prepare_meshes.py before LIGGGHTS gets a chance to die on a missing file.
+          for f in DieBox.stl TopPlate.stl InsertFace.stl; do
+            test -s "liggghts/meshes/$f" || { echo "[FATAL] missing/empty mesh: liggghts/meshes/$f"; exit 1; }
+          done
 
       - name: Run DEM preload
         working-directory: liggghts
@@ -70,11 +81,48 @@ jobs:
           sed -n '1,120p' in.dia60al40_dem_preload.liggghts
           echo '[RUN LIGGGHTS]'
           # `-in file` is the canonical invocation; stdin redirect can swallow output on some builds.
+          # `tee` reads until EOF — it does NOT close stdin early, so pipefail+SIGPIPE is not a concern here
+          # (unlike the `liggghts -h | head -40` trap in the previous step). If liggghts exits non-zero,
+          # pipefail correctly propagates the failure.
           liggghts -in in.dia60al40_dem_preload.liggghts 2>&1 | tee dia60al40_liggghts.run.log
           echo '[OUTPUT TREE]'
           find . -maxdepth 3 -type f -ls | sort -k11
           test -s dia60al40_liggghts.run.log
+
+          # Gate 1: surface any LIGGGHTS-level ERROR explicitly.
+          # pipefail above usually catches these, but printing the matching line(s) up-front
+          # makes diagnosis instant instead of scrolling through thousands of thermo lines.
+          if grep -E '^ERROR' dia60al40_liggghts.run.log; then
+            echo "[FATAL] LIGGGHTS reported an ERROR (see grep output above)."
+            exit 1
+          fi
+
+          # Soft-warn (do not fail): "Lost atoms" means particles silently left the box.
+          # The deck pins z via `setforce NULL NULL 0.0` so this should never happen,
+          # but if it does we want it visible without burying the run.
+          if grep -E 'Lost atoms|WARNING.*lost' dia60al40_liggghts.run.log; then
+            echo "[WARN] LIGGGHTS reported lost atoms — check physics, but not failing the step."
+          fi
+
+          # Gate 2: at least one timestep dump must exist (file presence).
           ls DEM/dia60al40_*.dump
+
+          # Gate 3: the FINAL dump must actually contain particles.
+          # This is the explicit defense against the documented "green-but-empty-artifact" false success:
+          # if insert/pack placed zero particles the dump still gets written, just with NUMBER OF ATOMS=0.
+          # We target 46 (4 DL + 8 DS + 34 Al). Allow some slack (insertion can drop a few due to overlap),
+          # but anything under 30 means the deck is broken, not just unlucky.
+          LAST_DUMP=$(ls -1 DEM/dia60al40_*.dump | sort -V | tail -1)
+          echo "[VERIFY] last dump: $LAST_DUMP"
+          NATOMS=$(awk '/^ITEM: NUMBER OF ATOMS$/{getline; gsub(/[[:space:]]/,""); print; exit}' "$LAST_DUMP")
+          echo "[VERIFY] NUMBER OF ATOMS in last dump = ${NATOMS:-<unparsed>}"
+          if ! [[ "$NATOMS" =~ ^[0-9]+$ ]]; then
+            echo "[FATAL] could not parse atom count from $LAST_DUMP"; exit 1
+          fi
+          if [ "$NATOMS" -lt 30 ]; then
+            echo "[FATAL] expected >=30 particles (target 46), got $NATOMS — deck/insertion regression."
+            exit 1
+          fi
 
       - name: Upload DEM artifacts
         if: always()
