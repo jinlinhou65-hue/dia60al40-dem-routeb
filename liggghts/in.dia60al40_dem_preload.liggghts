@@ -50,20 +50,20 @@ fix             walls all wall/gran model hertz tangential history mesh n_meshes
 # Templates: radii in cm. 13 um=0.0013 cm, 18 um=0.0018 cm, 42 um=0.0042 cm.
 fix             ptsAl all particletemplate/sphere 15485863 atom_type 1 density constant 2.70 radius constant 0.0013
 fix             ptsDS all particletemplate/sphere 15485867 atom_type 2 density constant 3.52 radius constant 0.0018
-fix             ptsDL all particletemplate/sphere 15485869 atom_type 2 density constant 3.52 radius constant 0.0042
+fix             ptsDL all particletemplate/sphere 49979693 atom_type 2 density constant 3.52 radius constant 0.0042
 fix             pddAl all particledistribution/discrete/numberbased 32452843 1 ptsAl 1.0
 fix             pddDS all particledistribution/discrete/numberbased 32452867 1 ptsDS 1.0
-fix             pddDL all particledistribution/discrete/numberbased 32452889 1 ptsDL 1.0
+fix             pddDL all particledistribution/discrete/numberbased 67867967 1 ptsDL 1.0
 
 # Centers constrained to the mid-plane: quasi-2D single layer; all_in no allows large spheres to touch z walls.
 region          particles_in_region block 0.0013 0.0387 0.0013 0.0207 -0.00001 0.00001 units box
 fix             insDL all insert/pack seed 49979687 distributiontemplate pddDL maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 4 region particles_in_region ntry_mc 20000
 run             1
 unfix           insDL
-fix             insDS all insert/pack seed 49979717 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 8 region particles_in_region ntry_mc 20000
+fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 8 region particles_in_region ntry_mc 20000
 run             1
 unfix           insDS
-fix             insAl all insert/pack seed 49979747 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 34 region particles_in_region ntry_mc 20000
+fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 34 region particles_in_region ntry_mc 20000
 run             1
 unfix           insAl
 
