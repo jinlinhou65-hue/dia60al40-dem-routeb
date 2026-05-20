@@ -44,15 +44,25 @@ fix             grav all gravity 98000 vector 0.0 -1.0 0.0
 
 fix             integr all nve/sphere
 
-# Quasi-2D constraint: pin all particle centers to the z=0 mid-plane by
-# zeroing the z-component of force. Combined with v_z(t=0)=0 from
-# insert/pack, particles never move in z, so the projection to 2D
-# (used by the COMSOL converter) is exact.
-fix             zlock all enforce2d
-
 fix             die all mesh/surface file meshes/DieBox.stl type 3 scale 1.0
 fix             top all mesh/surface file meshes/TopPlate.stl type 3 scale 1.0
 fix             walls all wall/gran model hertz tangential history mesh n_meshes 2 meshes die top
+
+# Quasi-2D constraint: pin all particle centers to the z=0 mid-plane by zeroing
+# the z-component of force AFTER every other force-adding fix has run.
+#
+# CRITICAL: LIGGGHTS calls post_force in fix-declaration order, so this MUST be
+# declared AFTER `fix walls` (wall/gran). Run #9 had it declared BEFORE `fix walls`
+# and used `enforce2d` (undefined in 3D); wall/gran then added a z-force component
+# from DL r=42 µm particles grazing the z=±45 µm mesh walls, which leaked into the
+# velocity update each step and drifted z by ~32 µm over 450k steps. The deck still
+# produced 46 particles, but `max|z|=31.99 µm` and the 2D projection had a -26 µm
+# overlap — a false success that the converter's geometry gate now catches.
+#
+# `setforce NULL NULL 0.0` is intentional (not `enforce2d`): we are running a 3D
+# simulation with 3D STL meshes; setforce is well-defined here and v_z is held at
+# zero by the explicit `velocity ... NULL NULL 0.0` after each insert below.
+fix             zlock all setforce NULL NULL 0.0
 
 # Templates: radii in cm. 13 um=0.0013 cm, 18 um=0.0018 cm, 42 um=0.0042 cm.
 fix             ptsAl all particletemplate/sphere 15485863 atom_type 1 density constant 2.70 radius constant 0.0013
@@ -71,14 +81,17 @@ region          particles_in_region block 0.0013 0.0387 0.0013 0.0207 -0.000001 
 fix             insDL all insert/pack seed 49979687 distributiontemplate pddDL maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 4 region particles_in_region ntry_mc 20000
 run             1
 set             group all z 0.0
+velocity        all set NULL NULL 0.0
 unfix           insDL
 fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 12 region particles_in_region ntry_mc 20000
 run             1
 set             group all z 0.0
+velocity        all set NULL NULL 0.0
 unfix           insDS
 fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 46 region particles_in_region ntry_mc 20000
 run             1
 set             group all z 0.0
+velocity        all set NULL NULL 0.0
 unfix           insAl
 
 # settle briefly, then move top down: 400000*5e-9*1 cm/s = 20 um
