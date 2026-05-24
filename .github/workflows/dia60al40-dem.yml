@@ -135,6 +135,10 @@ jobs:
               --input "$dump" \
               --mode 2d \
               --output "liggghts/DEM/comsol_particles_${stage}.csv"
+            python3 python/export_dem_stage_handoff.py \
+              --input "$dump" \
+              --stage-id "$stage" \
+              --output "liggghts/DEM/dem_fem_handoff_${stage}.csv"
           done
 
       - name: Upload DEM artifacts

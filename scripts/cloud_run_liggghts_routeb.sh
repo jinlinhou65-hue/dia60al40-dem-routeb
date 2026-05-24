@@ -37,6 +37,10 @@ for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho
     --input "$dump" \
     --mode 2d \
     --output "liggghts/DEM/comsol_particles_${stage}.csv"
+  python3 python/export_dem_stage_handoff.py \
+    --input "$dump" \
+    --stage-id "$stage" \
+    --output "liggghts/DEM/dem_fem_handoff_${stage}.csv"
 done
 
 echo "[CLOUD] done."

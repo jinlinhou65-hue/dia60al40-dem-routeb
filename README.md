@@ -53,6 +53,24 @@ py D:\CodexProjects\python\convert_liggghts_csv_to_comsol.py --input D:\CodexPro
 
 GitHub Actions runs the staged DEM deck, verifies every stage, and uploads the stage dumps, restarts, logs, STLs, and generated `comsol_particles_stage*.csv` files.
 
+For each DEM stage the workflow also writes a richer DEM-FEM handoff table:
+
+```text
+liggghts/DEM/dem_fem_handoff_<stage>.csv
+```
+
+Columns:
+
+```text
+stage_id,target_rho_total,actual_rho_total,current_height_um,
+particle_id,type,shape,material,x_um,y_um,r_um,
+rotation_rad,vx_cm_s,vy_cm_s,contact_count
+```
+
+`rotation_rad` is currently `0.0` because the LIGGGHTS model uses spherical DEM particles. The column is included so future clump/superquadric or polygon-orientation output can be passed to COMSOL without changing the handoff schema.
+
+`contact_count` is computed from the projected 2D particle geometry using a configurable gap tolerance. It is a stage-level contact-network diagnostic, not a replacement for LIGGGHTS' internal contact force history.
+
 ## 4. Run COMSOL Route-B skeleton
 
 ```powershell

@@ -1,40 +1,10 @@
 from __future__ import annotations
 
 import argparse
-import math
 from collections import Counter
 from pathlib import Path
 
-
-UM_PER_CM = 10000.0
-W_UM = 400.0
-
-
-STAGES = [
-    ("stage0_preload", 200.0, 0.55, 0.60),
-    ("stage1_rho065", 174.036425, 0.63, 0.67),
-    ("stage2_rho072", 157.170037, 0.70, 0.74),
-    ("stage3_rho080", 141.404595, 0.78, 0.82),
-    ("stage4_rho088", 128.548211, 0.86, 0.90),
-    ("stage5_rho095", 119.077554, 0.93, 0.97),
-]
-
-
-def read_liggghts_dump(path: Path) -> list[dict[str, str]]:
-    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    try:
-        atoms_i = next(i for i, line in enumerate(lines) if line.startswith("ITEM: ATOMS"))
-    except StopIteration:
-        raise SystemExit(f"[FAIL] no ITEM: ATOMS section in {path}")
-    cols = lines[atoms_i].split()[2:]
-    rows: list[dict[str, str]] = []
-    for line in lines[atoms_i + 1 :]:
-        if not line.strip() or line.startswith("ITEM:"):
-            break
-        vals = line.split()
-        if len(vals) >= len(cols):
-            rows.append(dict(zip(cols, vals)))
-    return rows
+from dem_stage_metadata import STAGES, UM_PER_CM, W_UM, read_liggghts_dump, total_particle_area_um2
 
 
 def classify_counts(rows: list[dict[str, str]]) -> Counter[str]:
@@ -51,21 +21,6 @@ def classify_counts(rows: list[dict[str, str]]) -> Counter[str]:
         else:
             counts[f"type{typ}"] += 1
     return counts
-
-
-def total_particle_area_um2(rows: list[dict[str, str]]) -> float:
-    # Match COMSOL Route-B 2D geometry convention:
-    # Al is circular; all diamond particles (DS and DL) are represented
-    # downstream as regular octagons.
-    area = 0.0
-    for row in rows:
-        typ = int(float(row["type"]))
-        r_um = float(row["radius"]) * UM_PER_CM
-        if typ == 1:
-            area += math.pi * r_um * r_um
-        else:
-            area += 2.0 * math.sqrt(2.0) * r_um * r_um
-    return area
 
 
 def check_geometry(rows: list[dict[str, str]], z_tol_um: float, overlap_tol_um: float) -> None:
@@ -94,7 +49,7 @@ def check_geometry(rows: list[dict[str, str]], z_tol_um: float, overlap_tol_um: 
         )
 
 
-def verify_stage(root: Path, stage: str, height_um: float, rho_min: float, rho_max: float, args) -> None:
+def verify_stage(root: Path, stage: str, target_rho: float, height_um: float, rho_min: float, rho_max: float, args) -> None:
     matches = sorted(root.glob(f"{stage}_*.dump"))
     if not matches:
         raise SystemExit(f"[FAIL] no dump found for {stage}: {root / (stage + '_*.dump')}")
@@ -111,7 +66,7 @@ def verify_stage(root: Path, stage: str, height_um: float, rho_min: float, rho_m
     check_geometry(rows, args.z_tol_um, args.overlap_tol_um)
     area = total_particle_area_um2(rows)
     rho = area / (W_UM * height_um)
-    print(f"[VERIFY] height_um={height_um:.6f} area_um2={area:.6f} rho_total={rho:.6f}")
+    print(f"[VERIFY] target_rho={target_rho:.4f} height_um={height_um:.6f} area_um2={area:.6f} rho_total={rho:.6f}")
     if not (rho_min <= rho <= rho_max):
         raise SystemExit(f"[FAIL] {stage} rho_total={rho:.6f} outside [{rho_min},{rho_max}]")
 
@@ -127,8 +82,8 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(args.root)
-    for stage, height_um, rho_min, rho_max in STAGES:
-        verify_stage(root, stage, height_um, rho_min, rho_max, args)
+    for stage, target_rho, height_um, rho_min, rho_max in STAGES:
+        verify_stage(root, stage, target_rho, height_um, rho_min, rho_max, args)
     print("[OK] all DEM stages passed composition, geometry, and density gates")
 
 
