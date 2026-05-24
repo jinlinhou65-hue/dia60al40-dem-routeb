@@ -71,28 +71,28 @@ jobs:
             test -s "liggghts/meshes/$f" || { echo "[FATAL] missing/empty mesh: liggghts/meshes/$f"; exit 1; }
           done
 
-      - name: Run DEM preload
+      - name: Run staged DEM compaction
         working-directory: liggghts
         run: |
           set -euxo pipefail
           mkdir -p DEM
           echo '[PWD]' "$PWD"
           echo '[INPUT HEAD]'
-          sed -n '1,120p' in.dia60al40_dem_preload.liggghts
+          sed -n '1,180p' in.dia60al40_dem_staged.liggghts
           echo '[RUN LIGGGHTS]'
           # `-in file` is the canonical invocation; stdin redirect can swallow output on some builds.
           # `tee` reads until EOF — it does NOT close stdin early, so pipefail+SIGPIPE is not a concern here
           # (unlike the `liggghts -h | head -40` trap in the previous step). If liggghts exits non-zero,
           # pipefail correctly propagates the failure.
-          liggghts -in in.dia60al40_dem_preload.liggghts 2>&1 | tee dia60al40_liggghts.run.log
+          liggghts -in in.dia60al40_dem_staged.liggghts 2>&1 | tee dia60al40_liggghts_staged.run.log
           echo '[OUTPUT TREE]'
           find . -maxdepth 3 -type f -ls | sort -k11
-          test -s dia60al40_liggghts.run.log
+          test -s dia60al40_liggghts_staged.run.log
 
           # Gate 1: surface any LIGGGHTS-level ERROR explicitly.
           # pipefail above usually catches these, but printing the matching line(s) up-front
           # makes diagnosis instant instead of scrolling through thousands of thermo lines.
-          if grep -E '^ERROR' dia60al40_liggghts.run.log; then
+          if grep -E '^ERROR' dia60al40_liggghts_staged.run.log; then
             echo "[FATAL] LIGGGHTS reported an ERROR (see grep output above)."
             exit 1
           fi
@@ -100,21 +100,42 @@ jobs:
           # Soft-warn (do not fail): "Lost atoms" means particles silently left the box.
           # The deck pins z via `setforce NULL NULL 0.0` so this should never happen,
           # but if it does we want it visible without burying the run.
-          if grep -E 'Lost atoms|WARNING.*lost' dia60al40_liggghts.run.log; then
+          if grep -E 'Lost atoms|WARNING.*lost' dia60al40_liggghts_staged.run.log; then
             echo "[WARN] LIGGGHTS reported lost atoms — check physics, but not failing the step."
           fi
 
-          # Gate 2: at least one timestep dump must exist (file presence).
-          ls DEM/dia60al40_*.dump
+          # Gate 2: each staged handoff dump must exist.
+          ls DEM/stage0_preload_*.dump
+          ls DEM/stage1_rho065_*.dump
+          ls DEM/stage2_rho072_*.dump
+          ls DEM/stage3_rho080_*.dump
+          ls DEM/stage4_rho088_*.dump
+          ls DEM/stage5_rho095_*.dump
 
           # Gate 3: the FINAL dump must contain the exact target composition.
           # `insert/pack particles_in_region` is easy to misuse because the value is a
           # total target count, not the number inserted by that specific fix. The previous
           # loose >=30 gate allowed a green run with 26 Al + 8 DS + 0 DL. This gate forbids
           # that second-order false success.
-          LAST_DUMP=$(ls -1 DEM/dia60al40_*.dump | sort -V | tail -1)
+          LAST_DUMP=$(ls -1 DEM/stage5_rho095_*.dump | sort -V | tail -1)
           echo "[VERIFY] last dump: $LAST_DUMP"
           python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" --expect-al 34 --expect-ds 8 --expect-dl 4
+
+          # Gate 4: verify every stage against expected density windows and 2D
+          # COMSOL handoff constraints.
+          cd ..
+          python3 python/verify_dem_stages.py --root liggghts/DEM
+
+          # Export every stage into COMSOL-ready CSV. COMSOL can now analyze
+          # local stress/plasticity per packed state instead of solving the
+          # entire DEM rearrangement itself.
+          for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho088 stage5_rho095; do
+            dump=$(ls -1 "liggghts/DEM/${stage}_"*.dump | sort -V | tail -1)
+            python3 python/convert_liggghts_csv_to_comsol.py \
+              --input "$dump" \
+              --mode 2d \
+              --output "liggghts/DEM/comsol_particles_${stage}.csv"
+          done
 
       - name: Upload DEM artifacts
         if: always()

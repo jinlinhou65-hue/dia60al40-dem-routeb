@@ -14,23 +14,44 @@ Outputs:
 
 All STL coordinates are cgs centimeters. The quasi-2D thickness is `Tcm=0.0090` (slightly larger than the 84 µm DL diameter to give the largest particles geometric headroom against the front/back walls).
 
-## 2. Run DEM preload
+## 2. Run staged DEM compaction
 
 ```powershell
 Set-Location D:\CodexProjects\liggghts
-liggghts -in in.dia60al40_dem_preload.liggghts
+liggghts -in in.dia60al40_dem_staged.liggghts
 ```
 
-DEM VTK frames are written to `D:\CodexProjects\liggghts\DEM\dia60al40_*.vtk` if LIGGGHTS is available.
+DEM stage dumps and restarts are written to `D:\CodexProjects\liggghts\DEM\`.
 
-## 3. Export final DEM state to CSV
+The staged workflow separates DEM rearrangement from COMSOL FEM stress analysis:
 
-Open the largest-step VTK in ParaView and export CSV.
+| Stage | Target packing metric | Output prefix |
+| --- | ---: | --- |
+| 0 | preload, about 0.56 | `stage0_preload_*.dump` |
+| 1 | 0.65 | `stage1_rho065_*.dump` |
+| 2 | 0.72 | `stage2_rho072_*.dump` |
+| 3 | 0.80 | `stage3_rho080_*.dump` |
+| 4 | 0.88 | `stage4_rho088_*.dump` |
+| 5 | 0.95 | `stage5_rho095_*.dump` |
+
+Here:
+
+```text
+rho_total = (Al area + diamond area) / (400 um * current top height)
+```
+
+This is the DEM packing target. It is not the Al hardening density used inside COMSOL.
+
+## 3. Verify and export DEM stages to COMSOL CSV
+
+Each stage can be verified directly from the LIGGGHTS custom dump:
 
 ```powershell
-py D:\CodexProjects\python\check_dem_state.py --input <last_frame>.csv
-py D:\CodexProjects\python\convert_liggghts_csv_to_comsol.py --input <last_frame>.csv --mode 2d --output D:\CodexProjects\scripts\comsol_particles.csv
+py D:\CodexProjects\python\verify_dem_stages.py --root D:\CodexProjects\liggghts\DEM
+py D:\CodexProjects\python\convert_liggghts_csv_to_comsol.py --input D:\CodexProjects\liggghts\DEM\stage5_rho095_<step>.dump --mode 2d --output D:\CodexProjects\scripts\comsol_particles.csv
 ```
+
+GitHub Actions runs the staged DEM deck, verifies every stage, and uploads the stage dumps, restarts, logs, STLs, and generated `comsol_particles_stage*.csv` files.
 
 ## 4. Run COMSOL Route-B skeleton
 

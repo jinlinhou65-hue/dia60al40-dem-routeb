@@ -21,11 +21,23 @@ liggghts -h | head -40 || true
 echo "[CLOUD] prepare meshes"
 python3 python/prepare_meshes.py
 
-echo "[CLOUD] run DEM"
+echo "[CLOUD] run staged DEM"
 cd liggghts
 mkdir -p DEM
-liggghts -in in.dia60al40_dem_preload.liggghts | tee dia60al40_liggghts.run.log
+liggghts -in in.dia60al40_dem_staged.liggghts | tee dia60al40_liggghts_staged.run.log
 cd "$ROOT"
 
-echo "[CLOUD] done. Export final VTK to CSV via ParaView, then run convert script. If pvpython is available, add automatic conversion here."
+echo "[CLOUD] verify staged DEM handoff dumps"
+python3 python/verify_dem_stages.py --root liggghts/DEM
+
+echo "[CLOUD] convert stage dumps to COMSOL CSV"
+for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho088 stage5_rho095; do
+  dump=$(ls -1 "liggghts/DEM/${stage}_"*.dump | sort -V | tail -1)
+  python3 python/convert_liggghts_csv_to_comsol.py \
+    --input "$dump" \
+    --mode 2d \
+    --output "liggghts/DEM/comsol_particles_${stage}.csv"
+done
+
+echo "[CLOUD] done."
 find liggghts/DEM -maxdepth 1 -type f | sort | tail -20
