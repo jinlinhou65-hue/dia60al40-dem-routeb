@@ -23,8 +23,8 @@ python3 python/prepare_meshes.py
 python3 python/render_dem_deck.py \
   --input liggghts/in.dia60al40_dem_staged.liggghts \
   --output liggghts/in.dia60al40_dem_staged.rendered.liggghts \
-  --e-al-e0-gpa "${E_AL_E0_GPA:-10}" \
-  --e-al-emax-gpa "${E_AL_EMAX_GPA:-40}" \
+  --e-al-e0-gpa "${E_AL_E0_GPA:-5}" \
+  --e-al-emax-gpa "${E_AL_EMAX_GPA:-12}" \
   --e-diamond-gpa "${E_DIAMOND_GPA:-300}" \
   --e-tool-gpa "${E_TOOL_GPA:-600}" \
   --e-wall-gpa "${E_WALL_GPA:-200}" \

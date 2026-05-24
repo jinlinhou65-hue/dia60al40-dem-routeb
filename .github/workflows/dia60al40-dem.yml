@@ -5,13 +5,13 @@ on:
       e_al_e0_gpa:
         description: 'Smoothstep Al modulus at loose packing, GPa'
         required: false
-        default: '10'
+        default: '5'
       e_al_emax_gpa:
         description: 'Smoothstep Al modulus near rho_total=0.95, GPa'
         required: false
-        default: '40'
+        default: '12'
       e_al_emax_sweep_json:
-        description: 'Optional JSON list for Emax sweep, e.g. ["20","25","30","40"]; empty uses e_al_emax_gpa'
+        description: 'Optional JSON list for Emax sweep, e.g. ["10","12","14","16"]; empty uses e_al_emax_gpa'
         required: false
         default: ''
       e_diamond_gpa:
@@ -72,7 +72,7 @@ jobs:
       fail-fast: false
       matrix:
         mu_scale: ${{ fromJSON(inputs.mu_scale_json || '["1.0"]') }}
-        e_al_emax: ${{ fromJSON(inputs.e_al_emax_sweep_json || format('["{0}"]', inputs.e_al_emax_gpa || '40')) }}
+        e_al_emax: ${{ fromJSON(inputs.e_al_emax_sweep_json || format('["{0}"]', inputs.e_al_emax_gpa || '12')) }}
     # Ubuntu apt repos do NOT ship a working `liggghts` package, so we
     # build LIGGGHTS-PUBLIC from source. Use 22.04 because its older
     # g++ 11 tolerates the LIGGGHTS-PUBLIC codebase without -Werror noise.
@@ -140,7 +140,7 @@ jobs:
           python3 python/render_dem_deck.py \
             --input liggghts/in.dia60al40_dem_staged.liggghts \
             --output liggghts/in.dia60al40_dem_staged.rendered.liggghts \
-            --e-al-e0-gpa "${{ inputs.e_al_e0_gpa || '10' }}" \
+            --e-al-e0-gpa "${{ inputs.e_al_e0_gpa || '5' }}" \
             --e-al-emax-gpa "${{ matrix.e_al_emax }}" \
             --e-diamond-gpa "${{ inputs.e_diamond_gpa || '300' }}" \
             --e-tool-gpa "${{ inputs.e_tool_gpa || '600' }}" \

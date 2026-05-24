@@ -141,12 +141,16 @@ def model_parameter_block(args: argparse.Namespace, e_al_stages: list[float]) ->
 
 def replace_model_parameters(text: str, args: argparse.Namespace, e_al_stages: list[float]) -> str:
     start = 'print           "parameter,value,unit" file DEM/model_parameters.csv screen no'
-    end = 'print           "smoothstep_E_Al,E0_10_to_Emax_40_by_stage,description" append DEM/model_parameters.csv screen no'
     i0 = text.find(start)
-    i1 = text.find(end)
-    if i0 < 0 or i1 < 0:
+    if i0 < 0:
         raise SystemExit("[FAIL] could not locate model_parameters print block")
-    i1 += len(end)
+    match = re.search(
+        r'print\s+"smoothstep_E_Al,[^"]*,description"\s+append\s+DEM/model_parameters\.csv\s+screen\s+no',
+        text[i0:],
+    )
+    if not match:
+        raise SystemExit("[FAIL] could not locate model_parameters smoothstep terminator")
+    i1 = i0 + match.end()
     return text[:i0] + model_parameter_block(args, e_al_stages) + text[i1:]
 
 
@@ -170,8 +174,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default="liggghts/in.dia60al40_dem_staged.liggghts")
     parser.add_argument("--output", default="liggghts/in.dia60al40_dem_staged.rendered.liggghts")
-    parser.add_argument("--e-al-e0-gpa", type=float, default=10.0)
-    parser.add_argument("--e-al-emax-gpa", type=float, default=40.0)
+    parser.add_argument("--e-al-e0-gpa", type=float, default=5.0)
+    parser.add_argument("--e-al-emax-gpa", type=float, default=12.0)
     parser.add_argument("--e-diamond-gpa", type=float, default=300.0)
     parser.add_argument("--e-tool-gpa", type=float, default=600.0)
     parser.add_argument("--e-wall-gpa", type=float, default=200.0)
