@@ -20,11 +20,27 @@ liggghts -h | head -40 || true
 
 echo "[CLOUD] prepare meshes"
 python3 python/prepare_meshes.py
+python3 python/render_dem_deck.py \
+  --input liggghts/in.dia60al40_dem_staged.liggghts \
+  --output liggghts/in.dia60al40_dem_staged.rendered.liggghts \
+  --e-al-e0-gpa "${E_AL_E0_GPA:-10}" \
+  --e-al-emax-gpa "${E_AL_EMAX_GPA:-40}" \
+  --e-diamond-gpa "${E_DIAMOND_GPA:-300}" \
+  --e-tool-gpa "${E_TOOL_GPA:-600}" \
+  --e-wall-gpa "${E_WALL_GPA:-200}" \
+  --mu-al-al "${MU_AL_AL:-0.30}" \
+  --mu-al-diamond "${MU_AL_DIAMOND:-0.30}" \
+  --mu-al-tool "${MU_AL_TOOL:-0.08}" \
+  --mu-al-wall "${MU_AL_WALL:-0.08}" \
+  --mu-diamond-diamond "${MU_DIAMOND_DIAMOND:-0.10}" \
+  --mu-diamond-tool "${MU_DIAMOND_TOOL:-0.08}" \
+  --mu-diamond-wall "${MU_DIAMOND_WALL:-0.08}" \
+  --mu-scale "${MU_SCALE:-1.0}"
 
 echo "[CLOUD] run staged DEM"
 cd liggghts
 mkdir -p DEM
-liggghts -in in.dia60al40_dem_staged.liggghts | tee dia60al40_liggghts_staged.run.log
+liggghts -in in.dia60al40_dem_staged.rendered.liggghts | tee dia60al40_liggghts_staged.run.log
 cd "$ROOT"
 
 echo "[CLOUD] verify staged DEM handoff dumps"
@@ -51,6 +67,12 @@ python3 python/export_pressure_density_curve.py \
   --raw liggghts/DEM/pressure_density_curve_raw.csv \
   --output liggghts/DEM/pressure_density_curve.csv
 cat liggghts/DEM/pressure_density_curve.csv
+python3 python/analyze_pressure_density.py \
+  --curve liggghts/DEM/pressure_density_curve.csv \
+  --output liggghts/DEM/pressure_density_summary.csv \
+  --target-rho 0.95 \
+  --target-pressure-mpa 200
+cat liggghts/DEM/pressure_density_summary.csv
 python3 python/plot_dem_results.py \
   --root liggghts/DEM \
   --curve liggghts/DEM/pressure_density_curve.csv \

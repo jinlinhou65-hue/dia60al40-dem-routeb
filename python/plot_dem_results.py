@@ -36,6 +36,19 @@ def read_curve(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(f))
 
 
+def read_model_parameters(path: Path) -> dict[str, float]:
+    if not path.exists():
+        return {}
+    out: dict[str, float] = {}
+    with path.open(newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            try:
+                out[row["parameter"]] = float(row["value"])
+            except (KeyError, ValueError):
+                continue
+    return out
+
+
 def f(row: dict[str, str], key: str) -> float:
     return float(row[key])
 
@@ -45,7 +58,25 @@ def f_default(row: dict[str, str], key: str, default: float) -> float:
     return default if value == "" else float(value)
 
 
-def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
+def smoothstep(x: float) -> float:
+    x = min(1.0, max(0.0, x))
+    return 3.0 * x * x - 2.0 * x * x * x
+
+
+def smooth_al_modulus(rho: float, params: dict[str, float]) -> float | None:
+    e0 = params.get("E_Al_smoothstep_E0")
+    emax = params.get("E_Al_smoothstep_Emax")
+    if e0 is None or emax is None:
+        return None
+    rho0 = params.get("rho_total_stage0_preload", min(v[1] for v in STAGE_BY_ID.values()))
+    rho95 = params.get("rho_total_stage5_rho095", max(v[1] for v in STAGE_BY_ID.values()))
+    span = rho95 - rho0
+    if span <= 0.0:
+        return emax
+    return e0 + (emax - e0) * smoothstep((rho - rho0) / span)
+
+
+def save_pressure_plots(rows: list[dict[str, str]], outdir: Path, params: dict[str, float]) -> None:
     plt, _, _ = import_matplotlib()
     rho = [f(row, "actual_rho_total") for row in rows]
     pressure = [f(row, "pressure_mpa") for row in rows]
@@ -82,6 +113,22 @@ def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
 
     fig, ax1 = plt.subplots(figsize=(7.2, 4.8), dpi=180)
     ax1.plot(rho, al_modulus, marker="s", linewidth=2.0, color="#c43b3b")
+    smooth_values = [smooth_al_modulus(x, params) for x in rho]
+    if all(v is not None for v in smooth_values):
+        rho_min = min(rho)
+        rho_max = max(rho)
+        rho_dense = [rho_min + (rho_max - rho_min) * i / 160.0 for i in range(161)]
+        e_dense = [smooth_al_modulus(x, params) for x in rho_dense]
+        ax1.plot(
+            rho_dense,
+            e_dense,
+            linewidth=1.4,
+            linestyle="--",
+            color="#7f1d1d",
+            alpha=0.85,
+            label="smoothstep E_Al",
+        )
+        ax1.legend(frameon=False, loc="upper left")
     ax1.set_xlabel("Total relative density")
     ax1.set_ylabel("Al DEM modulus (GPa)", color="#c43b3b")
     ax1.tick_params(axis="y", labelcolor="#c43b3b")
@@ -96,6 +143,24 @@ def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
     fig.tight_layout()
     fig.savefig(outdir / "al_modulus_pressure_curve.png")
     plt.close(fig)
+
+    if all(v is not None for v in smooth_values):
+        fig, ax = plt.subplots(figsize=(7.2, 4.8), dpi=180)
+        rho_min = min(rho)
+        rho_max = max(rho)
+        rho_dense = [rho_min + (rho_max - rho_min) * i / 220.0 for i in range(221)]
+        e_dense = [smooth_al_modulus(x, params) for x in rho_dense]
+        ax.plot(rho_dense, e_dense, linewidth=2.0, color="#7f1d1d", label="smoothstep")
+        ax.scatter(rho, al_modulus, s=34, color="#c43b3b", zorder=3, label="DEM stages")
+        ax.set_xlabel("Total relative density")
+        ax.set_ylabel("Al DEM modulus (GPa)")
+        ax.set_title("Smooth Al stiffness schedule")
+        ax.grid(True, alpha=0.3)
+        ax.legend(frameon=False)
+        ax.tick_params(direction="in", top=True, right=True)
+        fig.tight_layout()
+        fig.savefig(outdir / "al_smoothstep_schedule.png")
+        plt.close(fig)
 
     fig, ax1 = plt.subplots(figsize=(7.2, 4.8), dpi=180)
     ax1.plot(rho, contacts, marker="o", linewidth=2.0, color="#276749")
@@ -199,7 +264,8 @@ def main() -> None:
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     rows = read_curve(Path(args.curve))
-    save_pressure_plots(rows, outdir)
+    params = read_model_parameters(root / "model_parameters.csv")
+    save_pressure_plots(rows, outdir, params)
     for stage_id in STAGE_BY_ID:
         plot_stage(root, stage_id, outdir)
     print(f"[OK] wrote DEM plots to {outdir}")
