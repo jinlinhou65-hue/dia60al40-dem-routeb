@@ -4,6 +4,8 @@ Coordinates are CGS centimeters for LIGGGHTS.
 Physical cavity: 400 um wide x 220 um high x 90 um thick.
 Meshes:
   - DieBox.stl: five fixed walls (left, right, bottom, front, back), open at top
+  - DieLeft.stl / DieRight.stl / DieBottom.stl: separate stress-output walls
+  - DieFrontBack.stl: quasi-2D front/back confinement
   - TopPlate.stl: moving upper plate at y=220 um
   - InsertFace.stl: injection plane just below the top opening
 """
@@ -53,16 +55,25 @@ def main():
     z0, z1 = -T/2, T/2
 
     die = []
+    left = []
+    right = []
+    bottom = []
+    frontback = []
     # left wall inner surface x=0, outward normal into cavity roughly +x if vertex order chosen.
-    die += quad((x0,y0,z0), (x0,y1,z0), (x0,y1,z1), (x0,y0,z1))
+    left += quad((x0,y0,z0), (x0,y1,z0), (x0,y1,z1), (x0,y0,z1))
     # right wall x=W
-    die += quad((x1,y0,z1), (x1,y1,z1), (x1,y1,z0), (x1,y0,z0))
+    right += quad((x1,y0,z1), (x1,y1,z1), (x1,y1,z0), (x1,y0,z0))
     # bottom wall y=0
-    die += quad((x0,y0,z1), (x1,y0,z1), (x1,y0,z0), (x0,y0,z0))
+    bottom += quad((x0,y0,z1), (x1,y0,z1), (x1,y0,z0), (x0,y0,z0))
     # front/back confining planes z=+/-T/2
-    die += quad((x0,y0,z0), (x1,y0,z0), (x1,y1,z0), (x0,y1,z0))
-    die += quad((x1,y0,z1), (x0,y0,z1), (x0,y1,z1), (x1,y1,z1))
+    frontback += quad((x0,y0,z0), (x1,y0,z0), (x1,y1,z0), (x0,y1,z0))
+    frontback += quad((x1,y0,z1), (x0,y0,z1), (x0,y1,z1), (x1,y1,z1))
+    die = left + right + bottom + frontback
     write_stl(OUT / "DieBox.stl", "DieBox", die)
+    write_stl(OUT / "DieLeft.stl", "DieLeft", left)
+    write_stl(OUT / "DieRight.stl", "DieRight", right)
+    write_stl(OUT / "DieBottom.stl", "DieBottom", bottom)
+    write_stl(OUT / "DieFrontBack.stl", "DieFrontBack", frontback)
 
     top = []
     # lower face of top plate at y=H; extended across cavity only.
@@ -81,7 +92,15 @@ def main():
     insert = quad((x0,yi,z0), (x1,yi,z0), (x1,yi,z1), (x0,yi,z1))
     write_stl(OUT / "InsertFace.stl", "InsertFace", insert)
 
-    for fn in ["DieBox.stl", "TopPlate.stl", "InsertFace.stl"]:
+    for fn in [
+        "DieBox.stl",
+        "DieLeft.stl",
+        "DieRight.stl",
+        "DieBottom.stl",
+        "DieFrontBack.stl",
+        "TopPlate.stl",
+        "InsertFace.stl",
+    ]:
         p = OUT / fn
         print(f"[OK] {p} ({p.stat().st_size} bytes)")
     print(f"[UNITS] cm; W={W:g}, H={H:g}, T={T:g}")

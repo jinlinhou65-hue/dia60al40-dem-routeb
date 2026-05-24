@@ -15,6 +15,19 @@ def import_matplotlib():
     import matplotlib.pyplot as plt
     from matplotlib.patches import Circle, RegularPolygon
 
+    plt.rcParams.update(
+        {
+            "font.family": "DejaVu Sans",
+            "axes.linewidth": 1.0,
+            "axes.labelsize": 11,
+            "axes.titlesize": 12,
+            "xtick.labelsize": 10,
+            "ytick.labelsize": 10,
+            "legend.fontsize": 9,
+            "figure.facecolor": "white",
+            "savefig.facecolor": "white",
+        }
+    )
     return plt, Circle, RegularPolygon
 
 
@@ -40,6 +53,10 @@ def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
     al_modulus = [f_default(row, "al_modulus_gpa", float("nan")) for row in rows]
     contacts = [f(row, "avg_contact_count") for row in rows]
     overlap = [f(row, "max_overlap_um") for row in rows]
+    overlap_ratio = [f_default(row, "max_overlap_ratio", float("nan")) for row in rows]
+    bottom_pressure = [f_default(row, "bottom_pressure_mpa", 0.0) for row in rows]
+    left_pressure = [f_default(row, "left_pressure_mpa", 0.0) for row in rows]
+    right_pressure = [f_default(row, "right_pressure_mpa", 0.0) for row in rows]
 
     fig, ax = plt.subplots(figsize=(7.2, 4.8), dpi=180)
     ax.plot(rho, pressure, marker="o", linewidth=2.0, color="#1f4e79")
@@ -47,6 +64,7 @@ def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
     ax.set_ylabel("Punch pressure (MPa)")
     ax.set_title("Pressure-density curve")
     ax.grid(True, alpha=0.3)
+    ax.tick_params(direction="in", top=True, right=True)
     fig.tight_layout()
     fig.savefig(outdir / "pressure_density_curve.png")
     plt.close(fig)
@@ -57,6 +75,7 @@ def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
     ax.set_ylabel("Punch pressure (MPa)")
     ax.set_title("Pressure-displacement curve")
     ax.grid(True, alpha=0.3)
+    ax.tick_params(direction="in", top=True, right=True)
     fig.tight_layout()
     fig.savefig(outdir / "pressure_displacement_curve.png")
     plt.close(fig)
@@ -72,6 +91,8 @@ def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
     ax2.tick_params(axis="y", labelcolor="#1f4e79")
     ax1.set_title("Staged Al hardening and pressure")
     ax1.grid(True, alpha=0.3)
+    ax1.tick_params(direction="in", top=True)
+    ax2.tick_params(direction="in", right=True)
     fig.tight_layout()
     fig.savefig(outdir / "al_modulus_pressure_curve.png")
     plt.close(fig)
@@ -87,8 +108,36 @@ def save_pressure_plots(rows: list[dict[str, str]], outdir: Path) -> None:
     ax2.tick_params(axis="y", labelcolor="#b7791f")
     ax1.set_title("Contact-network diagnostics")
     ax1.grid(True, alpha=0.3)
+    ax1.tick_params(direction="in", top=True)
+    ax2.tick_params(direction="in", right=True)
     fig.tight_layout()
     fig.savefig(outdir / "contact_overlap_diagnostics.png")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.8), dpi=180)
+    ax.plot(rho, overlap_ratio, marker="o", linewidth=2.0, color="#b7791f")
+    ax.set_xlabel("Total relative density")
+    ax.set_ylabel("Max overlap / minimum radius")
+    ax.set_title("Normalized overlap diagnostic")
+    ax.grid(True, alpha=0.3)
+    ax.tick_params(direction="in", top=True, right=True)
+    fig.tight_layout()
+    fig.savefig(outdir / "normalized_overlap_curve.png")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.8), dpi=180)
+    ax.plot(rho, pressure, marker="o", linewidth=2.0, label="Top", color="#1f4e79")
+    ax.plot(rho, bottom_pressure, marker="s", linewidth=2.0, label="Bottom", color="#805ad5")
+    ax.plot(rho, left_pressure, marker="^", linewidth=2.0, label="Left wall", color="#276749")
+    ax.plot(rho, right_pressure, marker="v", linewidth=2.0, label="Right wall", color="#c43b3b")
+    ax.set_xlabel("Total relative density")
+    ax.set_ylabel("Boundary pressure (MPa)")
+    ax.set_title("Boundary reaction pressures")
+    ax.grid(True, alpha=0.3)
+    ax.legend(frameon=False)
+    ax.tick_params(direction="in", top=True, right=True)
+    fig.tight_layout()
+    fig.savefig(outdir / "boundary_pressure_curve.png")
     plt.close(fig)
 
 
@@ -133,6 +182,7 @@ def plot_stage(root: Path, stage_id: str, outdir: Path) -> None:
     ax.set_xlabel("x (um)")
     ax.set_ylabel("y (um)")
     ax.set_title(f"{stage_id}: target rho={target_rho:.3f}, height={height_um:.1f} um")
+    ax.tick_params(direction="in", top=True, right=True)
     fig.tight_layout()
     fig.savefig(outdir / f"particles_{stage_id}.png")
     plt.close(fig)

@@ -67,7 +67,7 @@ jobs:
           find liggghts/meshes -maxdepth 1 -type f -ls
           # Hard-assert all three STLs were produced and are non-empty.
           # Catches silent regressions in prepare_meshes.py before LIGGGHTS gets a chance to die on a missing file.
-          for f in DieBox.stl TopPlate.stl InsertFace.stl; do
+          for f in DieBox.stl DieLeft.stl DieRight.stl DieBottom.stl DieFrontBack.stl TopPlate.stl InsertFace.stl; do
             test -s "liggghts/meshes/$f" || { echo "[FATAL] missing/empty mesh: liggghts/meshes/$f"; exit 1; }
           done
 
