@@ -28,7 +28,7 @@ variable        Tcm equal 0.0090
 variable        Wcm equal 0.04
 variable        Hcm equal 0.022
 variable        topVel equal 1.0
-variable        dt equal 5.0e-9
+variable        dt equal 2.0e-10
 
 region          simreg block -0.002 0.042 -0.004 0.024 -0.0045 0.0045 units box
 create_box      4 simreg
@@ -38,14 +38,14 @@ neigh_modify    delay 0
 timestep        ${dt}
 
 # type 1 = Al, type 2 = Diamond, type 3 = top tool, type 4 = die/wall.
-# DEM uses contact-calibrated softened moduli for the pressure-density curve.
-# Diamond contact stiffness is reduced by 1/2 from the previous deck; die/wall
-# contact stiffness is doubled. The result is still a 2D macro-compaction model:
-# pressure is computed from top punch reaction / (Wcm*Tcm), not from a 3D FEM solve.
+# DEM moduli for the pressure-density curve:
+#   Al=30 GPa, Diamond=300 GPa, top tool=600 GPa, die/wall=200 GPa.
+# In CGS, 1 GPa = 1e10 dyne/cm^2. The timestep is reduced because these
+# contact moduli are much stiffer than the earlier soft-calibration deck.
 # LIGGGHTS-PUBLIC blocks Young's modulus above 1e10 in CGS unless this explicit
-# override is set. We need it because the requested die/wall stiffness is 2e10.
+# override is set.
 hard_particles  yes
-fix             mprop all property/global youngsModulus peratomtype 6.259e9 5.0e9 1.0e10 2.0e10
+fix             mprop all property/global youngsModulus peratomtype 3.0e11 3.0e12 6.0e12 2.0e12
 fix             pprop all property/global poissonsRatio peratomtype 0.33 0.10 0.31 0.30
 fix             cor all property/global coefficientRestitution peratomtypepair 4 &
                 0.20 0.15 0.15 0.15 &
@@ -113,13 +113,13 @@ dump            dmp all custom 50000 DEM/staged_trace_*.dump id type x y z vx vy
 print           "stage_id,target_rho_total,current_height_um,top_displacement_um,top_force_y_dyne,top_force_abs_dyne,pressure_mpa" file DEM/pressure_density_curve_raw.csv screen no
 
 # Initial settling before any punch motion.
-run             50000
+run             1250000
 
 # Stage 0: existing preload reference, 20 um total top travel.
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             400000
+run             10000000
 unfix           topMove
-run             50000
+run             1250000
 print           "stage0_preload,0.5668,200.000000,20.000000,${topForceYDyn},${topForceAbsDyn},${topPressureMPa}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st0 all custom 1 DEM/stage0_preload_*.dump id type x y z vx vy vz radius
 run             0
@@ -128,9 +128,9 @@ write_restart   DEM/stage0_preload.restart
 
 # Stage 1: rho_total ~0.65. Additional travel from 20.0 um to 45.963575 um.
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             519272
+run             12981800
 unfix           topMove
-run             50000
+run             1250000
 print           "stage1_rho065,0.6500,174.036425,45.963575,${topForceYDyn},${topForceAbsDyn},${topPressureMPa}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st1 all custom 1 DEM/stage1_rho065_*.dump id type x y z vx vy vz radius
 run             0
@@ -139,9 +139,9 @@ write_restart   DEM/stage1_rho065.restart
 
 # Stage 2: rho_total ~0.72. Additional travel to 62.829963 um.
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             337328
+run             8433200
 unfix           topMove
-run             50000
+run             1250000
 print           "stage2_rho072,0.7200,157.170037,62.829963,${topForceYDyn},${topForceAbsDyn},${topPressureMPa}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st2 all custom 1 DEM/stage2_rho072_*.dump id type x y z vx vy vz radius
 run             0
@@ -150,9 +150,9 @@ write_restart   DEM/stage2_rho072.restart
 
 # Stage 3: rho_total ~0.80. Additional travel to 78.595405 um.
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             315309
+run             7882725
 unfix           topMove
-run             50000
+run             1250000
 print           "stage3_rho080,0.8000,141.404595,78.595405,${topForceYDyn},${topForceAbsDyn},${topPressureMPa}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st3 all custom 1 DEM/stage3_rho080_*.dump id type x y z vx vy vz radius
 run             0
@@ -161,9 +161,9 @@ write_restart   DEM/stage3_rho080.restart
 
 # Stage 4: rho_total ~0.88. Additional travel to 91.451789 um.
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             257128
+run             6428200
 unfix           topMove
-run             50000
+run             1250000
 print           "stage4_rho088,0.8800,128.548211,91.451789,${topForceYDyn},${topForceAbsDyn},${topPressureMPa}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st4 all custom 1 DEM/stage4_rho088_*.dump id type x y z vx vy vz radius
 run             0
@@ -172,9 +172,9 @@ write_restart   DEM/stage4_rho088.restart
 
 # Stage 5: rho_total ~0.95. Additional travel to 100.922446 um.
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             189413
+run             4735325
 unfix           topMove
-run             100000
+run             2500000
 print           "stage5_rho095,0.9500,119.077554,100.922446,${topForceYDyn},${topForceAbsDyn},${topPressureMPa}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st5 all custom 1 DEM/stage5_rho095_*.dump id type x y z vx vy vz radius
 run             0
