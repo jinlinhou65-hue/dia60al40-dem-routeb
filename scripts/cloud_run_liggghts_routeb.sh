@@ -77,6 +77,10 @@ python3 python/plot_dem_results.py \
   --root liggghts/DEM \
   --curve liggghts/DEM/pressure_density_curve.csv \
   --outdir liggghts/DEM/plots
+python3 python/plot_plastic_morphology.py \
+  --root liggghts/DEM \
+  --outdir liggghts/DEM/plots \
+  --metrics liggghts/DEM/plastic_morphology_metrics.csv
 find liggghts/DEM/plots -maxdepth 1 -type f | sort
 
 echo "[CLOUD] done."
