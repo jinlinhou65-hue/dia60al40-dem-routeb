@@ -42,6 +42,9 @@ timestep        ${dt}
 # Diamond contact stiffness is reduced by 1/2 from the previous deck; die/wall
 # contact stiffness is doubled. The result is still a 2D macro-compaction model:
 # pressure is computed from top punch reaction / (Wcm*Tcm), not from a 3D FEM solve.
+# LIGGGHTS-PUBLIC blocks Young's modulus above 1e10 in CGS unless this explicit
+# override is set. We need it because the requested die/wall stiffness is 2e10.
+hard_particles  yes
 fix             mprop all property/global youngsModulus peratomtype 6.259e9 5.0e9 1.0e10 2.0e10
 fix             pprop all property/global poissonsRatio peratomtype 0.33 0.10 0.31 0.30
 fix             cor all property/global coefficientRestitution peratomtypepair 4 &
