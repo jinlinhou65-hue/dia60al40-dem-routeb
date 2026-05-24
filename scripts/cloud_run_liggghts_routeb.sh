@@ -29,6 +29,7 @@ cd "$ROOT"
 
 echo "[CLOUD] verify staged DEM handoff dumps"
 python3 python/verify_dem_stages.py --root liggghts/DEM
+test -s liggghts/DEM/pressure_density_curve_raw.csv
 
 echo "[CLOUD] convert stage dumps to COMSOL CSV"
 for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho088 stage5_rho095; do
@@ -44,6 +45,12 @@ for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho
     --stage-id "$stage" \
     --output "liggghts/DEM/dem_fem_handoff_${stage}.csv"
 done
+
+python3 python/export_pressure_density_curve.py \
+  --root liggghts/DEM \
+  --raw liggghts/DEM/pressure_density_curve_raw.csv \
+  --output liggghts/DEM/pressure_density_curve.csv
+cat liggghts/DEM/pressure_density_curve.csv
 
 echo "[CLOUD] done."
 find liggghts/DEM -maxdepth 1 -type f | sort | tail -20

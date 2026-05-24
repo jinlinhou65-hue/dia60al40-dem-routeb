@@ -1,6 +1,6 @@
-﻿# Dia60Al40 DEM → COMSOL Route-B pipeline
+# Dia60Al40 DEM Pressure-Density Pipeline
 
-## 1. Generate STL meshes
+## 1. Generate STL Meshes
 
 ```powershell
 py D:\CodexProjects\python\prepare_meshes.py
@@ -12,9 +12,9 @@ Outputs:
 - `D:\CodexProjects\liggghts\meshes\TopPlate.stl`
 - `D:\CodexProjects\liggghts\meshes\InsertFace.stl`
 
-All STL coordinates are cgs centimeters. The quasi-2D thickness is `Tcm=0.0090` (slightly larger than the 84 µm DL diameter to give the largest particles geometric headroom against the front/back walls).
+All STL coordinates are cgs centimeters. The quasi-2D thickness is `Tcm=0.0090`.
 
-## 2. Run staged DEM compaction
+## 2. Run Staged DEM Compaction
 
 ```powershell
 Set-Location D:\CodexProjects\liggghts
@@ -23,7 +23,21 @@ liggghts -in in.dia60al40_dem_staged.liggghts
 
 DEM stage dumps and restarts are written to `D:\CodexProjects\liggghts\DEM\`.
 
-The staged workflow separates DEM rearrangement from COMSOL FEM stress analysis:
+The main result is the 2D DEM pressure-density curve:
+
+```text
+liggghts/DEM/pressure_density_curve.csv
+```
+
+The curve is based on the top punch reaction recorded by `fix mesh/surface/stress`:
+
+```text
+pressure_MPa = |top_force_y_dyne| / (Wcm * Tcm) * 1e-7
+```
+
+where `Wcm=0.04` and `Tcm=0.0090`. COMSOL is optional and secondary; the primary conclusion is the pressure needed to reach `rho_total ~= 0.95`.
+
+The staged workflow uses DEM for particle rearrangement, contact-network closure, and macro compaction pressure:
 
 | Stage | Target packing metric | Output prefix |
 | --- | ---: | --- |
@@ -40,9 +54,7 @@ Here:
 rho_total = (Al area + diamond area) / (400 um * current top height)
 ```
 
-This is the DEM packing target. It is not the Al hardening density used inside COMSOL.
-
-## 3. Verify and export DEM stages to COMSOL CSV
+## 3. Verify And Export DEM Results
 
 Each stage can be verified directly from the LIGGGHTS custom dump:
 
@@ -51,13 +63,17 @@ py D:\CodexProjects\python\verify_dem_stages.py --root D:\CodexProjects\liggghts
 py D:\CodexProjects\python\convert_liggghts_csv_to_comsol.py --input D:\CodexProjects\liggghts\DEM\stage5_rho095_<step>.dump --mode 2d --auto-shrink-overlap --output D:\CodexProjects\scripts\comsol_particles.csv
 ```
 
-GitHub Actions runs the staged DEM deck, verifies every stage, and uploads the stage dumps, restarts, logs, STLs, and generated `comsol_particles_stage*.csv` files.
+GitHub Actions runs the staged DEM deck, verifies every stage, and uploads the stage dumps, restarts, logs, STLs, generated `comsol_particles_stage*.csv` files, and the macro `pressure_density_curve.csv`.
 
-Compressed DEM dumps may contain projected 2D particle overlap. In Hertz DEM,
-that overlap is the elastic contact deformation used to compute contact force;
-it is not by itself a failed DEM solve. The workflow therefore treats overlap
-as a reported diagnostic, while particle counts, z-plane locking, and density
-windows remain hard gates.
+The uploaded pressure curve has columns:
+
+```text
+stage_id,target_rho_total,actual_rho_total,current_height_um,
+top_displacement_um,top_force_y_dyne,top_force_n,pressure_mpa,
+avg_contact_count,max_contact_count,max_overlap_um,worst_overlap_pair
+```
+
+Compressed DEM dumps may contain projected 2D particle overlap. In Hertz DEM, that overlap is the elastic contact deformation used to compute contact force; it is not by itself a failed DEM solve. The workflow therefore treats overlap as a reported diagnostic, while particle counts, z-plane locking, and density windows remain hard gates.
 
 The legacy COMSOL geometry CSVs:
 
@@ -65,10 +81,7 @@ The legacy COMSOL geometry CSVs:
 liggghts/DEM/comsol_particles_<stage>.csv
 ```
 
-are geometry-safe files. If projected DEM overlap is present, the converter
-applies a uniform `radius_shrink_um` just large enough to remove the initial
-intersections before COMSOL imports the particles. This avoids starting FEM
-from mutually penetrating domains.
+are geometry-safe files. If projected DEM overlap is present, the converter applies a uniform `radius_shrink_um` just large enough to remove the initial intersections before COMSOL imports the particles.
 
 For each DEM stage the workflow also writes a richer DEM-FEM handoff table:
 
@@ -86,20 +99,8 @@ rotation_rad,vx_cm_s,vy_cm_s,contact_count
 
 `rotation_rad` is currently `0.0` because the LIGGGHTS model uses spherical DEM particles. The column is included so future clump/superquadric or polygon-orientation output can be passed to COMSOL without changing the handoff schema.
 
-`contact_count` is computed from the projected 2D particle geometry using a configurable gap tolerance. It is a stage-level contact-network diagnostic, not a replacement for LIGGGHTS' internal contact force history.
+Use `dem_fem_handoff_<stage>.csv` when you need the raw DEM state and contact network. Use `comsol_particles_<stage>.csv` when you need a COMSOL-importable geometry table.
 
-Use `dem_fem_handoff_<stage>.csv` when you need the raw DEM state and contact
-network. Use `comsol_particles_<stage>.csv` when you need a COMSOL-importable
-geometry table.
+## 4. Optional COMSOL Stage Analysis
 
-## 4. Run COMSOL Route-B skeleton
-
-```powershell
-& "D:\Program Files\COMSOL\COMSOL64\Multiphysics\bin\win64\comsolcompile.exe" D:\CodexProjects\comsol\Dia60Al40_ComsolRouteB_Skeleton.java
-& "D:\Program Files\COMSOL\COMSOL64\Multiphysics\bin\win64\comsolbatch.exe" `
-  -inputfile D:\CodexProjects\comsol\Dia60Al40_ComsolRouteB_Skeleton.class `
-  D:\CodexProjects\scripts\comsol_particles.csv `
-  D:\CodexProjects\scripts\Dia60Al40_RouteB_FromDEM.mph
-```
-
-Route-B uses displacement control: `uTop = 0 0.2 0.5 1 2 3 5 8 12 16 20 25 30 um`.
+COMSOL is no longer the primary route for the pressure-density conclusion. It can still consume selected `comsol_particles_<stage>.csv` files for secondary local-field visualization.

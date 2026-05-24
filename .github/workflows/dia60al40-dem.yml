@@ -128,6 +128,7 @@ jobs:
           # is contact deformation in DEM. z drift and composition still fail.
           cd ..
           python3 python/verify_dem_stages.py --root liggghts/DEM
+          test -s liggghts/DEM/pressure_density_curve_raw.csv
 
           # Export every stage into COMSOL-ready CSV. COMSOL can now analyze
           # local stress/plasticity per packed state instead of solving the
@@ -147,6 +148,16 @@ jobs:
               --stage-id "$stage" \
               --output "liggghts/DEM/dem_fem_handoff_${stage}.csv"
           done
+
+          # Main project result: 2D DEM pressure-density curve. This is the
+          # primary output for estimating the punch pressure required to reach
+          # rho_total ~= 0.95.
+          python3 python/export_pressure_density_curve.py \
+            --root liggghts/DEM \
+            --raw liggghts/DEM/pressure_density_curve_raw.csv \
+            --output liggghts/DEM/pressure_density_curve.csv
+          echo '[PRESSURE-DENSITY CURVE]'
+          cat liggghts/DEM/pressure_density_curve.csv
 
       - name: Upload DEM artifacts
         if: always()
