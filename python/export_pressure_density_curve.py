@@ -21,6 +21,7 @@ FIELDNAMES = [
     "actual_rho_total",
     "current_height_um",
     "top_displacement_um",
+    "al_modulus_gpa",
     "top_force_y_dyne",
     "top_force_n",
     "pressure_mpa",
@@ -89,6 +90,7 @@ def export_curve(root: Path, raw_path: Path, output_path: Path, contact_gap_um: 
             max_overlap_um, worst_pair = overlap_summary(rows)
 
             raw = raw_by_stage[stage_id]
+            al_modulus_gpa = float(raw.get("al_modulus_gpa", "nan"))
             top_force_y_dyne = float(raw["top_force_y_dyne"])
             top_force_n = abs(top_force_y_dyne) * 1.0e-5
             pressure_mpa = float(raw["pressure_mpa"])
@@ -100,6 +102,7 @@ def export_curve(root: Path, raw_path: Path, output_path: Path, contact_gap_um: 
                     "actual_rho_total": fmt(actual_rho),
                     "current_height_um": fmt(current_height_um),
                     "top_displacement_um": raw["top_displacement_um"],
+                    "al_modulus_gpa": fmt(al_modulus_gpa),
                     "top_force_y_dyne": fmt(top_force_y_dyne),
                     "top_force_n": fmt(top_force_n),
                     "pressure_mpa": fmt(pressure_mpa),
