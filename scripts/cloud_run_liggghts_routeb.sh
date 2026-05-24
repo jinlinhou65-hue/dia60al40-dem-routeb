@@ -36,6 +36,8 @@ for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho
   python3 python/convert_liggghts_csv_to_comsol.py \
     --input "$dump" \
     --mode 2d \
+    --auto-shrink-overlap \
+    --clearance-um 0.02 \
     --output "liggghts/DEM/comsol_particles_${stage}.csv"
   python3 python/export_dem_stage_handoff.py \
     --input "$dump" \

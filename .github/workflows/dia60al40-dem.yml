@@ -116,24 +116,31 @@ jobs:
           # `insert/pack particles_in_region` is easy to misuse because the value is a
           # total target count, not the number inserted by that specific fix. The previous
           # loose >=30 gate allowed a green run with 26 Al + 8 DS + 0 DL. This gate forbids
-          # that second-order false success.
+          # that second-order false success. Projected 2D overlap is diagnostic-only here:
+          # compressed Hertz DEM stages normally contain overlap, and the COMSOL geometry
+          # converter removes it with a documented radius shrink.
           LAST_DUMP=$(ls -1 DEM/stage5_rho095_*.dump | sort -V | tail -1)
           echo "[VERIFY] last dump: $LAST_DUMP"
           python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" --expect-al 34 --expect-ds 8 --expect-dl 4
 
           # Gate 4: verify every stage against expected density windows and 2D
-          # COMSOL handoff constraints.
+          # COMSOL handoff constraints. Overlap is reported, not failed, because it
+          # is contact deformation in DEM. z drift and composition still fail.
           cd ..
           python3 python/verify_dem_stages.py --root liggghts/DEM
 
           # Export every stage into COMSOL-ready CSV. COMSOL can now analyze
           # local stress/plasticity per packed state instead of solving the
-          # entire DEM rearrangement itself.
+          # entire DEM rearrangement itself. The legacy comsol_particles CSV is
+          # geometry-safe: it shrinks radii just enough to remove DEM Hertz overlap.
+          # The richer dem_fem_handoff CSV preserves raw DEM radii and contact counts.
           for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho088 stage5_rho095; do
             dump=$(ls -1 "liggghts/DEM/${stage}_"*.dump | sort -V | tail -1)
             python3 python/convert_liggghts_csv_to_comsol.py \
               --input "$dump" \
               --mode 2d \
+              --auto-shrink-overlap \
+              --clearance-um 0.02 \
               --output "liggghts/DEM/comsol_particles_${stage}.csv"
             python3 python/export_dem_stage_handoff.py \
               --input "$dump" \

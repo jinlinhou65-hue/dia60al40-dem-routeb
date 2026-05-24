@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 from collections import Counter
 from pathlib import Path
 
@@ -23,7 +24,13 @@ def classify_counts(rows: list[dict[str, str]]) -> Counter[str]:
     return counts
 
 
-def check_geometry(rows: list[dict[str, str]], z_tol_um: float, overlap_tol_um: float) -> None:
+def check_geometry(
+    rows: list[dict[str, str]],
+    z_tol_um: float,
+    overlap_tol_um: float,
+    clearance_um: float,
+    fail_on_overlap: bool,
+) -> None:
     zmax = max((abs(float(row.get("z", 0.0)) * UM_PER_CM) for row in rows), default=0.0)
     print(f"[VERIFY] max|z|={zmax:.6g} um")
     if zmax > z_tol_um:
@@ -44,9 +51,16 @@ def check_geometry(rows: list[dict[str, str]], z_tol_um: float, overlap_tol_um: 
     if severe:
         severe.sort()
         gap, aid, bid = severe[0]
-        raise SystemExit(
-            f"[FAIL] severe projected overlaps={len(severe)} worst_gap_um={gap:.6g} pair={aid}-{bid}"
+        shrink = max(0.0, -gap / 2.0 + clearance_um)
+        level = "[FAIL]" if fail_on_overlap else "[VERIFY]"
+        print(
+            f"{level} projected overlaps={len(severe)} worst_gap_um={gap:.6g} "
+            f"pair={aid}-{bid} suggested_radius_shrink_um={shrink:.6g}"
         )
+        if fail_on_overlap:
+            raise SystemExit(
+                f"[FAIL] severe projected overlaps={len(severe)} worst_gap_um={gap:.6g} pair={aid}-{bid}"
+            )
 
 
 def verify_stage(root: Path, stage: str, target_rho: float, height_um: float, rho_min: float, rho_max: float, args) -> None:
@@ -63,7 +77,7 @@ def verify_stage(root: Path, stage: str, target_rho: float, height_um: float, rh
             f"[FAIL] composition mismatch for {stage}: "
             f"Al={counts['Al']}/{args.expect_al} DS={counts['DS']}/{args.expect_ds} DL={counts['DL']}/{args.expect_dl}"
         )
-    check_geometry(rows, args.z_tol_um, args.overlap_tol_um)
+    check_geometry(rows, args.z_tol_um, args.overlap_tol_um, args.clearance_um, args.fail_on_overlap)
     area = total_particle_area_um2(rows)
     rho = area / (W_UM * height_um)
     print(f"[VERIFY] target_rho={target_rho:.4f} height_um={height_um:.6f} area_um2={area:.6f} rho_total={rho:.6f}")
@@ -79,12 +93,18 @@ def main() -> None:
     parser.add_argument("--expect-dl", type=int, default=4)
     parser.add_argument("--z-tol-um", type=float, default=0.05)
     parser.add_argument("--overlap-tol-um", type=float, default=1.0)
+    parser.add_argument("--clearance-um", type=float, default=0.02)
+    parser.add_argument(
+        "--fail-on-overlap",
+        action="store_true",
+        help="Fail when compressed DEM stages have projected Hertz overlap. Default is diagnostic-only.",
+    )
     args = parser.parse_args()
 
     root = Path(args.root)
     for stage, target_rho, height_um, rho_min, rho_max in STAGES:
         verify_stage(root, stage, target_rho, height_um, rho_min, rho_max, args)
-    print("[OK] all DEM stages passed composition, geometry, and density gates")
+    print("[OK] all DEM stages passed composition, z-plane, and density gates")
 
 
 if __name__ == "__main__":
