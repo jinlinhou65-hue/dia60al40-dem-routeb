@@ -28,7 +28,7 @@ jobs:
           # unless src/STUBS is manually built first.
           sudo apt-get install -y build-essential gcc g++ gfortran make git \
                                    libopenmpi-dev openmpi-bin \
-                                   python3 python3-pip
+                                   python3 python3-pip python3-matplotlib
           which mpicxx
           mpicxx --version | head -1
 
@@ -158,6 +158,11 @@ jobs:
             --output liggghts/DEM/pressure_density_curve.csv
           echo '[PRESSURE-DENSITY CURVE]'
           cat liggghts/DEM/pressure_density_curve.csv
+          python3 python/plot_dem_results.py \
+            --root liggghts/DEM \
+            --curve liggghts/DEM/pressure_density_curve.csv \
+            --outdir liggghts/DEM/plots
+          find liggghts/DEM/plots -maxdepth 1 -type f -ls | sort -k11
 
       - name: Upload DEM artifacts
         if: always()

@@ -9,7 +9,7 @@ cat /etc/os-release || true
 
 echo "[CLOUD] install LIGGGHTS from Ubuntu universe if available"
 sudo apt-get update
-sudo apt-get install -y liggghts python3 python3-pip || {
+sudo apt-get install -y liggghts python3 python3-pip python3-matplotlib || {
   echo "[CLOUD] apt liggghts failed; falling back to source build is not implemented in this short runner script" >&2
   exit 20
 }
@@ -51,6 +51,11 @@ python3 python/export_pressure_density_curve.py \
   --raw liggghts/DEM/pressure_density_curve_raw.csv \
   --output liggghts/DEM/pressure_density_curve.csv
 cat liggghts/DEM/pressure_density_curve.csv
+python3 python/plot_dem_results.py \
+  --root liggghts/DEM \
+  --curve liggghts/DEM/pressure_density_curve.csv \
+  --outdir liggghts/DEM/plots
+find liggghts/DEM/plots -maxdepth 1 -type f | sort
 
 echo "[CLOUD] done."
 find liggghts/DEM -maxdepth 1 -type f | sort | tail -20
