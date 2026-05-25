@@ -58,6 +58,10 @@ on:
         description: 'JSON list for mu sweep, e.g. ["0.7","1.0","1.3"]'
         required: false
         default: '["1.0"]'
+      dem_seed_json:
+        description: 'JSON list of reproducible DEM random-mixing seed indices, e.g. ["0","1","2","3","4"]'
+        required: false
+        default: '["0","1","2"]'
   push:
     paths:
       - 'python/**'
@@ -67,12 +71,13 @@ on:
 
 jobs:
   dem:
-    name: dem Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }}
+    name: dem Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}
     strategy:
       fail-fast: false
       matrix:
         mu_scale: ${{ fromJSON(inputs.mu_scale_json || '["1.0"]') }}
         e_al_emax: ${{ fromJSON(inputs.e_al_emax_sweep_json || format('["{0}"]', inputs.e_al_emax_gpa || '12')) }}
+        dem_seed: ${{ fromJSON(inputs.dem_seed_json || '["0","1","2"]') }}
     # Ubuntu apt repos do NOT ship a working `liggghts` package, so we
     # build LIGGGHTS-PUBLIC from source. Use 22.04 because its older
     # g++ 11 tolerates the LIGGGHTS-PUBLIC codebase without -Werror noise.
@@ -152,7 +157,8 @@ jobs:
             --mu-diamond-diamond "${{ inputs.mu_diamond_diamond || '0.10' }}" \
             --mu-diamond-tool "${{ inputs.mu_diamond_tool || '0.08' }}" \
             --mu-diamond-wall "${{ inputs.mu_diamond_wall || '0.08' }}" \
-            --mu-scale "${{ matrix.mu_scale }}"
+            --mu-scale "${{ matrix.mu_scale }}" \
+            --seed-index "${{ matrix.dem_seed }}"
           sed -n '1,180p' liggghts/in.dia60al40_dem_staged.rendered.liggghts
 
       - name: Run staged DEM compaction
@@ -264,9 +270,47 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dia60al40-dem-artifacts-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}
+          name: dia60al40-dem-artifacts-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}
           path: |
             liggghts/DEM/**
             liggghts/*.log
             liggghts/*.liggghts
             liggghts/meshes/*.stl
+
+  ensemble:
+    name: aggregate DEM seed ensemble
+    needs: dem
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install plotting dependency
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-matplotlib
+
+      - name: Download DEM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dia60al40-dem-artifacts-*
+          path: ensemble_inputs
+          merge-multiple: false
+
+      - name: Aggregate seed ensemble
+        run: |
+          set -euxo pipefail
+          find ensemble_inputs -maxdepth 3 -type f | sort | head -80
+          python3 python/aggregate_ensemble_results.py \
+            --root ensemble_inputs \
+            --outdir ensemble_summary
+          cat ensemble_summary/ensemble_runs.csv
+          cat ensemble_summary/ensemble_pressure_summary.csv
+
+      - name: Upload ensemble summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dia60al40-dem-ensemble-summary
+          path: ensemble_summary/**

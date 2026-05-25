@@ -14,6 +14,79 @@ RHO_STAGES = [
     ("stage5_rho095", 0.9500),
 ]
 
+SEED_KEYS = {
+    "ptsAl": 15485863,
+    "ptsDS": 15485867,
+    "ptsDL": 49979693,
+    "pddAl": 32452843,
+    "pddDS": 32452867,
+    "pddDL": 67867967,
+    "insDL": 49979687,
+    "insDS": 67867979,
+    "insAl": 86028121,
+}
+
+# Fixed prime table keeps every workflow run reproducible while still sampling
+# different random mixed-powder packings. LIGGGHTS insertion has historically
+# been picky about seeds, so use known-prime values instead of arithmetic offsets.
+SEED_TABLE = [
+    {
+        "ptsAl": 15485863,
+        "ptsDS": 15485867,
+        "ptsDL": 49979693,
+        "pddAl": 32452843,
+        "pddDS": 32452867,
+        "pddDL": 67867967,
+        "insDL": 49979687,
+        "insDS": 67867979,
+        "insAl": 86028121,
+    },
+    {
+        "ptsAl": 32452867,
+        "ptsDS": 49979693,
+        "ptsDL": 67867979,
+        "pddAl": 86028121,
+        "pddDS": 15485863,
+        "pddDL": 15485867,
+        "insDL": 32452843,
+        "insDS": 67867967,
+        "insAl": 49979687,
+    },
+    {
+        "ptsAl": 67867967,
+        "ptsDS": 32452843,
+        "ptsDL": 86028121,
+        "pddAl": 49979687,
+        "pddDS": 49979693,
+        "pddDL": 15485863,
+        "insDL": 15485867,
+        "insDS": 32452867,
+        "insAl": 67867979,
+    },
+    {
+        "ptsAl": 86028121,
+        "ptsDS": 67867967,
+        "ptsDL": 32452843,
+        "pddAl": 15485867,
+        "pddDS": 49979687,
+        "pddDL": 32452867,
+        "insDL": 67867979,
+        "insDS": 15485863,
+        "insAl": 49979693,
+    },
+    {
+        "ptsAl": 49979687,
+        "ptsDS": 86028121,
+        "ptsDL": 15485867,
+        "pddAl": 67867979,
+        "pddDS": 32452843,
+        "pddDL": 49979693,
+        "insDL": 15485863,
+        "insDS": 49979687,
+        "insAl": 32452867,
+    },
+]
+
 
 def smoothstep(x: float) -> float:
     x = min(1.0, max(0.0, x))
@@ -117,6 +190,8 @@ def model_parameter_block(args: argparse.Namespace, e_al_stages: list[float]) ->
         lines.append(f'print           "rho_total_{stage_id},{rho:.6g},1" append DEM/model_parameters.csv screen no')
     lines.extend(
         [
+            f'print           "DEM_seed_index,{args.seed_index},1" append DEM/model_parameters.csv screen no',
+            f'print           "DEM_seed_table_slot,{args.seed_index % len(SEED_TABLE)},1" append DEM/model_parameters.csv screen no',
             f'print           "E_Al_smoothstep_E0,{args.e_al_e0_gpa:.6g},GPa" append DEM/model_parameters.csv screen no',
             f'print           "E_Al_smoothstep_Emax,{args.e_al_emax_gpa:.6g},GPa" append DEM/model_parameters.csv screen no',
             f'print           "E_Diamond,{args.e_diamond_gpa:.6g},GPa" append DEM/model_parameters.csv screen no',
@@ -154,6 +229,16 @@ def replace_model_parameters(text: str, args: argparse.Namespace, e_al_stages: l
     return text[:i0] + model_parameter_block(args, e_al_stages) + text[i1:]
 
 
+def replace_seeds(text: str, seed_index: int) -> str:
+    seed_map = SEED_TABLE[seed_index % len(SEED_TABLE)]
+    for key, base_seed in SEED_KEYS.items():
+        new_seed = seed_map[key]
+        text, count = re.subn(rf"(\b{key}\b[^\n]*?)\b{base_seed}\b", rf"\g<1>{new_seed}", text, count=1)
+        if count != 1:
+            raise SystemExit(f"[FAIL] could not replace seed for {key}")
+    return text
+
+
 def render(args: argparse.Namespace) -> None:
     source = Path(args.input)
     output = Path(args.output)
@@ -164,10 +249,12 @@ def render(args: argparse.Namespace) -> None:
     text = replace_friction(text, args)
     text = replace_stage_prints(text, e_al_stages)
     text = replace_model_parameters(text, args, e_al_stages)
+    text = replace_seeds(text, args.seed_index)
 
     output.write_text(text, encoding="utf-8", newline="\n")
     print(f"[OK] rendered {output}")
     print("[PARAM] E_Al_stages_GPa=" + ",".join(f"{v:.6g}" for v in e_al_stages))
+    print(f"[PARAM] seed_index={args.seed_index} seed_table_slot={args.seed_index % len(SEED_TABLE)}")
 
 
 def main() -> None:
@@ -190,6 +277,7 @@ def main() -> None:
     parser.add_argument("--mu-tool-wall", type=float, default=0.08)
     parser.add_argument("--mu-wall-wall", type=float, default=0.08)
     parser.add_argument("--mu-scale", type=float, default=1.0)
+    parser.add_argument("--seed-index", type=int, default=0)
     render(parser.parse_args())
 
 
