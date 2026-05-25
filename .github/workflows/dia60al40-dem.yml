@@ -309,9 +309,31 @@ jobs:
           cat ensemble_summary/ensemble_runs.csv
           cat ensemble_summary/ensemble_pressure_summary.csv
 
+          mkdir -p ensemble_seed_plots
+          for artifact_dir in ensemble_inputs/dia60al40-dem-artifacts-*; do
+            test -d "$artifact_dir/DEM" || continue
+            seed_name="$(basename "$artifact_dir" | sed -E 's/^.*-(seed[0-9]+)$/\1/')"
+            mkdir -p "ensemble_seed_plots/$seed_name"
+            cp "$artifact_dir/DEM/pressure_density_curve.csv" "ensemble_seed_plots/$seed_name/"
+            cp "$artifact_dir/DEM/pressure_density_summary.csv" "ensemble_seed_plots/$seed_name/"
+            cp "$artifact_dir/DEM/model_parameters.csv" "ensemble_seed_plots/$seed_name/"
+            cp "$artifact_dir/DEM/plots/particles_stage"*.png "ensemble_seed_plots/$seed_name/"
+            cp "$artifact_dir/DEM/plots/plastic_morphology_stage"*.png "ensemble_seed_plots/$seed_name/"
+            cp "$artifact_dir/DEM/plots/pressure_density_curve.png" "ensemble_seed_plots/$seed_name/"
+            cp "$artifact_dir/DEM/plots/boundary_pressure_curve.png" "ensemble_seed_plots/$seed_name/"
+          done
+          find ensemble_seed_plots -maxdepth 2 -type f | sort
+
       - name: Upload ensemble summary
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dia60al40-dem-ensemble-summary
           path: ensemble_summary/**
+
+      - name: Upload seed plot bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dia60al40-dem-seed-plots
+          path: ensemble_seed_plots/**
