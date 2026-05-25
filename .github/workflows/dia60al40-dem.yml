@@ -301,7 +301,8 @@ jobs:
       - name: Aggregate seed ensemble
         run: |
           set -euxo pipefail
-          find ensemble_inputs -maxdepth 3 -type f | sort | head -80
+          find ensemble_inputs -maxdepth 3 -type f | sort > /tmp/ensemble_files.txt
+          head -80 /tmp/ensemble_files.txt
           python3 python/aggregate_ensemble_results.py \
             --root ensemble_inputs \
             --outdir ensemble_summary
