@@ -9,12 +9,12 @@ W_UM = 400.0
 
 # stage_id, target_rho_total, current_height_um, acceptable low/high bounds.
 STAGES = [
-    ("stage0_preload", 0.5668, 200.000000, 0.55, 0.60),
-    ("stage1_rho065", 0.6500, 174.036425, 0.63, 0.67),
-    ("stage2_rho072", 0.7200, 157.170037, 0.70, 0.74),
-    ("stage3_rho080", 0.8000, 141.404595, 0.78, 0.82),
-    ("stage4_rho088", 0.8800, 128.548211, 0.86, 0.90),
-    ("stage5_rho095", 0.9500, 119.077554, 0.93, 0.97),
+    ("stage0_preload", 0.5668, 201.779948, 0.55, 0.60),
+    ("stage1_rho065", 0.6500, 175.952115, 0.63, 0.67),
+    ("stage2_rho072", 0.7200, 158.845659, 0.70, 0.74),
+    ("stage3_rho080", 0.8000, 142.961093, 0.78, 0.82),
+    ("stage4_rho088", 0.8800, 129.964630, 0.86, 0.90),
+    ("stage5_rho095", 0.9500, 120.388289, 0.93, 0.97),
 ]
 
 STAGE_BY_ID = {stage[0]: stage for stage in STAGES}
@@ -46,7 +46,7 @@ def particle_shape(row: dict[str, str]) -> str:
     radius_um = float(row["radius"]) * UM_PER_CM
     if typ == 1:
         return "Al"
-    return "DL" if radius_um > 30.0 else "DS"
+    return "DL" if radius_um > 24.0 else "DS"
 
 
 def particle_material(row: dict[str, str]) -> str:

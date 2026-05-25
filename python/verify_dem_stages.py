@@ -15,7 +15,7 @@ def classify_counts(rows: list[dict[str, str]]) -> Counter[str]:
         radius_um = float(row["radius"]) * UM_PER_CM
         if typ == 1:
             counts["Al"] += 1
-        elif typ == 2 and radius_um > 30.0:
+        elif typ == 2 and radius_um > 24.0:
             counts["DL"] += 1
         elif typ == 2:
             counts["DS"] += 1
@@ -90,7 +90,7 @@ def main() -> None:
     parser.add_argument("--root", default="liggghts/DEM")
     parser.add_argument("--expect-al", type=int, default=34)
     parser.add_argument("--expect-ds", type=int, default=8)
-    parser.add_argument("--expect-dl", type=int, default=4)
+    parser.add_argument("--expect-dl", type=int, default=8)
     parser.add_argument("--z-tol-um", type=float, default=0.05)
     parser.add_argument("--overlap-tol-um", type=float, default=1.0)
     parser.add_argument("--clearance-um", type=float, default=0.02)

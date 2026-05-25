@@ -30,7 +30,7 @@ def main():
     ap.add_argument("--input", required=True)
     ap.add_argument("--expect-al", type=int, default=34)
     ap.add_argument("--expect-ds", type=int, default=8)
-    ap.add_argument("--expect-dl", type=int, default=4)
+    ap.add_argument("--expect-dl", type=int, default=8)
     ap.add_argument("--z-tol-um", type=float, default=0.05)
     ap.add_argument("--overlap-tol-um", type=float, default=1.0)
     ap.add_argument("--clearance-um", type=float, default=0.02)
@@ -51,7 +51,7 @@ def main():
         rad_um = float(row["radius"]) * UM_PER_CM
         if typ == 1:
             counts["Al"] += 1
-        elif typ == 2 and rad_um > 30.0:
+        elif typ == 2 and rad_um > 24.0:
             counts["DL"] += 1
         elif typ == 2:
             counts["DS"] += 1

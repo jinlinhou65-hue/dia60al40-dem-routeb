@@ -15,7 +15,7 @@ from pathlib import Path
 UM_TO_CM = 1e-4
 W = 400 * UM_TO_CM      # x width
 H = 220 * UM_TO_CM      # y height
-T = 90 * UM_TO_CM       # z thickness: quasi-2D single layer, > 84 um DL diameter
+T = 90 * UM_TO_CM       # z thickness: quasi-2D single layer with front/back confinement
 WALL = 20 * UM_TO_CM
 TOP_THICK = 18 * UM_TO_CM
 OUT = Path(__file__).resolve().parents[1] / "liggghts" / "meshes"

@@ -10,7 +10,7 @@
 #   W = 400 um, top starts at 220 um in this DEM die.
 #
 # Stages written by this deck:
-#   stage0_preload  : existing Route-B preload, top moved 20 um, rho_total ~0.566
+#   stage0_preload  : Route-B preload, top moved 18.220 um, rho_total ~0.566
 #   stage1_rho065  : top moved to target rho_total ~0.65
 #   stage2_rho072  : top moved to target rho_total ~0.72
 #   stage3_rho080  : top moved to target rho_total ~0.80
@@ -94,27 +94,32 @@ variable        bottomPressureMPa equal v_bottomForceAbsDyn/v_topAreaCm2*1.0e-7
 # Quasi-2D lock. Keep this after wall/gran so wall forces cannot inject z motion.
 fix             zlock all setforce NULL NULL 0.0
 
-# Templates: radii in cm. 13 um=0.0013 cm, 18 um=0.0018 cm, 42 um=0.0042 cm.
+# Templates: radii in cm. 13 um=0.0013 cm, 18 um=0.0018 cm, 30 um=0.0030 cm.
+# The previous 4 x 42 um large-diamond layout created persistent structural
+# voids. Use 8 medium diamonds with nearly the same total diamond area, but a
+# better chance to rearrange and fill the lower/middle die space.
 fix             ptsAl all particletemplate/sphere 15485863 atom_type 1 density constant 2.70 radius constant 0.0013
 fix             ptsDS all particletemplate/sphere 15485867 atom_type 2 density constant 3.52 radius constant 0.0018
-fix             ptsDL all particletemplate/sphere 49979693 atom_type 2 density constant 3.52 radius constant 0.0042
+fix             ptsDL all particletemplate/sphere 49979693 atom_type 2 density constant 3.52 radius constant 0.0030
 fix             pddAl all particledistribution/discrete/numberbased 32452843 1 ptsAl 1.0
 fix             pddDS all particledistribution/discrete/numberbased 32452867 1 ptsDS 1.0
 fix             pddDL all particledistribution/discrete/numberbased 67867967 1 ptsDL 1.0
 
-# Sequential insertion targets are cumulative: 4 DL, 12 total after DS, 46 total after Al.
+# Sequential insertion targets are cumulative: 8 medium-DL, 16 total after DS,
+# 50 total after Al. In LIGGGHTS insert/pack this number is the total target
+# particle count after that insertion command, not the per-command increment.
 region          particles_in_region block 0.0013 0.0387 0.0013 0.0207 -0.000001 0.000001 units box
-fix             insDL all insert/pack seed 49979687 distributiontemplate pddDL maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 4 region particles_in_region ntry_mc 20000
+fix             insDL all insert/pack seed 49979687 distributiontemplate pddDL maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 8 region particles_in_region ntry_mc 20000
 run             1
 set             group all z 0.0
 velocity        all set NULL NULL 0.0
 unfix           insDL
-fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 12 region particles_in_region ntry_mc 20000
+fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 16 region particles_in_region ntry_mc 20000
 run             1
 set             group all z 0.0
 velocity        all set NULL NULL 0.0
 unfix           insDS
-fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 46 region particles_in_region ntry_mc 20000
+fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 20000 insert_every once overlapcheck yes all_in no particles_in_region 50 region particles_in_region ntry_mc 20000
 run             1
 set             group all z 0.0
 velocity        all set NULL NULL 0.0
@@ -147,77 +152,77 @@ print           "smoothstep_E_Al,E0_5_to_Emax_12_by_stage,description" append DE
 # Initial settling before any punch motion.
 run             1250000
 
-# Stage 0: existing preload reference, 20 um total top travel.
+# Stage 0: preload reference, 18.220 um total top travel.
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             10000000
+run             9110026
 unfix           topMove
 run             1250000
-print           "stage0_preload,0.5668,200.000000,20.000000,5,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
+print           "stage0_preload,0.5668,201.779948,18.220052,5,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st0 all custom 1 DEM/stage0_preload_*.dump id type x y z vx vy vz radius
 run             0
 undump          st0
 write_restart   DEM/stage0_preload.restart
 
-# Stage 1: rho_total ~0.65. Additional travel from 20.0 um to 45.963575 um.
+# Stage 1: rho_total ~0.65. Additional travel to 44.047885 um.
 unfix           mprop
 fix             mprop all property/global youngsModulus peratomtype 5.84666e10 3.0e12 6.0e12 2.0e12
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             12981800
+run             12913917
 unfix           topMove
 run             1250000
-print           "stage1_rho065,0.6500,174.036425,45.963575,5.84666,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
+print           "stage1_rho065,0.6500,175.952115,44.047885,5.84666,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st1 all custom 1 DEM/stage1_rho065_*.dump id type x y z vx vy vz radius
 run             0
 undump          st1
 write_restart   DEM/stage1_rho065.restart
 
-# Stage 2: rho_total ~0.72. Additional travel to 62.829963 um.
+# Stage 2: rho_total ~0.72. Additional travel to 61.154341 um.
 unfix           mprop
 fix             mprop all property/global youngsModulus peratomtype 7.4619e10 3.0e12 6.0e12 2.0e12
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             8433200
+run             8553228
 unfix           topMove
 run             1250000
-print           "stage2_rho072,0.7200,157.170037,62.829963,7.4619,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
+print           "stage2_rho072,0.7200,158.845659,61.154341,7.4619,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st2 all custom 1 DEM/stage2_rho072_*.dump id type x y z vx vy vz radius
 run             0
 undump          st2
 write_restart   DEM/stage2_rho072.restart
 
-# Stage 3: rho_total ~0.80. Additional travel to 78.595405 um.
+# Stage 3: rho_total ~0.80. Additional travel to 77.038907 um.
 unfix           mprop
 fix             mprop all property/global youngsModulus peratomtype 9.62196e10 3.0e12 6.0e12 2.0e12
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             7882725
+run             7942283
 unfix           topMove
 run             1250000
-print           "stage3_rho080,0.8000,141.404595,78.595405,9.62196,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
+print           "stage3_rho080,0.8000,142.961093,77.038907,9.62196,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st3 all custom 1 DEM/stage3_rho080_*.dump id type x y z vx vy vz radius
 run             0
 undump          st3
 write_restart   DEM/stage3_rho080.restart
 
-# Stage 4: rho_total ~0.88. Additional travel to 91.451789 um.
+# Stage 4: rho_total ~0.88. Additional travel to 90.035370 um.
 unfix           mprop
 fix             mprop all property/global youngsModulus peratomtype 1.13846e11 3.0e12 6.0e12 2.0e12
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             6428200
+run             6498232
 unfix           topMove
 run             1250000
-print           "stage4_rho088,0.8800,128.548211,91.451789,11.3846,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
+print           "stage4_rho088,0.8800,129.964630,90.035370,11.3846,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st4 all custom 1 DEM/stage4_rho088_*.dump id type x y z vx vy vz radius
 run             0
 undump          st4
 write_restart   DEM/stage4_rho088.restart
 
-# Stage 5: rho_total ~0.95. Additional travel to 100.922446 um.
+# Stage 5: rho_total ~0.95. Additional travel to 99.611711 um.
 unfix           mprop
 fix             mprop all property/global youngsModulus peratomtype 1.2e11 3.0e12 6.0e12 2.0e12
 fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
-run             4735325
+run             4788171
 unfix           topMove
 run             2500000
-print           "stage5_rho095,0.9500,119.077554,100.922446,12,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
+print           "stage5_rho095,0.9500,120.388289,99.611711,12,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st5 all custom 1 DEM/stage5_rho095_*.dump id type x y z vx vy vz radius
 run             0
 undump          st5

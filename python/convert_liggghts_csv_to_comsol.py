@@ -2,7 +2,7 @@
 
 This converter is the LAST gate before the COMSOL FEM model consumes DEM positions.
 It refuses by default to emit a CSV whose particle composition disagrees with the
-target (34 Al + 8 DS + 4 DL = 46). Without this guard, a deck that silently dropped
+target (34 Al + 8 DS + 8 DL = 50). Without this guard, a deck that silently dropped
 DL or under-inserted Al (as happened on Run #8: Al=26, DS=8, DL=0) would still
 produce a clean-looking CSV and silently corrupt the downstream FEM run.
 
@@ -78,12 +78,12 @@ def main():
     ap.add_argument('--input', required=True)
     ap.add_argument('--mode', default='2d')
     ap.add_argument('--output', default='D:/CodexProjects/scripts/comsol_particles.csv')
-    # Composition gate. Defaults match the project target 34 Al + 8 DS + 4 DL = 46.
+    # Composition gate. Defaults match the project target 34 Al + 8 DS + 8 DL = 50.
     # Keep the radius-based DS/DL split threshold in sync with verify_liggghts_dump.py
-    # and with the deck's templates (DS r=18 um, DL r=42 um → 30 um is the safe split).
+    # and with the deck's templates (DS r=18 um, DL r=30 um -> 24 um is the safe split).
     ap.add_argument('--expect-al', type=int, default=34)
     ap.add_argument('--expect-ds', type=int, default=8)
-    ap.add_argument('--expect-dl', type=int, default=4)
+    ap.add_argument('--expect-dl', type=int, default=8)
     ap.add_argument('--allow-incomplete', action='store_true',
                     help='emit CSV even when composition disagrees with target. '
                          'For diagnostic dumps only — DO NOT feed the result to COMSOL.')
@@ -107,7 +107,7 @@ def main():
     for r in rows:
         typ = int(float(pick(r, 'type', 'Type')))
         _, _, rad = particle_xy_radius_um(r)
-        shape = 'Al' if typ == 1 else ('DL' if rad > 30 else 'DS')
+        shape = 'Al' if typ == 1 else ('DL' if rad > 24 else 'DS')
         counts[shape] = counts.get(shape, 0) + 1
 
     # 2D handoff validity gate: Route-B collapses DEM to x-y. z drift remains
@@ -156,7 +156,7 @@ def main():
     for r in rows:
         typ = int(float(pick(r, 'type', 'Type')))
         x, y, rad = particle_xy_radius_um(r)
-        shape = 'Al' if typ == 1 else ('DL' if rad > 30 else 'DS')
+        shape = 'Al' if typ == 1 else ('DL' if rad > 24 else 'DS')
         out.append(
             {
                 'id': pick(r, 'id', 'ID'),

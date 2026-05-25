@@ -5,12 +5,11 @@ import csv
 import math
 from pathlib import Path
 
-from matplotlib.transforms import Affine2D
-
 from dem_stage_metadata import STAGE_BY_ID, UM_PER_CM, particle_shape, read_liggghts_dump
 
 
 W_UM = 400.0
+Point = tuple[float, float]
 
 
 def import_matplotlib():
@@ -18,7 +17,7 @@ def import_matplotlib():
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    from matplotlib.patches import Ellipse, RegularPolygon, Rectangle
+    from matplotlib.patches import Polygon, Rectangle
 
     plt.rcParams.update(
         {
@@ -32,7 +31,7 @@ def import_matplotlib():
             "savefig.facecolor": "white",
         }
     )
-    return plt, Ellipse, RegularPolygon, Rectangle
+    return plt, Polygon, Rectangle
 
 
 def latest_stage_dump(root: Path, stage_id: str) -> Path:
@@ -54,15 +53,22 @@ def particle_state(row: dict[str, str]) -> tuple[float, float, float]:
     )
 
 
+def polygon_area(poly: list[Point]) -> float:
+    if len(poly) < 3:
+        return 0.0
+    acc = 0.0
+    for i, (x0, y0) in enumerate(poly):
+        x1, y1 = poly[(i + 1) % len(poly)]
+        acc += x0 * y1 - x1 * y0
+    return abs(acc) * 0.5
+
+
 def add_contact(metric: dict[str, float], overlap_um: float, nx: float, ny: float) -> None:
     if overlap_um <= 0.0:
         return
     metric["contact_count"] += 1.0
     metric["overlap_sum_um"] += overlap_um
     metric["max_overlap_um"] = max(metric["max_overlap_um"], overlap_um)
-    # Contact compression acts along the normal direction. Use a weighted
-    # second moment so multiple contacts naturally choose a dominant flattening
-    # direction without needing a brittle if/else for every contact topology.
     metric["mxx"] += overlap_um * nx * nx
     metric["mxy"] += overlap_um * nx * ny
     metric["myy"] += overlap_um * ny * ny
@@ -90,10 +96,7 @@ def contact_metrics(rows: list[dict[str, str]], height_um: float) -> dict[str, d
             dx = bx - ax
             dy = by - ay
             dist = math.hypot(dx, dy)
-            if dist <= 1e-12:
-                nx, ny = 1.0, 0.0
-            else:
-                nx, ny = dx / dist, dy / dist
+            nx, ny = (1.0, 0.0) if dist <= 1e-12 else (dx / dist, dy / dist)
             overlap = ar + br - dist
             if overlap > 0.0:
                 add_contact(metrics[aid], overlap, nx, ny)
@@ -121,25 +124,183 @@ def principal_direction(metric: dict[str, float]) -> float:
 
 def deformation(row: dict[str, str], metric: dict[str, float]) -> tuple[float, float, float, float]:
     _, _, r = particle_state(row)
-    mat = material(row)
     severity = metric["overlap_sum_um"] / max(r, 1e-9)
-    if mat == "Al":
+    if material(row) == "Al":
         gain = 0.36
         cap = 0.62
     else:
-        # Diamond is still allowed to show contact-compression deformation, but
-        # its much higher stiffness keeps the visible flattening modest.
         gain = 0.045
         cap = 0.14
     flatten = min(cap, gain * severity)
     minor = max(0.35 * r, r * (1.0 - flatten))
     major = min(1.9 * r, r * r / minor)
-    angle = principal_direction(metric)
+    # The contact normal is the compression direction; visible elongation is
+    # perpendicular to it. This keeps the pseudo-plastic sketch mechanically sane.
+    angle = principal_direction(metric) + 0.5 * math.pi
     return major, minor, angle, flatten
 
 
+def die_polygon(height_um: float) -> list[Point]:
+    return [(0.0, 0.0), (W_UM, 0.0), (W_UM, height_um), (0.0, height_um)]
+
+
+def clip_halfplane(poly: list[Point], a: float, b: float, c: float, eps: float = 1e-9) -> list[Point]:
+    # Keep a*x + b*y + c <= 0.
+    if not poly:
+        return []
+
+    def value(p: Point) -> float:
+        return a * p[0] + b * p[1] + c
+
+    def intersect(p0: Point, p1: Point, v0: float, v1: float) -> Point:
+        denom = v0 - v1
+        if abs(denom) <= 1e-14:
+            return p1
+        t = v0 / denom
+        return (p0[0] + t * (p1[0] - p0[0]), p0[1] + t * (p1[1] - p0[1]))
+
+    out: list[Point] = []
+    prev = poly[-1]
+    prev_v = value(prev)
+    prev_inside = prev_v <= eps
+    for cur in poly:
+        cur_v = value(cur)
+        cur_inside = cur_v <= eps
+        if cur_inside:
+            if not prev_inside:
+                out.append(intersect(prev, cur, prev_v, cur_v))
+            out.append(cur)
+        elif prev_inside:
+            out.append(intersect(prev, cur, prev_v, cur_v))
+        prev = cur
+        prev_v = cur_v
+        prev_inside = cur_inside
+    return out
+
+
+def clip_to_die(poly: list[Point], height_um: float) -> list[Point]:
+    poly = clip_halfplane(poly, -1.0, 0.0, 0.0)
+    poly = clip_halfplane(poly, 1.0, 0.0, -W_UM)
+    poly = clip_halfplane(poly, 0.0, -1.0, 0.0)
+    poly = clip_halfplane(poly, 0.0, 1.0, -height_um)
+    return poly
+
+
+def clip_outside_diamond(poly: list[Point], al_row: dict[str, str], dia_row: dict[str, str]) -> list[Point]:
+    ax, ay, _ = particle_state(al_row)
+    dx, dy, dr = particle_state(dia_row)
+    nx = ax - dx
+    ny = ay - dy
+    norm = math.hypot(nx, ny)
+    if norm <= 1e-12:
+        return poly
+    nx /= norm
+    ny /= norm
+    # The diamond phase is rendered as an octagon, not as its full
+    # circumcircle. Use the octagon inradius as the Al exclusion boundary so
+    # the morphology plot does not invent extra diamond-blocked pore volume.
+    effective_r = dr * math.cos(math.radians(22.5))
+    tx = dx + nx * effective_r
+    ty = dy + ny * effective_r
+    # Keep the side of the tangent plane away from the diamond center. This is a
+    # boundary constraint, not a post-plot crop, so Al wraps around diamond space.
+    return clip_halfplane(poly, -nx, -ny, nx * tx + ny * ty)
+
+
+def clip_al_voronoi(poly: list[Point], rows: list[dict[str, str]], row_index: int) -> list[Point]:
+    xi, yi, _ = particle_state(rows[row_index])
+    for j, other in enumerate(rows):
+        if j == row_index or material(other) != "Al":
+            continue
+        xj, yj, _ = particle_state(other)
+        nx = xj - xi
+        ny = yj - yi
+        if math.hypot(nx, ny) <= 1e-12:
+            continue
+        mx = 0.5 * (xi + xj)
+        my = 0.5 * (yi + yj)
+        poly = clip_halfplane(poly, nx, ny, -(nx * mx + ny * my))
+        if len(poly) < 3:
+            return []
+    return poly
+
+
+def al_constraint_cell(rows: list[dict[str, str]], row_index: int, height_um: float) -> list[Point]:
+    poly = die_polygon(height_um)
+    poly = clip_al_voronoi(poly, rows, row_index)
+    if len(poly) < 3:
+        return []
+    row = rows[row_index]
+    for other in rows:
+        if material(other) == "Diamond":
+            poly = clip_outside_diamond(poly, row, other)
+            if len(poly) < 3:
+                return []
+    return clip_to_die(poly, height_um)
+
+
+def scale_polygon(poly: list[Point], center: Point, scale: float) -> list[Point]:
+    cx, cy = center
+    return [(cx + (x - cx) * scale, cy + (y - cy) * scale) for x, y in poly]
+
+
+def transformed_polygon(
+    x: float,
+    y: float,
+    major: float,
+    minor: float,
+    angle: float,
+    vertices: int,
+    base_rotation: float = 0.0,
+) -> list[Point]:
+    ca = math.cos(angle)
+    sa = math.sin(angle)
+    pts: list[Point] = []
+    for k in range(vertices):
+        t = base_rotation + 2.0 * math.pi * k / vertices
+        lx = major * math.cos(t)
+        ly = minor * math.sin(t)
+        pts.append((x + lx * ca - ly * sa, y + lx * sa + ly * ca))
+    return pts
+
+
+def diamond_polygon(row: dict[str, str], major: float, minor: float, angle: float, height_um: float) -> list[Point]:
+    x, y, _ = particle_state(row)
+    poly = transformed_polygon(x, y, major, minor, angle, vertices=8, base_rotation=math.radians(22.5))
+    return clip_to_die(poly, height_um)
+
+
+def nominal_projected_area(row: dict[str, str]) -> float:
+    _, _, r = particle_state(row)
+    if material(row) == "Al":
+        return math.pi * r * r
+    return 2.0 * math.sqrt(2.0) * r * r
+
+
+def al_render_polygon(
+    rows: list[dict[str, str]],
+    row_index: int,
+    height_um: float,
+) -> tuple[list[Point], float, float, float]:
+    row = rows[row_index]
+    x, y, _ = particle_state(row)
+    cell = al_constraint_cell(rows, row_index, height_um)
+    cell_area = polygon_area(cell)
+    target_area = nominal_projected_area(row)
+    if cell_area <= 1e-9:
+        return [], cell_area, 0.0, 0.0
+
+    # Scale the constrained cell to the particle's nominal Al area. This avoids
+    # both false material loss from visual clipping and false material creation
+    # from filling the whole cell in loose stages.
+    scale = min(0.995, math.sqrt(target_area / cell_area))
+    poly = scale_polygon(cell, (x, y), scale)
+    rendered_area = polygon_area(poly)
+    return poly, cell_area, rendered_area, scale
+
+
 def plot_stage(root: Path, stage_id: str, outdir: Path, metric_rows: list[dict[str, str]]) -> None:
-    plt, Ellipse, RegularPolygon, Rectangle = import_matplotlib()
+    plt, Polygon, Rectangle = import_matplotlib()
     dump = latest_stage_dump(root, stage_id)
     rows = read_liggghts_dump(dump)
     _, target_rho, height_um, _, _ = STAGE_BY_ID[stage_id]
@@ -148,9 +309,10 @@ def plot_stage(root: Path, stage_id: str, outdir: Path, metric_rows: list[dict[s
     fig, ax = plt.subplots(figsize=(8, 4.2), dpi=180)
     ax.set_aspect("equal", adjustable="box")
     ax.set_xlim(-25, 425)
-    ax.set_ylim(-25, 230)
-    ax.add_patch(Rectangle((0, 0), W_UM, height_um, fill=False, linewidth=1.2, edgecolor="#444444"))
+    ax.set_ylim(-25, max(230, height_um + 35))
+    ax.add_patch(Rectangle((0, 0), W_UM, height_um, fill=False, linewidth=1.3, edgecolor="#444444"))
 
+    pending_diamonds: list[tuple[list[Point], dict[str, str]]] = []
     for i, row in enumerate(rows):
         pid = str(row.get("id", i + 1))
         x, y, r = particle_state(row)
@@ -158,37 +320,21 @@ def plot_stage(root: Path, stage_id: str, outdir: Path, metric_rows: list[dict[s
         major, minor, angle, flatten = deformation(row, met)
         shape = particle_shape(row)
         mat = material(row)
+        nominal_area = nominal_projected_area(row)
+        cell_area = 0.0
+        area_scale = 1.0
+
         if mat == "Al":
-            patch = Ellipse(
-                (x, y),
-                width=2.0 * major,
-                height=2.0 * minor,
-                angle=math.degrees(angle),
-                facecolor="#d7e9ff",
-                edgecolor="#235789",
-                linewidth=0.7,
-                alpha=0.96,
-            )
+            poly, cell_area, rendered_area, area_scale = al_render_polygon(rows, i, height_um)
+            if len(poly) >= 3 and rendered_area > 1e-8:
+                ax.add_patch(
+                    Polygon(poly, closed=True, facecolor="#d7e9ff", edgecolor="#235789", linewidth=0.7, alpha=0.96)
+                )
         else:
-            patch = RegularPolygon(
-                (0.0, 0.0),
-                numVertices=8,
-                radius=1.0,
-                orientation=math.radians(22.5),
-                facecolor="#333333",
-                edgecolor="#111111",
-                linewidth=0.7,
-                alpha=0.96,
-            )
-            transform = (
-                Affine2D()
-                .scale(major, minor)
-                .rotate(angle)
-                .translate(x, y)
-                + ax.transData
-            )
-            patch.set_transform(transform)
-        ax.add_patch(patch)
+            poly = diamond_polygon(row, major, minor, angle, height_um)
+            rendered_area = polygon_area(poly)
+            pending_diamonds.append((poly, row))
+
         metric_rows.append(
             {
                 "stage_id": stage_id,
@@ -205,12 +351,21 @@ def plot_stage(root: Path, stage_id: str, outdir: Path, metric_rows: list[dict[s
                 "contact_count": f"{met['contact_count']:.0f}",
                 "overlap_sum_um": f"{met['overlap_sum_um']:.9g}",
                 "max_overlap_um": f"{met['max_overlap_um']:.9g}",
+                "nominal_area_um2": f"{nominal_area:.9g}",
+                "cell_area_um2": f"{cell_area:.9g}",
+                "rendered_area_um2": f"{rendered_area:.9g}",
+                "area_scale": f"{area_scale:.9g}",
+                "polygon_vertices": f"{len(poly)}",
             }
         )
 
+    for poly, _ in pending_diamonds:
+        if len(poly) >= 3 and polygon_area(poly) > 1e-8:
+            ax.add_patch(Polygon(poly, closed=True, facecolor="#333333", edgecolor="#111111", linewidth=0.75, alpha=0.97))
+
     ax.set_xlabel("x (um)")
     ax.set_ylabel("y (um)")
-    ax.set_title(f"Pseudo-plastic morphology: {stage_id}, target rho={target_rho:.3f}")
+    ax.set_title(f"Constrained polygonal morphology: {stage_id}, target rho={target_rho:.3f}")
     ax.tick_params(direction="in", top=True, right=True)
     fig.tight_layout()
     fig.savefig(outdir / f"plastic_morphology_{stage_id}.png")
@@ -233,6 +388,11 @@ def write_metrics(path: Path, rows: list[dict[str, str]]) -> None:
         "contact_count",
         "overlap_sum_um",
         "max_overlap_um",
+        "nominal_area_um2",
+        "cell_area_um2",
+        "rendered_area_um2",
+        "area_scale",
+        "polygon_vertices",
     ]
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -254,7 +414,7 @@ def main() -> None:
     for stage_id in STAGE_BY_ID:
         plot_stage(root, stage_id, outdir, metric_rows)
     write_metrics(Path(args.metrics), metric_rows)
-    print(f"[OK] wrote pseudo-plastic morphology plots to {outdir}")
+    print(f"[OK] wrote constrained polygonal morphology plots to {outdir}")
     print(f"[OK] wrote {args.metrics}")
 
 

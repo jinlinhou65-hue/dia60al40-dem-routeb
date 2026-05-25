@@ -205,7 +205,7 @@ jobs:
           # converter removes it with a documented radius shrink.
           LAST_DUMP=$(ls -1 DEM/stage5_rho095_*.dump | sort -V | tail -1)
           echo "[VERIFY] last dump: $LAST_DUMP"
-          python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" --expect-al 34 --expect-ds 8 --expect-dl 4
+          python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" --expect-al 34 --expect-ds 8 --expect-dl 8
 
           # Gate 4: verify every stage against expected density windows and 2D
           # COMSOL handoff constraints. Overlap is reported, not failed, because it
@@ -255,6 +255,8 @@ jobs:
           python3 python/plot_plastic_morphology.py \
             --root liggghts/DEM \
             --outdir liggghts/DEM/plots \
+            --metrics liggghts/DEM/plastic_morphology_metrics.csv
+          python3 python/verify_plastic_morphology.py \
             --metrics liggghts/DEM/plastic_morphology_metrics.csv
           find liggghts/DEM/plots -maxdepth 1 -type f -ls | sort -k11
 
