@@ -5,7 +5,7 @@ import csv
 import math
 from pathlib import Path
 
-from dem_stage_metadata import STAGE_BY_ID, UM_PER_CM, particle_shape, read_liggghts_dump
+from dem_stage_metadata import STAGES, UM_PER_CM, particle_shape, read_liggghts_dump, stages_from_model_parameters
 
 
 def import_matplotlib():
@@ -68,8 +68,8 @@ def smooth_al_modulus(rho: float, params: dict[str, float]) -> float | None:
     emax = params.get("E_Al_smoothstep_Emax")
     if e0 is None or emax is None:
         return None
-    rho0 = params.get("rho_total_stage0_preload", min(v[1] for v in STAGE_BY_ID.values()))
-    rho95 = params.get("rho_total_stage5_rho095", max(v[1] for v in STAGE_BY_ID.values()))
+    rho0 = params.get("rho_total_stage0_preload", min(v[1] for v in STAGES))
+    rho95 = params.get("rho_total_stage5_rho095", max(v[1] for v in STAGES))
     span = rho95 - rho0
     if span <= 0.0:
         return emax
@@ -213,16 +213,16 @@ def latest_stage_dump(root: Path, stage_id: str) -> Path:
     return matches[-1]
 
 
-def plot_stage(root: Path, stage_id: str, outdir: Path) -> None:
+def plot_stage(root: Path, stage_id: str, stage_meta: tuple[str, float, float, float, float], outdir: Path) -> None:
     plt, Circle, RegularPolygon = import_matplotlib()
     dump = latest_stage_dump(root, stage_id)
     rows = read_liggghts_dump(dump)
-    _, target_rho, height_um, _, _ = STAGE_BY_ID[stage_id]
+    _, target_rho, height_um, _, _ = stage_meta
 
     fig, ax = plt.subplots(figsize=(8, 4.2), dpi=180)
     ax.set_aspect("equal", adjustable="box")
     ax.set_xlim(-25, 425)
-    ax.set_ylim(-25, 230)
+    ax.set_ylim(-25, max(230, height_um + 35))
     ax.add_patch(plt.Rectangle((0, 0), 400, height_um, fill=False, linewidth=1.2, edgecolor="#444444"))
 
     for row in rows:
@@ -266,8 +266,8 @@ def main() -> None:
     rows = read_curve(Path(args.curve))
     params = read_model_parameters(root / "model_parameters.csv")
     save_pressure_plots(rows, outdir, params)
-    for stage_id in STAGE_BY_ID:
-        plot_stage(root, stage_id, outdir)
+    for stage_meta in stages_from_model_parameters(root):
+        plot_stage(root, stage_meta[0], stage_meta, outdir)
     print(f"[OK] wrote DEM plots to {outdir}")
 
 

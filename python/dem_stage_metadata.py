@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import csv
 
 
 UM_PER_CM = 10000.0
@@ -22,6 +23,24 @@ STAGE_BY_ID = {stage[0]: stage for stage in STAGES}
 
 def stage_ids() -> list[str]:
     return [stage[0] for stage in STAGES]
+
+
+def read_model_parameters(path) -> dict[str, str]:
+    with path.open(newline="", encoding="utf-8") as f:
+        return {row["parameter"]: row["value"] for row in csv.DictReader(f)}
+
+
+def stages_from_model_parameters(root) -> list[tuple[str, float, float, float, float]]:
+    params_path = root / "model_parameters.csv"
+    if not params_path.exists():
+        return STAGES
+    params = read_model_parameters(params_path)
+    stages: list[tuple[str, float, float, float, float]] = []
+    for stage_id, fallback_rho, fallback_height, fallback_min, fallback_max in STAGES:
+        rho = float(params.get(f"rho_total_{stage_id}", fallback_rho))
+        height = float(params.get(f"height_um_{stage_id}", fallback_height))
+        stages.append((stage_id, rho, height, rho - 0.02, rho + 0.02))
+    return stages
 
 
 def read_liggghts_dump(path) -> list[dict[str, str]]:

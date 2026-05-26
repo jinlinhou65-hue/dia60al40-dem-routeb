@@ -10,11 +10,11 @@ Meshes:
   - InsertFace.stl: injection plane just below the top opening
 """
 from __future__ import annotations
+import argparse
 from pathlib import Path
 
 UM_TO_CM = 1e-4
 W = 400 * UM_TO_CM      # x width
-H = 220 * UM_TO_CM      # y height
 T = 90 * UM_TO_CM       # z thickness: quasi-2D single layer with front/back confinement
 WALL = 20 * UM_TO_CM
 TOP_THICK = 18 * UM_TO_CM
@@ -48,10 +48,15 @@ def quad(p1, p2, p3, p4):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--height-um", type=float, default=220.0)
+    args = parser.parse_args()
+    h = args.height_um * UM_TO_CM
+
     OUT.mkdir(parents=True, exist_ok=True)
     # Coordinates: x width, y vertical/load direction, z thickness.
     x0, x1 = 0.0, W
-    y0, y1 = 0.0, H
+    y0, y1 = 0.0, h
     z0, z1 = -T/2, T/2
 
     die = []
@@ -103,7 +108,7 @@ def main():
     ]:
         p = OUT / fn
         print(f"[OK] {p} ({p.stat().st_size} bytes)")
-    print(f"[UNITS] cm; W={W:g}, H={H:g}, T={T:g}")
+    print(f"[UNITS] cm; W={W:g}, H={h:g}, T={T:g}")
 
 if __name__ == "__main__":
     main()

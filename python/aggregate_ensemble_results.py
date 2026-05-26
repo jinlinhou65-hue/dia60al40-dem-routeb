@@ -71,6 +71,14 @@ def collect_runs(root: Path) -> list[dict[str, object]]:
         runs.append(
             {
                 "artifact": dem_dir.parent.name,
+                "diamond_size_case": params.get("diamond_size_case", "?"),
+                "al_radius_um": float(params.get("Al_dem_radius_um", "nan")),
+                "diamond_ds_radius_um": float(params.get("diamond_dem_radius_DS_um", "nan")),
+                "diamond_dl_radius_um": float(params.get("diamond_dem_radius_DL_um", "nan")),
+                "diamond_count_ds": int(float(params.get("diamond_count_DS", "0"))),
+                "diamond_count_dl": int(float(params.get("diamond_count_DL", "0"))),
+                "al_area_fraction": float(params.get("Al_area_fraction", "nan")),
+                "diamond_area_fraction": float(params.get("diamond_area_fraction", "nan")),
                 "seed_index": int(float(params.get("DEM_seed_index", "0"))),
                 "e_al_emax_gpa": float(params.get("E_Al_smoothstep_Emax", "nan")),
                 "mu_scale": float(params.get("mu_scale", "nan")),
@@ -109,23 +117,97 @@ def write_ensemble_csv(path: Path, runs: list[dict[str, object]]) -> None:
         writer.writerow(row)
 
 
-def write_run_csv(path: Path, runs: list[dict[str, object]]) -> None:
-    fieldnames = ["artifact", "seed_index", "e_al_emax_gpa", "mu_scale", "p95_mpa"]
+def write_case_summary_csv(path: Path, runs: list[dict[str, object]]) -> None:
+    groups: dict[str, list[dict[str, object]]] = {}
+    for run in runs:
+        groups.setdefault(str(run["diamond_size_case"]), []).append(run)
+    fieldnames = [
+        "diamond_size_case",
+        "n_runs",
+        "p95_mean_mpa",
+        "p95_stdev_mpa",
+        "p95_min_mpa",
+        "p95_max_mpa",
+        "al_radius_um",
+        "diamond_ds_radius_um",
+        "diamond_dl_radius_um",
+        "diamond_count_ds",
+        "diamond_count_dl",
+        "al_area_fraction",
+        "diamond_area_fraction",
+    ]
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        for run in sorted(runs, key=lambda r: (float(r["e_al_emax_gpa"]), float(r["mu_scale"]), int(r["seed_index"]))):
+        for case_id in sorted(groups):
+            case_runs = groups[case_id]
+            p95s = [float(run["p95_mpa"]) for run in case_runs if not math.isnan(float(run["p95_mpa"]))]
+            first = case_runs[0]
+            writer.writerow(
+                {
+                    "diamond_size_case": case_id,
+                    "n_runs": len(p95s),
+                    "p95_mean_mpa": f"{mean(p95s):.9g}",
+                    "p95_stdev_mpa": f"{stdev(p95s):.9g}",
+                    "p95_min_mpa": f"{min(p95s):.9g}",
+                    "p95_max_mpa": f"{max(p95s):.9g}",
+                    "al_radius_um": first["al_radius_um"],
+                    "diamond_ds_radius_um": first["diamond_ds_radius_um"],
+                    "diamond_dl_radius_um": first["diamond_dl_radius_um"],
+                    "diamond_count_ds": first["diamond_count_ds"],
+                    "diamond_count_dl": first["diamond_count_dl"],
+                    "al_area_fraction": first["al_area_fraction"],
+                    "diamond_area_fraction": first["diamond_area_fraction"],
+                }
+            )
+
+
+def write_run_csv(path: Path, runs: list[dict[str, object]]) -> None:
+    fieldnames = [
+        "artifact",
+        "diamond_size_case",
+        "seed_index",
+        "e_al_emax_gpa",
+        "mu_scale",
+        "al_radius_um",
+        "diamond_ds_radius_um",
+        "diamond_dl_radius_um",
+        "diamond_count_ds",
+        "diamond_count_dl",
+        "al_area_fraction",
+        "diamond_area_fraction",
+        "p95_mpa",
+    ]
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for run in sorted(
+            runs,
+            key=lambda r: (
+                str(r["diamond_size_case"]),
+                float(r["e_al_emax_gpa"]),
+                float(r["mu_scale"]),
+                int(r["seed_index"]),
+            ),
+        ):
             writer.writerow({name: run[name] for name in fieldnames})
 
 
 def plot_ensemble(path: Path, runs: list[dict[str, object]]) -> None:
     plt = import_matplotlib()
     fig, ax = plt.subplots(figsize=(6.5, 4.2), dpi=180)
-    for run in sorted(runs, key=lambda r: int(r["seed_index"])):
+    for run in sorted(runs, key=lambda r: (str(r["diamond_size_case"]), int(r["seed_index"]))):
         curve = run["curve"]
         xs = [float(row.get("actual_rho_total", row.get("rho_total_measured", "nan"))) for row in curve]  # type: ignore[index]
         ys = [float(row["pressure_mpa"]) for row in curve]  # type: ignore[index]
-        ax.plot(xs, ys, marker="o", linewidth=1.2, markersize=3.5, label=f"seed {run['seed_index']}")
+        ax.plot(
+            xs,
+            ys,
+            marker="o",
+            linewidth=1.2,
+            markersize=3.5,
+            label=f"{run['diamond_size_case']} seed {run['seed_index']}",
+        )
     ax.axvline(0.95, color="#444444", linestyle="--", linewidth=0.9)
     ax.axhline(200.0, color="#aa3333", linestyle=":", linewidth=1.0)
     ax.set_xlabel("total relative density")
@@ -133,6 +215,28 @@ def plot_ensemble(path: Path, runs: list[dict[str, object]]) -> None:
     ax.set_title("DEM pressure-density ensemble")
     ax.tick_params(direction="in", top=True, right=True)
     ax.legend(frameon=False)
+    fig.tight_layout()
+    fig.savefig(path)
+    plt.close(fig)
+
+
+def plot_case_p95(path: Path, runs: list[dict[str, object]]) -> None:
+    plt = import_matplotlib()
+    groups: dict[str, list[float]] = {}
+    for run in runs:
+        value = float(run["p95_mpa"])
+        if not math.isnan(value):
+            groups.setdefault(str(run["diamond_size_case"]), []).append(value)
+    labels = sorted(groups)
+    means = [mean(groups[label]) for label in labels]
+    errors = [stdev(groups[label]) for label in labels]
+    fig, ax = plt.subplots(figsize=(5.6, 3.8), dpi=180)
+    ax.bar(labels, means, yerr=errors, capsize=4, color="#4C78A8", edgecolor="#222222", linewidth=0.8)
+    ax.axhline(200.0, color="#aa3333", linestyle=":", linewidth=1.0)
+    ax.set_xlabel("diamond size case")
+    ax.set_ylabel("P at rho=0.95 (MPa)")
+    ax.set_title("Size-case sensitivity at 60/40 area fraction")
+    ax.tick_params(direction="in", top=True, right=True)
     fig.tight_layout()
     fig.savefig(path)
     plt.close(fig)
@@ -153,7 +257,9 @@ def main() -> None:
 
     write_run_csv(outdir / "ensemble_runs.csv", runs)
     write_ensemble_csv(outdir / "ensemble_pressure_summary.csv", runs)
+    write_case_summary_csv(outdir / "ensemble_pressure_summary_by_size_case.csv", runs)
     plot_ensemble(outdir / "ensemble_pressure_density.png", runs)
+    plot_case_p95(outdir / "p95_by_diamond_size_case.png", runs)
     print(f"[OK] aggregated {len(runs)} DEM run(s) into {outdir}")
 
 

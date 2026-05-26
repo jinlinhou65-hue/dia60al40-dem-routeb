@@ -6,11 +6,11 @@ import math
 from pathlib import Path
 
 from dem_stage_metadata import (
-    STAGE_BY_ID,
     UM_PER_CM,
     W_UM,
     contact_counts,
     read_liggghts_dump,
+    stages_from_model_parameters,
     total_particle_area_um2,
 )
 
@@ -99,7 +99,7 @@ def export_curve(root: Path, raw_path: Path, output_path: Path, contact_gap_um: 
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
         writer.writeheader()
 
-        for stage_id, target_rho, current_height_um, _, _ in STAGE_BY_ID.values():
+        for stage_id, target_rho, current_height_um, _, _ in stages_from_model_parameters(root):
             if stage_id not in raw_by_stage:
                 raise SystemExit(f"[FAIL] {raw_path} is missing force row for {stage_id}")
 

@@ -5,7 +5,7 @@ import math
 from collections import Counter
 from pathlib import Path
 
-from dem_stage_metadata import STAGES, UM_PER_CM, W_UM, read_liggghts_dump, total_particle_area_um2
+from dem_stage_metadata import UM_PER_CM, W_UM, read_liggghts_dump, stages_from_model_parameters, total_particle_area_um2
 
 
 def classify_counts(rows: list[dict[str, str]]) -> Counter[str]:
@@ -102,7 +102,7 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(args.root)
-    for stage, target_rho, height_um, rho_min, rho_max in STAGES:
+    for stage, target_rho, height_um, rho_min, rho_max in stages_from_model_parameters(root):
         verify_stage(root, stage, target_rho, height_um, rho_min, rho_max, args)
     print("[OK] all DEM stages passed composition, z-plane, and density gates")
 

@@ -62,6 +62,10 @@ on:
         description: 'JSON list of reproducible DEM random-mixing seed indices, e.g. ["0","1","2","3","4"]'
         required: false
         default: '["0","1","2"]'
+      diamond_size_case_json:
+        description: 'JSON list of diamond size cases: C=80/130um, D=100um, E=60um. Counts keep Diamond/Al area near 60/40.'
+        required: false
+        default: '["C","D","E"]'
   push:
     paths:
       - 'python/**'
@@ -71,13 +75,14 @@ on:
 
 jobs:
   dem:
-    name: dem Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}
+    name: dem size=${{ matrix.diamond_size_case }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}
     strategy:
       fail-fast: false
       matrix:
         mu_scale: ${{ fromJSON(inputs.mu_scale_json || '["1.0"]') }}
         e_al_emax: ${{ fromJSON(inputs.e_al_emax_sweep_json || format('["{0}"]', inputs.e_al_emax_gpa || '12')) }}
         dem_seed: ${{ fromJSON(inputs.dem_seed_json || '["0","1","2"]') }}
+        diamond_size_case: ${{ fromJSON(inputs.diamond_size_case_json || '["C","D","E"]') }}
     # Ubuntu apt repos do NOT ship a working `liggghts` package, so we
     # build LIGGGHTS-PUBLIC from source. Use 22.04 because its older
     # g++ 11 tolerates the LIGGGHTS-PUBLIC codebase without -Werror noise.
@@ -131,7 +136,14 @@ jobs:
       - name: Prepare meshes
         run: |
           set -euxo pipefail
-          python3 python/prepare_meshes.py
+          python3 - <<'PY' > /tmp/dem_case_height.env
+          from python.render_dem_deck import DIAMOND_CASES, initial_height_um
+          case = DIAMOND_CASES["${{ matrix.diamond_size_case }}"]
+          print(f"HEIGHT_UM={initial_height_um(case):.9g}")
+          PY
+          cat /tmp/dem_case_height.env
+          source /tmp/dem_case_height.env
+          python3 python/prepare_meshes.py --height-um "$HEIGHT_UM"
           find liggghts/meshes -maxdepth 1 -type f -ls
           # Hard-assert all three STLs were produced and are non-empty.
           # Catches silent regressions in prepare_meshes.py before LIGGGHTS gets a chance to die on a missing file.
@@ -145,6 +157,7 @@ jobs:
           python3 python/render_dem_deck.py \
             --input liggghts/in.dia60al40_dem_staged.liggghts \
             --output liggghts/in.dia60al40_dem_staged.rendered.liggghts \
+            --diamond-size-case "${{ matrix.diamond_size_case }}" \
             --e-al-e0-gpa "${{ inputs.e_al_e0_gpa || '5' }}" \
             --e-al-emax-gpa "${{ matrix.e_al_emax }}" \
             --e-diamond-gpa "${{ inputs.e_diamond_gpa || '300' }}" \
@@ -211,13 +224,19 @@ jobs:
           # converter removes it with a documented radius shrink.
           LAST_DUMP=$(ls -1 DEM/stage5_rho095_*.dump | sort -V | tail -1)
           echo "[VERIFY] last dump: $LAST_DUMP"
-          python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" --expect-al 34 --expect-ds 8 --expect-dl 8
+          EXPECT_AL=$(awk -F, '$1=="Al_count"{print int($2)}' DEM/model_parameters.csv)
+          EXPECT_DS=$(awk -F, '$1=="diamond_count_DS"{print int($2)}' DEM/model_parameters.csv)
+          EXPECT_DL=$(awk -F, '$1=="diamond_count_DL"{print int($2)}' DEM/model_parameters.csv)
+          echo "[VERIFY] expected composition from model_parameters.csv: Al=$EXPECT_AL DS=$EXPECT_DS DL=$EXPECT_DL"
+          python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" \
+            --expect-al "$EXPECT_AL" --expect-ds "$EXPECT_DS" --expect-dl "$EXPECT_DL"
 
           # Gate 4: verify every stage against expected density windows and 2D
           # COMSOL handoff constraints. Overlap is reported, not failed, because it
           # is contact deformation in DEM. z drift and composition still fail.
           cd ..
-          python3 python/verify_dem_stages.py --root liggghts/DEM
+          python3 python/verify_dem_stages.py --root liggghts/DEM \
+            --expect-al "$EXPECT_AL" --expect-ds "$EXPECT_DS" --expect-dl "$EXPECT_DL"
           test -s liggghts/DEM/pressure_density_curve_raw.csv
 
           # Export every stage into COMSOL-ready CSV. COMSOL can now analyze
@@ -270,7 +289,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dia60al40-dem-artifacts-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}
+          name: dia60al40-dem-artifacts-size${{ matrix.diamond_size_case }}-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}
           path: |
             liggghts/DEM/**
             liggghts/*.log
@@ -308,19 +327,22 @@ jobs:
             --outdir ensemble_summary
           cat ensemble_summary/ensemble_runs.csv
           cat ensemble_summary/ensemble_pressure_summary.csv
+          cat ensemble_summary/ensemble_pressure_summary_by_size_case.csv
 
           mkdir -p ensemble_seed_plots
           for artifact_dir in ensemble_inputs/dia60al40-dem-artifacts-*; do
             test -d "$artifact_dir/DEM" || continue
-            seed_name="$(basename "$artifact_dir" | sed -E 's/^.*-(seed[0-9]+)$/\1/')"
-            mkdir -p "ensemble_seed_plots/$seed_name"
-            cp "$artifact_dir/DEM/pressure_density_curve.csv" "ensemble_seed_plots/$seed_name/"
-            cp "$artifact_dir/DEM/pressure_density_summary.csv" "ensemble_seed_plots/$seed_name/"
-            cp "$artifact_dir/DEM/model_parameters.csv" "ensemble_seed_plots/$seed_name/"
-            cp "$artifact_dir/DEM/plots/particles_stage"*.png "ensemble_seed_plots/$seed_name/"
-            cp "$artifact_dir/DEM/plots/plastic_morphology_stage"*.png "ensemble_seed_plots/$seed_name/"
-            cp "$artifact_dir/DEM/plots/pressure_density_curve.png" "ensemble_seed_plots/$seed_name/"
-            cp "$artifact_dir/DEM/plots/boundary_pressure_curve.png" "ensemble_seed_plots/$seed_name/"
+            case_name="$(awk -F, '$1=="diamond_size_case"{print $2}' "$artifact_dir/DEM/model_parameters.csv")"
+            seed_name="$(awk -F, '$1=="DEM_seed_index"{print "seed" int($2)}' "$artifact_dir/DEM/model_parameters.csv")"
+            run_name="size${case_name}_${seed_name}"
+            mkdir -p "ensemble_seed_plots/$run_name"
+            cp "$artifact_dir/DEM/pressure_density_curve.csv" "ensemble_seed_plots/$run_name/"
+            cp "$artifact_dir/DEM/pressure_density_summary.csv" "ensemble_seed_plots/$run_name/"
+            cp "$artifact_dir/DEM/model_parameters.csv" "ensemble_seed_plots/$run_name/"
+            cp "$artifact_dir/DEM/plots/particles_stage"*.png "ensemble_seed_plots/$run_name/"
+            cp "$artifact_dir/DEM/plots/plastic_morphology_stage"*.png "ensemble_seed_plots/$run_name/"
+            cp "$artifact_dir/DEM/plots/pressure_density_curve.png" "ensemble_seed_plots/$run_name/"
+            cp "$artifact_dir/DEM/plots/boundary_pressure_curve.png" "ensemble_seed_plots/$run_name/"
           done
           find ensemble_seed_plots -maxdepth 2 -type f | sort
 

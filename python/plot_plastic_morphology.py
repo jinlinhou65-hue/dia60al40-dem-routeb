@@ -5,7 +5,7 @@ import csv
 import math
 from pathlib import Path
 
-from dem_stage_metadata import STAGE_BY_ID, UM_PER_CM, particle_shape, read_liggghts_dump
+from dem_stage_metadata import UM_PER_CM, particle_shape, read_liggghts_dump, stages_from_model_parameters
 
 
 W_UM = 400.0
@@ -299,11 +299,17 @@ def al_render_polygon(
     return poly, cell_area, rendered_area, scale
 
 
-def plot_stage(root: Path, stage_id: str, outdir: Path, metric_rows: list[dict[str, str]]) -> None:
+def plot_stage(
+    root: Path,
+    stage_id: str,
+    stage_meta: tuple[str, float, float, float, float],
+    outdir: Path,
+    metric_rows: list[dict[str, str]],
+) -> None:
     plt, Polygon, Rectangle = import_matplotlib()
     dump = latest_stage_dump(root, stage_id)
     rows = read_liggghts_dump(dump)
-    _, target_rho, height_um, _, _ = STAGE_BY_ID[stage_id]
+    _, target_rho, height_um, _, _ = stage_meta
     metrics = contact_metrics(rows, height_um)
 
     fig, ax = plt.subplots(figsize=(8, 4.2), dpi=180)
@@ -411,8 +417,8 @@ def main() -> None:
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     metric_rows: list[dict[str, str]] = []
-    for stage_id in STAGE_BY_ID:
-        plot_stage(root, stage_id, outdir, metric_rows)
+    for stage_meta in stages_from_model_parameters(root):
+        plot_stage(root, stage_meta[0], stage_meta, outdir, metric_rows)
     write_metrics(Path(args.metrics), metric_rows)
     print(f"[OK] wrote constrained polygonal morphology plots to {outdir}")
     print(f"[OK] wrote {args.metrics}")

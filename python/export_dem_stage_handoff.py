@@ -16,12 +16,12 @@ import csv
 from pathlib import Path
 
 from dem_stage_metadata import (
-    STAGE_BY_ID,
     UM_PER_CM,
     contact_counts,
     particle_material,
     particle_shape,
     read_liggghts_dump,
+    stages_from_model_parameters,
     total_particle_area_um2,
 )
 
@@ -50,11 +50,12 @@ def fmt(value: float) -> str:
 
 
 def export_stage(input_path: Path, stage_id: str, output_path: Path, contact_gap_um: float) -> None:
-    if stage_id not in STAGE_BY_ID:
-        known = ", ".join(STAGE_BY_ID)
+    stage_by_id = {stage[0]: stage for stage in stages_from_model_parameters(input_path.parent)}
+    if stage_id not in stage_by_id:
+        known = ", ".join(stage_by_id)
         raise SystemExit(f"[FAIL] unknown stage_id={stage_id}; known stages: {known}")
 
-    _, target_rho, current_height_um, _, _ = STAGE_BY_ID[stage_id]
+    _, target_rho, current_height_um, _, _ = stage_by_id[stage_id]
     rows = read_liggghts_dump(input_path)
     actual_rho = total_particle_area_um2(rows) / (400.0 * current_height_um)
     counts = contact_counts(rows, contact_gap_um)
