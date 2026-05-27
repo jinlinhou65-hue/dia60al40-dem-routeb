@@ -137,9 +137,9 @@ jobs:
         run: |
           set -euxo pipefail
           python3 - <<'PY' > /tmp/dem_case_height.env
-          from python.render_dem_deck import DIAMOND_CASES, initial_height_um
+          from python.render_dem_deck import DIAMOND_CASES, initial_die_height_um
           case = DIAMOND_CASES["${{ matrix.diamond_size_case }}"]
-          print(f"HEIGHT_UM={initial_height_um(case):.9g}")
+          print(f"HEIGHT_UM={initial_die_height_um(case):.9g}")
           PY
           cat /tmp/dem_case_height.env
           source /tmp/dem_case_height.env

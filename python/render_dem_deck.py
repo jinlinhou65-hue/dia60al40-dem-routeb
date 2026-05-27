@@ -10,6 +10,7 @@ from pathlib import Path
 W_UM = 400.0
 TARGET_AL_AREA_FRACTION = 0.40
 TARGET_DIAMOND_AREA_FRACTION = 0.60
+INSERT_RHO_TOTAL = 0.38
 AL_RADIUS_UM = 13.0
 DT_SECONDS = 2.0e-10
 TOP_VEL_CM_S = 1.0
@@ -176,7 +177,7 @@ def gpa_to_cgs(value_gpa: float) -> str:
 
 def stage_plan(case: DiamondCase, e_al_stages: list[float]) -> list[dict[str, float | str]]:
     area_um2 = total_solid_area_um2(case)
-    h0_um = initial_height_um(case)
+    h0_um = initial_die_height_um(case)
     plan: list[dict[str, float | str]] = []
     previous_displacement = 0.0
     for i, ((stage_id, rho), e_gpa) in enumerate(zip(RHO_STAGES, e_al_stages)):
@@ -203,10 +204,16 @@ def stage_plan(case: DiamondCase, e_al_stages: list[float]) -> list[dict[str, fl
     return plan
 
 
-def initial_height_um(case: DiamondCase) -> float:
-    # The die height is chosen per particle-size recipe so every sweep starts
-    # from the same stage0 loose density, then compacts along the same rho path.
+def stage0_height_um(case: DiamondCase) -> float:
     return total_solid_area_um2(case) / (W_UM * RHO_STAGES[0][1])
+
+
+def initial_die_height_um(case: DiamondCase) -> float:
+    # Random sequential insertion uses a smaller inner insertion region than the
+    # final die area. Start from a loose mixed bed so all particles are present,
+    # then let the punch preload to stage0=0.5668 before the density ladder.
+    insertion_height = total_solid_area_um2(case) / (W_UM * INSERT_RHO_TOTAL)
+    return max(stage0_height_um(case), insertion_height)
 
 
 def replace_moduli(
@@ -273,7 +280,7 @@ def replace_friction(text: str, args: argparse.Namespace) -> str:
 
 
 def replace_diamond_templates(text: str, case: DiamondCase) -> str:
-    h_cm = initial_height_um(case) * 1.0e-4
+    h_cm = initial_die_height_um(case) * 1.0e-4
     al_cm = AL_RADIUS_UM * 1.0e-4
     ds_cm = max(case.ds_dem_um, 1.0) * 1.0e-4
     dl_cm = max(case.dl_dem_um, 1.0) * 1.0e-4
@@ -320,7 +327,7 @@ def insertion_step(fix_id: str, seed: int, pdd: str, target_count: int) -> list[
 
 
 def insertion_block(case: DiamondCase) -> str:
-    y_max = max(0.0013, initial_height_um(case) * 1.0e-4 - 0.0013)
+    y_max = max(0.0013, initial_die_height_um(case) * 1.0e-4 - 0.0013)
     lines = [
         "# Sequential insertion targets are cumulative. The diamond counts are",
         f"# generated from diamond_size_case={case.case_id}: DS={case.ds_count}, DL={case.dl_count}, Al={al_count(case)}.",
@@ -380,7 +387,9 @@ def model_parameter_block(
             f'print           "diamond_dem_radius_DL_um,{case.dl_dem_um:.6g},um" append DEM/model_parameters.csv screen no',
             f'print           "target_Al_area_fraction,{TARGET_AL_AREA_FRACTION:.9g},1" append DEM/model_parameters.csv screen no',
             f'print           "target_diamond_area_fraction,{TARGET_DIAMOND_AREA_FRACTION:.9g},1" append DEM/model_parameters.csv screen no',
-            f'print           "initial_die_height_um,{initial_height_um(case):.9g},um" append DEM/model_parameters.csv screen no',
+            f'print           "insert_rho_total,{INSERT_RHO_TOTAL:.9g},1" append DEM/model_parameters.csv screen no',
+            f'print           "stage0_height_um,{stage0_height_um(case):.9g},um" append DEM/model_parameters.csv screen no',
+            f'print           "initial_die_height_um,{initial_die_height_um(case):.9g},um" append DEM/model_parameters.csv screen no',
             f'print           "Al_area_um2,{al_area_um2(case):.9g},um2" append DEM/model_parameters.csv screen no',
             f'print           "diamond_area_um2,{diamond_area_um2(case):.9g},um2" append DEM/model_parameters.csv screen no',
             f'print           "Al_area_fraction,{al_area_um2(case) / total_solid_area_um2(case):.9g},1" append DEM/model_parameters.csv screen no',
@@ -548,7 +557,7 @@ def render(args: argparse.Namespace) -> None:
     output.write_text(text, encoding="utf-8", newline="\n")
     print(f"[OK] rendered {output}")
     print(f"[PARAM] diamond_size_case={case.case_id} {case.description}")
-    print(f"[PARAM] initial_die_height_um={initial_height_um(case):.6g}")
+    print(f"[PARAM] initial_die_height_um={initial_die_height_um(case):.6g} stage0_height_um={stage0_height_um(case):.6g}")
     print(f"[PARAM] counts Al={al_count(case)} DS={case.ds_count} DL={case.dl_count} Al_radius_um={AL_RADIUS_UM:.6g}")
     print(
         "[PARAM] area_fraction Al="
