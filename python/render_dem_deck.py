@@ -10,7 +10,7 @@ from pathlib import Path
 W_UM = 400.0
 TARGET_AL_AREA_FRACTION = 0.40
 TARGET_DIAMOND_AREA_FRACTION = 0.60
-AL_COUNT = 34
+AL_RADIUS_UM = 13.0
 DT_SECONDS = 2.0e-10
 TOP_VEL_CM_S = 1.0
 INITIAL_SETTLE_STEPS = 1_250_000
@@ -45,8 +45,8 @@ DIAMOND_CASES = {
     "B": DiamondCase("B", "dual diamond 60/100 um actual, scaled to 18/30 um DEM", 60.0, 100.0, 18.0, 30.0, 8, 8),
     "C": DiamondCase("C", "dual diamond 80/130 um actual, scaled to 24/39 um DEM", 80.0, 130.0, 24.0, 39.0, 8, 8),
     # Single-size counts keep the total diamond area close to case B. For every
-    # case, Al radius is then back-calculated so Al/Diamond area is exactly 40/60
-    # while the number of Al particles remains fixed at 34.
+    # case, Al count is then back-calculated from the fixed 13 um Al radius so
+    # Al/Diamond area stays near 40/60 without changing powder particle size.
     "D": DiamondCase("D", "single diamond 100 um actual, scaled to 30 um DEM", 0.0, 100.0, 0.0, 30.0, 0, 11),
     "E": DiamondCase("E", "single diamond 60 um actual, scaled to 18 um DEM", 60.0, 0.0, 18.0, 0.0, 30, 0),
 }
@@ -138,15 +138,15 @@ def total_solid_area_um2(case: DiamondCase) -> float:
     return al_area_um2(case) + diamond_area_um2(case)
 
 
-def al_radius_um(case: DiamondCase) -> float:
-    # Hold Al particle count fixed, then choose the Al radius that gives 40%
+def al_count(case: DiamondCase) -> int:
+    # Hold Al particle radius fixed, then choose the count that best gives 40%
     # Al area for the selected diamond-size recipe.
     target_al_area = diamond_area_um2(case) * TARGET_AL_AREA_FRACTION / TARGET_DIAMOND_AREA_FRACTION
-    return math.sqrt(target_al_area / (AL_COUNT * math.pi))
+    return max(1, int(round(target_al_area / circle_area_um2(AL_RADIUS_UM))))
 
 
 def al_area_um2(case: DiamondCase) -> float:
-    return AL_COUNT * circle_area_um2(al_radius_um(case))
+    return al_count(case) * circle_area_um2(AL_RADIUS_UM)
 
 
 def diamond_area_um2(case: DiamondCase) -> float:
@@ -274,7 +274,7 @@ def replace_friction(text: str, args: argparse.Namespace) -> str:
 
 def replace_diamond_templates(text: str, case: DiamondCase) -> str:
     h_cm = initial_height_um(case) * 1.0e-4
-    al_cm = al_radius_um(case) * 1.0e-4
+    al_cm = AL_RADIUS_UM * 1.0e-4
     ds_cm = max(case.ds_dem_um, 1.0) * 1.0e-4
     dl_cm = max(case.dl_dem_um, 1.0) * 1.0e-4
     text = re.sub(
@@ -309,8 +309,8 @@ def insertion_step(fix_id: str, seed: int, pdd: str, target_count: int) -> list[
     return [
         (
             f"fix             {fix_id} all insert/pack seed {seed} distributiontemplate {pdd} "
-            f"maxattempt 40000 insert_every once overlapcheck yes all_in no "
-            f"particles_in_region {target_count} region particles_in_region ntry_mc 40000"
+            f"maxattempt 200000 insert_every once overlapcheck yes all_in no "
+            f"particles_in_region {target_count} region particles_in_region ntry_mc 200000"
         ),
         "run             1",
         "set             group all z 0.0",
@@ -323,20 +323,29 @@ def insertion_block(case: DiamondCase) -> str:
     y_max = max(0.0013, initial_height_um(case) * 1.0e-4 - 0.0013)
     lines = [
         "# Sequential insertion targets are cumulative. The diamond counts are",
-        f"# generated from diamond_size_case={case.case_id}: DS={case.ds_count}, DL={case.dl_count}, Al={AL_COUNT}.",
+        f"# generated from diamond_size_case={case.case_id}: DS={case.ds_count}, DL={case.dl_count}, Al={al_count(case)}.",
         (
             "region          particles_in_region block 0.0013 0.0387 0.0013 "
             f"{y_max:.9g} -0.000001 0.000001 units box"
         ),
     ]
     cumulative = 0
+    if case.dl_count == 0 and case.ds_count > 0:
+        # Single-small-diamond mixtures are crowded by particle count. Insert Al
+        # first so the 34-matrix-particle requirement is protected, then fill the
+        # remaining void space with the smaller diamond particles.
+        cumulative += al_count(case)
+        lines.extend(insertion_step("insAl", SEED_KEYS["insAl"], "pddAl", cumulative))
+        cumulative += case.ds_count
+        lines.extend(insertion_step("insDS", SEED_KEYS["insDS"], "pddDS", cumulative))
+        return "\n".join(lines)
     if case.dl_count > 0:
         cumulative += case.dl_count
         lines.extend(insertion_step("insDL", SEED_KEYS["insDL"], "pddDL", cumulative))
     if case.ds_count > 0:
         cumulative += case.ds_count
         lines.extend(insertion_step("insDS", SEED_KEYS["insDS"], "pddDS", cumulative))
-    cumulative += AL_COUNT
+    cumulative += al_count(case)
     lines.extend(insertion_step("insAl", SEED_KEYS["insAl"], "pddAl", cumulative))
     return "\n".join(lines)
 
@@ -361,10 +370,10 @@ def model_parameter_block(
         [
             f'print           "diamond_size_case,{case.case_id},1" append DEM/model_parameters.csv screen no',
             f'print           "diamond_size_description,{safe_description},text" append DEM/model_parameters.csv screen no',
-            f'print           "Al_count,{AL_COUNT},1" append DEM/model_parameters.csv screen no',
+            f'print           "Al_count,{al_count(case)},1" append DEM/model_parameters.csv screen no',
             f'print           "diamond_count_DS,{case.ds_count},1" append DEM/model_parameters.csv screen no',
             f'print           "diamond_count_DL,{case.dl_count},1" append DEM/model_parameters.csv screen no',
-            f'print           "Al_dem_radius_um,{al_radius_um(case):.9g},um" append DEM/model_parameters.csv screen no',
+            f'print           "Al_dem_radius_um,{AL_RADIUS_UM:.9g},um" append DEM/model_parameters.csv screen no',
             f'print           "diamond_actual_radius_DS_um,{case.ds_actual_um:.6g},um" append DEM/model_parameters.csv screen no',
             f'print           "diamond_actual_radius_DL_um,{case.dl_actual_um:.6g},um" append DEM/model_parameters.csv screen no',
             f'print           "diamond_dem_radius_DS_um,{case.ds_dem_um:.6g},um" append DEM/model_parameters.csv screen no',
@@ -540,7 +549,7 @@ def render(args: argparse.Namespace) -> None:
     print(f"[OK] rendered {output}")
     print(f"[PARAM] diamond_size_case={case.case_id} {case.description}")
     print(f"[PARAM] initial_die_height_um={initial_height_um(case):.6g}")
-    print(f"[PARAM] counts Al={AL_COUNT} DS={case.ds_count} DL={case.dl_count} Al_radius_um={al_radius_um(case):.6g}")
+    print(f"[PARAM] counts Al={al_count(case)} DS={case.ds_count} DL={case.dl_count} Al_radius_um={AL_RADIUS_UM:.6g}")
     print(
         "[PARAM] area_fraction Al="
         f"{al_area_um2(case) / total_solid_area_um2(case):.6g} Diamond="
