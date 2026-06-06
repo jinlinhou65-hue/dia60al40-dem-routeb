@@ -9,13 +9,13 @@ alumina particles in a cylindrical die.
 - Particle diameter: `30 um`
 - Particle count: `2000`
 - Die inner diameter: `450 um`
-- Initial die height: `600 um`
-- Target relative density stages: `0.50`, `0.56`, `0.60`, `0.64`
+- Initial die height: `900 um`
+- Target relative density stages: `0.30`, `0.38`, `0.46`, `0.54`
 
 With 2000 monodisperse spheres of radius 15 um, the solid particle volume is
 about `2.827e-5 cm3`. The selected die diameter gives about 15 particle
 diameters across the die, while the initial height gives a loose insertion
-volume fraction near 0.30 so LIGGGHTS can insert all particles robustly before
+volume fraction near 0.20 so LIGGGHTS can insert all particles robustly before
 compaction.
 
 ## Material Values
@@ -98,5 +98,5 @@ LIGGGHTS-PUBLIC from source, generates the cylindrical die STL files, renders
 the 2000-particle alumina deck, runs the final compaction stage, and verifies
 that the final dump still contains exactly 2000 type-1 alumina particles with
 30 um diameter inside the die envelope. The workflow is also triggered by
-pushes to `codex/alumina3d-dem-workflow` so prototype repairs rerun the same
-verification gate without requiring manual dispatch.
+pushes to `main` and `codex/alumina3d-dem-workflow` so prototype repairs rerun
+the same verification gate without requiring manual dispatch.

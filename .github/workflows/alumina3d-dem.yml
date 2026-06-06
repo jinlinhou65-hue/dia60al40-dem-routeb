@@ -9,6 +9,7 @@ on:
         default: '0'
   push:
     branches:
+      - main
       - codex/alumina3d-dem-workflow
 
 jobs:
