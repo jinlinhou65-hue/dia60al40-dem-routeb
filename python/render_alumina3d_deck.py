@@ -8,13 +8,14 @@ from pathlib import Path
 PARTICLE_COUNT = 2000
 PARTICLE_DIAMETER_UM = 30.0
 PARTICLE_RADIUS_UM = PARTICLE_DIAMETER_UM / 2.0
-DIE_DIAMETER_UM = 450.0
-INITIAL_HEIGHT_UM = 900.0
+DIE_DIAMETER_UM = 500.0
+INITIAL_HEIGHT_UM = 700.0
 TARGET_RELATIVE_DENSITIES = (0.22, 0.25, 0.28, 0.30)
 DT_SECONDS = 2.0e-7
 TOP_VEL_CM_S = 2.0
 SETTLE_STEPS = 20000
 FINAL_SETTLE_STEPS = 40000
+GRAVITY_CM_S2 = 98.1
 
 # Literature/material-table values for dense alpha alumina are kept in metadata.
 ALUMINA_TRUE_DENSITY_G_CM3 = 3.95
@@ -137,7 +138,7 @@ def render(seed: int) -> str:
         "pair_style      gran model hertz tangential history",
         "pair_coeff      * *",
         "",
-        "fix             grav all gravity 981 vector 0.0 0.0 -1.0",
+        f"fix             grav all gravity {GRAVITY_CM_S2:.12g} vector 0.0 0.0 -1.0",
         "fix             integr all nve/sphere",
         "fix             side all mesh/surface/stress file meshes/DieCylinder.stl type 3 scale 1.0 stress on",
         "fix             bottom all mesh/surface/stress file meshes/BottomPlate.stl type 3 scale 1.0 stress on",
@@ -170,6 +171,7 @@ def render(seed: int) -> str:
         f'print           "particle_diameter_um,{PARTICLE_DIAMETER_UM:.9g},um" append DEM/model_parameters.csv screen no',
         f'print           "die_diameter_um,{DIE_DIAMETER_UM:.9g},um" append DEM/model_parameters.csv screen no',
         f'print           "initial_height_um,{INITIAL_HEIGHT_UM:.9g},um" append DEM/model_parameters.csv screen no',
+        f'print           "gravity_cm_s2,{GRAVITY_CM_S2:.9g},cm/s2" append DEM/model_parameters.csv screen no',
         f'print           "solid_volume_cm3,{solid_vol:.9g},cm3" append DEM/model_parameters.csv screen no',
         f'print           "true_density_g_cm3,{ALUMINA_TRUE_DENSITY_G_CM3:.9g},g/cm3" append DEM/model_parameters.csv screen no',
         f'print           "true_young_modulus_gpa,{ALUMINA_TRUE_YOUNG_GPA:.9g},GPa" append DEM/model_parameters.csv screen no',

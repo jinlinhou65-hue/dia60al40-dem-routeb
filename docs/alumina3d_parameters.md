@@ -8,14 +8,14 @@ alumina particles in a cylindrical die.
 - Particle material: alumina (`Al2O3`)
 - Particle diameter: `30 um`
 - Particle count: `2000`
-- Die inner diameter: `450 um`
-- Initial die height: `900 um`
+- Die inner diameter: `500 um`
+- Initial die height: `700 um`
 - Target relative density stages: `0.22`, `0.25`, `0.28`, `0.30`
 
 With 2000 monodisperse spheres of radius 15 um, the solid particle volume is
-about `2.827e-5 cm3`. The selected die diameter gives about 15 particle
-diameters across the die, while the initial height gives a loose insertion
-volume fraction near 0.20 so LIGGGHTS can insert all particles robustly before
+about `2.827e-5 cm3`. The selected die diameter gives about 16.7 particle
+diameters across the die, while the initial height gives a loose bulk insertion
+volume fraction near 0.206 so LIGGGHTS can insert all particles robustly before
 compaction. The first CI-validated density ladder is deliberately conservative;
 after the 2000-particle gate passes, higher final densities can be swept as a
 calibration extension.
@@ -38,6 +38,11 @@ particles and `5 GPa` for die/punch surfaces. This is intentional: explicit DEM
 timesteps scale severely with contact stiffness, and published DEM workflows
 often reduce particle stiffness for tractable simulation when the objective is
 packing/force-trend screening rather than calibrated contact deformation.
+
+The CI deck uses `98.1 cm/s2` settling gravity, or 0.1 g, to reduce boundary
+tunneling risk during small-scale explicit DEM verification. Full-gravity
+settling and punch-speed sweeps are left as calibration runs after the
+2000-particle geometry gate passes.
 
 Contact parameters are initial screening values:
 

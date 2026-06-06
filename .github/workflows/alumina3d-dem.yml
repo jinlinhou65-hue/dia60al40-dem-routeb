@@ -51,8 +51,8 @@ jobs:
           set -euxo pipefail
           python3 python/prepare_alumina3d_meshes.py \
             --outdir liggghts/alumina3d/meshes \
-            --diameter-um 450 \
-            --height-um 600 \
+            --diameter-um 500 \
+            --height-um 700 \
             --segments 96
           for f in DieCylinder.stl BottomPlate.stl TopPunch.stl; do
             test -s "liggghts/alumina3d/meshes/$f"
