@@ -90,3 +90,11 @@ final ceramic green-body law.
   a defined region is used for the 2000-particle gate.
 - Engineering ceramic material-property tables for alumina density, elastic
   modulus, and Poisson ratio.
+
+## Workflow Gate
+
+GitHub Actions runs `.github/workflows/alumina3d-dem.yml`. The gate builds
+LIGGGHTS-PUBLIC from source, generates the cylindrical die STL files, renders
+the 2000-particle alumina deck, runs the final compaction stage, and verifies
+that the final dump still contains exactly 2000 type-1 alumina particles with
+30 um diameter inside the die envelope.
