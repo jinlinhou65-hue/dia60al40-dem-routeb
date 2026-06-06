@@ -10,7 +10,7 @@ alumina particles in a cylindrical die.
 - Particle count: `2000`
 - Die inner diameter: `450 um`
 - Initial die height: `900 um`
-- Target relative density stages: `0.30`, `0.38`, `0.46`, `0.54`
+- Target relative density stages: `0.22`, `0.25`, `0.28`, `0.30`
 
 With 2000 monodisperse spheres of radius 15 um, the solid particle volume is
 about `2.827e-5 cm3`. The selected die diameter gives about 15 particle

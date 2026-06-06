@@ -78,7 +78,7 @@ jobs:
           fi
           test -s DEM/model_parameters.csv
           test -s DEM/alumina3d_pressure_density_raw.csv
-          LAST_DUMP=$(ls -1 DEM/stage4_rho064_*.dump | sort -V | tail -1)
+          LAST_DUMP=$(ls -1 DEM/stage*_rho*_*.dump | sort -V | tail -1)
           python3 ../../python/verify_alumina3d_dump.py \
             --input "$LAST_DUMP" \
             --params DEM/model_parameters.csv
