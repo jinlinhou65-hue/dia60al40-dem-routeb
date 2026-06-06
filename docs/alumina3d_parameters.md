@@ -97,4 +97,6 @@ GitHub Actions runs `.github/workflows/alumina3d-dem.yml`. The gate builds
 LIGGGHTS-PUBLIC from source, generates the cylindrical die STL files, renders
 the 2000-particle alumina deck, runs the final compaction stage, and verifies
 that the final dump still contains exactly 2000 type-1 alumina particles with
-30 um diameter inside the die envelope.
+30 um diameter inside the die envelope. The workflow is also triggered by
+pushes to `codex/alumina3d-dem-workflow` so prototype repairs rerun the same
+verification gate without requiring manual dispatch.
