@@ -122,6 +122,7 @@ def render(seed: int) -> str:
         "timestep        ${dt}",
         "",
         "# type 1 = alumina particle, type 2 = top punch, type 3 = die/bottom wall.",
+        "hard_particles  yes",
         "fix             mprop all property/global youngsModulus peratomtype "
         f"{gpa_to_cgs(ALUMINA_DEM_YOUNG_GPA)} {gpa_to_cgs(TOOL_DEM_YOUNG_GPA)} {gpa_to_cgs(DIE_DEM_YOUNG_GPA)}",
         f"fix             pprop all property/global poissonsRatio peratomtype {ALUMINA_TRUE_POISSON:.6g} {STEEL_TOOL_POISSON:.6g} {STEEL_TOOL_POISSON:.6g}",
