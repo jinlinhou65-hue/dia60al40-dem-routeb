@@ -19,6 +19,7 @@ jobs:
   alumina3d:
     name: 3D alumina compaction, 2000 x 30um
     runs-on: ubuntu-22.04
+    # LIGGGHTS source build dominates runtime; keep enough headroom for reruns.
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
