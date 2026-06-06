@@ -29,6 +29,14 @@ ALUMINA_DEM_YOUNG_GPA = 0.50
 TOOL_DEM_YOUNG_GPA = 5.0
 DIE_DEM_YOUNG_GPA = 5.0
 
+SEED_TABLE = [
+    {"template": 15485863, "distribution": 15485867, "insert": 32452843},
+    {"template": 32452867, "distribution": 49979693, "insert": 67867967},
+    {"template": 49979687, "distribution": 67867979, "insert": 86028121},
+    {"template": 67867967, "distribution": 86028157, "insert": 15485867},
+    {"template": 86028121, "distribution": 32452843, "insert": 49979693},
+]
+
 
 def sphere_volume_cm3(radius_um: float) -> float:
     r_cm = radius_um * 1.0e-4
@@ -50,6 +58,10 @@ def height_for_density_um(relative_density: float) -> float:
 
 def gpa_to_cgs(value_gpa: float) -> str:
     return f"{value_gpa * 1.0e10:.9g}"
+
+
+def seed_values(seed_index: int) -> dict[str, int]:
+    return SEED_TABLE[seed_index % len(SEED_TABLE)]
 
 
 def stage_rows() -> list[dict[str, float | str]]:
@@ -77,6 +89,7 @@ def stage_rows() -> list[dict[str, float | str]]:
 
 
 def render(seed: int) -> str:
+    seeds = seed_values(seed)
     radius_cm = PARTICLE_RADIUS_UM * 1.0e-4
     die_radius_cm = DIE_DIAMETER_UM * 0.5 * 1.0e-4
     initial_height_cm = INITIAL_HEIGHT_UM * 1.0e-4
@@ -138,10 +151,10 @@ def render(seed: int) -> str:
         "variable        pressureMPa equal v_topForceAbsDyn/v_dieAreaCm2*1.0e-7",
         "variable        bottomPressureMPa equal v_bottomForceAbsDyn/v_dieAreaCm2*1.0e-7",
         "",
-        f"fix             ptsAlumina all particletemplate/sphere {seed + 101} atom_type 1 density constant {ALUMINA_TRUE_DENSITY_G_CM3:.6g} radius constant {radius_cm:.12g}",
-        f"fix             pddAlumina all particledistribution/discrete/numberbased {seed + 211} 1 ptsAlumina 1.0",
+        f"fix             ptsAlumina all particletemplate/sphere {seeds['template']} atom_type 1 density constant {ALUMINA_TRUE_DENSITY_G_CM3:.6g} radius constant {radius_cm:.12g}",
+        f"fix             pddAlumina all particledistribution/discrete/numberbased {seeds['distribution']} 1 ptsAlumina 1.0",
         f"region          particles_in_region cylinder z 0.0 0.0 {insert_radius_cm:.12g} {insert_zlo:.12g} {insert_zhi:.12g} units box",
-        f"fix             insAlumina all insert/pack seed {seed + 307} distributiontemplate pddAlumina maxattempt 500000 insert_every once overlapcheck yes all_in yes particles_in_region {PARTICLE_COUNT} region particles_in_region ntry_mc 500000",
+        f"fix             insAlumina all insert/pack seed {seeds['insert']} distributiontemplate pddAlumina maxattempt 500000 insert_every once overlapcheck yes all_in yes particles_in_region {PARTICLE_COUNT} region particles_in_region ntry_mc 500000",
         "run             1",
         "unfix           insAlumina",
         "",
@@ -161,6 +174,11 @@ def render(seed: int) -> str:
         f'print           "true_young_modulus_gpa,{ALUMINA_TRUE_YOUNG_GPA:.9g},GPa" append DEM/model_parameters.csv screen no',
         f'print           "true_poisson_ratio,{ALUMINA_TRUE_POISSON:.9g},1" append DEM/model_parameters.csv screen no',
         f'print           "dem_young_modulus_gpa,{ALUMINA_DEM_YOUNG_GPA:.9g},GPa" append DEM/model_parameters.csv screen no',
+        f'print           "DEM_seed_index,{seed},1" append DEM/model_parameters.csv screen no',
+        f'print           "DEM_seed_table_slot,{seed % len(SEED_TABLE)},1" append DEM/model_parameters.csv screen no',
+        f'print           "DEM_template_seed,{seeds["template"]},1" append DEM/model_parameters.csv screen no',
+        f'print           "DEM_distribution_seed,{seeds["distribution"]},1" append DEM/model_parameters.csv screen no',
+        f'print           "DEM_insert_seed,{seeds["insert"]},1" append DEM/model_parameters.csv screen no',
         f'print           "particle_particle_friction,0.45,1" append DEM/model_parameters.csv screen no',
         f'print           "particle_wall_friction,0.35,1" append DEM/model_parameters.csv screen no',
         f'print           "coefficient_restitution_particle_particle,0.35,1" append DEM/model_parameters.csv screen no',
@@ -198,14 +216,16 @@ def render(seed: int) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", default="liggghts/alumina3d/in.alumina3d_compaction.rendered.liggghts")
-    ap.add_argument("--seed", type=int, default=15485863)
+    ap.add_argument("--seed", type=int, default=0, help="Deterministic seed-table index; modulo the built-in prime seed table.")
     args = ap.parse_args()
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(render(args.seed), encoding="utf-8", newline="\n")
     print(f"[OK] wrote {out}")
+    seeds = seed_values(args.seed)
     print(f"[PARAM] particles={PARTICLE_COUNT} diameter_um={PARTICLE_DIAMETER_UM} die_diameter_um={DIE_DIAMETER_UM} initial_height_um={INITIAL_HEIGHT_UM}")
+    print(f"[PARAM] seed_index={args.seed} template={seeds['template']} distribution={seeds['distribution']} insert={seeds['insert']}")
     for row in stage_rows():
         print(
             f"[STAGE] {row['stage']} rho={row['rho']:.3f} "
