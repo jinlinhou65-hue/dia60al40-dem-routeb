@@ -1,0 +1,100 @@
+name: alumina3d-dem
+
+on:
+  workflow_dispatch:
+    inputs:
+      dem_seed:
+        description: 'LIGGGHTS insertion seed'
+        required: false
+        default: '15485863'
+  push:
+    paths:
+      - 'python/prepare_alumina3d_meshes.py'
+      - 'python/render_alumina3d_deck.py'
+      - 'python/verify_alumina3d_dump.py'
+      - 'docs/alumina3d_parameters.md'
+      - '.github/workflows/alumina3d-dem.yml'
+
+jobs:
+  alumina3d:
+    name: 3D alumina compaction, 2000 x 30um
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc g++ gfortran make git \
+                                   libopenmpi-dev openmpi-bin python3
+
+      - name: Build LIGGGHTS-PUBLIC from source
+        run: |
+          set -euxo pipefail
+          git clone --depth=1 https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git /tmp/lpub
+          cd /tmp/lpub/src
+          ( cd STUBS && make 2>&1 | tail -10 )
+          if ! make -j"$(nproc)" auto 2>&1 | tee /tmp/build_auto.log; then
+            echo "[build] auto failed; falling back to serial"
+            make clean-all || true
+            ( cd STUBS && make 2>&1 | tail -5 )
+            make -j"$(nproc)" serial 2>&1 | tee /tmp/build_serial.log
+          fi
+          if [ -x lmp_auto ]; then sudo install -m 0755 lmp_auto /usr/local/bin/liggghts; fi
+          if [ -x lmp_serial ]; then sudo install -m 0755 lmp_serial /usr/local/bin/liggghts; fi
+          liggghts -h >/tmp/liggghts_help.txt 2>&1 || true
+          head -40 /tmp/liggghts_help.txt
+          grep -q "LIGGGHTS" /tmp/liggghts_help.txt
+
+      - name: Prepare 3D cylindrical die meshes
+        run: |
+          set -euxo pipefail
+          python3 python/prepare_alumina3d_meshes.py \
+            --outdir liggghts/alumina3d/meshes \
+            --diameter-um 450 \
+            --height-um 600 \
+            --segments 96
+          for f in DieCylinder.stl BottomPlate.stl TopPunch.stl; do
+            test -s "liggghts/alumina3d/meshes/$f"
+          done
+
+      - name: Render 3D alumina compaction deck
+        run: |
+          set -euxo pipefail
+          python3 python/render_alumina3d_deck.py \
+            --output liggghts/alumina3d/in.alumina3d_compaction.rendered.liggghts \
+            --seed "${{ inputs.dem_seed || '15485863' }}"
+          sed -n '1,220p' liggghts/alumina3d/in.alumina3d_compaction.rendered.liggghts
+
+      - name: Run and verify 3D alumina compaction
+        working-directory: liggghts/alumina3d
+        run: |
+          set -euxo pipefail
+          mkdir -p DEM
+          liggghts -in in.alumina3d_compaction.rendered.liggghts 2>&1 | tee alumina3d_liggghts.run.log
+          if grep -E '^ERROR' alumina3d_liggghts.run.log; then
+            echo "[FATAL] LIGGGHTS reported an ERROR"
+            exit 1
+          fi
+          test -s DEM/model_parameters.csv
+          test -s DEM/alumina3d_pressure_density_raw.csv
+          LAST_DUMP=$(ls -1 DEM/stage4_rho064_*.dump | sort -V | tail -1)
+          python3 ../../python/verify_alumina3d_dump.py \
+            --input "$LAST_DUMP" \
+            --params DEM/model_parameters.csv
+          echo '[PRESSURE-DENSITY RAW]'
+          cat DEM/alumina3d_pressure_density_raw.csv
+
+      - name: Upload 3D alumina DEM artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alumina3d-dem-artifacts
+          path: |
+            liggghts/alumina3d/DEM/**
+            liggghts/alumina3d/*.log
+            liggghts/alumina3d/*.liggghts
+            liggghts/alumina3d/meshes/*.stl
+            docs/alumina3d_parameters.md
