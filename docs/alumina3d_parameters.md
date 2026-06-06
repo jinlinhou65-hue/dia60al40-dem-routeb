@@ -16,7 +16,9 @@ With 2000 monodisperse spheres of radius 15 um, the solid particle volume is
 about `2.827e-5 cm3`. The selected die diameter gives about 15 particle
 diameters across the die, while the initial height gives a loose insertion
 volume fraction near 0.20 so LIGGGHTS can insert all particles robustly before
-compaction.
+compaction. The first validated density ladder is deliberately conservative;
+after the 2000-particle gate passes, higher final densities can be swept as a
+calibration extension.
 
 ## Material Values
 
