@@ -8,12 +8,8 @@ on:
         required: false
         default: '0'
   push:
-    paths:
-      - 'python/prepare_alumina3d_meshes.py'
-      - 'python/render_alumina3d_deck.py'
-      - 'python/verify_alumina3d_dump.py'
-      - 'docs/alumina3d_parameters.md'
-      - '.github/workflows/alumina3d-dem.yml'
+    branches:
+      - codex/alumina3d-dem-workflow
 
 jobs:
   alumina3d:
