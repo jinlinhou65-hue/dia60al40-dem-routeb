@@ -1,5 +1,99 @@
 # Dia60Al40 DEM Pressure-Density Pipeline
 
+## Recommended Execution Path
+
+Run the DEM solve in GitHub Actions on Linux, not directly on Windows. The
+project workflow `.github/workflows/dia60al40-dem.yml` pins `ubuntu-22.04`,
+builds LIGGGHTS-PUBLIC from source, runs staged compaction, verifies each stage,
+exports pressure-density data, plots the results, runs the paper-reproduction
+stage-series post-processing, and uploads artifacts.
+
+Use the repository Actions tab, or run:
+
+```powershell
+gh workflow run dia60al40-dem.yml `
+  -f mu_scale_json='["1.0"]' `
+  -f dem_seed_json='["0"]' `
+  -f diamond_size_case_json='["C"]'
+```
+
+For a broader ensemble, keep the default inputs or provide JSON lists for
+`diamond_size_case_json`, `dem_seed_json`, `mu_scale_json`, and
+`e_al_emax_sweep_json`. A successful run must produce:
+
+- `liggghts/DEM/stage0_preload_*.dump` through `stage5_rho095_*.dump`
+- `liggghts/DEM/pressure_density_curve.csv`
+- `liggghts/DEM/pressure_density_summary.csv`
+- `liggghts/DEM/dem_fem_handoff_stage*.csv`
+- `liggghts/DEM/plastic_morphology_metrics.csv`
+- `liggghts/DEM/plots/*.png`
+- `liggghts/DEM/paper_reproduction/series_network_metrics.csv`
+- `liggghts/DEM/paper_reproduction/series_acceptance_summary.csv`
+- `liggghts/DEM/paper_reproduction/series_report.md`
+
+Windows is still useful for editing scripts, reading artifacts, and optional
+post-processing. It is not the preferred place to install or run the DEM solver.
+
+## Paper Algorithm Reproduction Track
+
+This repository also contains a solver-neutral track for reproducing the four
+powder-compaction papers without binding the first pass to LIGGGHTS:
+
+```powershell
+py scripts\run_paper_algorithm_reproduction.py `
+  --paper all `
+  --outdir outputs\paper_algorithm_reproduction
+```
+
+See `docs/paper_algorithm_reproduction.md`. This track reproduces the paper
+algorithms and output schemas first: Zhang's multi-scale inhomogeneity metrics,
+Yuan's arch-bridge metrics, Liu's compaction/electrothermal/sintering coupling,
+and Li's coated-powder sweep laws. Real YADE/PFC/LAMMPS/LIGGGHTS/MPFEM outputs
+can later replace the deterministic proxy data while keeping the same CSV/JSON
+contracts.
+
+The matching lightweight workflow is:
+
+```powershell
+gh workflow run paper-algorithm-reproduction.yml -f paper=all
+```
+
+The first-pass run writes `paper_trend_checks.json`,
+`paper_acceptance_summary.csv`, `paper_acceptance_report.md`,
+`paper_reproduction_manifest.json`, `paper_reproduction_manifest.md`,
+`paper_reproduction_report.md`, and dependency-free `plots/*.svg` figures so
+each paper has both an explicit trend-gate result and a readable demo artifact
+before any full DEM calibration.
+
+To process a real DEM/FEM handoff snapshot through the paper metrics:
+
+```powershell
+py scripts\process_particle_snapshot.py `
+  --particles liggghts\DEM\dem_fem_handoff_stage5_rho095.csv `
+  --outdir outputs\stage5_network `
+  --width-um 400 `
+  --height-um 120.388289
+```
+
+To process the complete pressure-density stage series:
+
+```powershell
+py scripts\process_stage_series.py `
+  --snapshot-dir liggghts\DEM `
+  --pressure-curve liggghts\DEM\pressure_density_curve.csv `
+  --outdir outputs\stage_series `
+  --width-um 400
+```
+
+The stage-series run also writes `series_trend_checks.json` and
+`series_acceptance_summary.csv`, so every paper has a visible pass/review/
+missing/mismatch status instead of just raw plots.
+
+The main `dia60al40-dem.yml` workflow now runs this stage-series command
+automatically after real DEM handoff tables and `pressure_density_curve.csv`
+are generated. The `paper-algorithm-reproduction.yml` workflow remains a fast
+solver-free check for the paper algorithms themselves.
+
 ## 1. Generate STL Meshes
 
 ```powershell
@@ -60,10 +154,10 @@ Each stage can be verified directly from the LIGGGHTS custom dump:
 
 ```powershell
 py D:\CodexProjects\python\verify_dem_stages.py --root D:\CodexProjects\liggghts\DEM
-py D:\CodexProjects\python\convert_liggghts_csv_to_comsol.py --input D:\CodexProjects\liggghts\DEM\stage5_rho095_<step>.dump --mode 2d --auto-shrink-overlap --output D:\CodexProjects\scripts\comsol_particles.csv
+py D:\CodexProjects\python\export_dem_stage_handoff.py --input D:\CodexProjects\liggghts\DEM\stage5_rho095_<step>.dump --stage-id stage5_rho095 --output D:\CodexProjects\liggghts\DEM\dem_fem_handoff_stage5_rho095.csv
 ```
 
-GitHub Actions runs the staged DEM deck, verifies every stage, and uploads the stage dumps, restarts, logs, STLs, generated `comsol_particles_stage*.csv` files, and the macro `pressure_density_curve.csv`.
+GitHub Actions runs the staged DEM deck, verifies every stage, and uploads the stage dumps, restarts, logs, STLs, generated `dem_fem_handoff_stage*.csv` files, plots, and the macro `pressure_density_curve.csv`.
 
 The uploaded pressure curve has columns:
 

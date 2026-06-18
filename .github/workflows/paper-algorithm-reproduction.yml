@@ -1,0 +1,62 @@
+name: paper-algorithm-reproduction
+
+on:
+  workflow_dispatch:
+    inputs:
+      paper:
+        description: 'Paper to reproduce: all, zhang, yuan, liu, or li'
+        required: false
+        default: 'all'
+  push:
+    paths:
+      - 'python/paper_reproduction/**'
+      - 'scripts/run_paper_algorithm_reproduction.py'
+      - 'scripts/generate_paper_reproduction_manifest.py'
+      - 'scripts/process_particle_snapshot.py'
+      - 'scripts/process_stage_series.py'
+      - 'tests/**'
+      - 'docs/paper_algorithm_reproduction.md'
+      - '.github/workflows/paper-algorithm-reproduction.yml'
+
+jobs:
+  paper-algorithms:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Python modules
+        run: |
+          set -euxo pipefail
+          python3 -m py_compile \
+            python/paper_reproduction/__init__.py \
+            python/paper_reproduction/core.py \
+            python/paper_reproduction/cases.py \
+            python/paper_reproduction/network.py \
+            python/paper_reproduction/registry.py \
+            python/paper_reproduction/report.py \
+            python/paper_reproduction/series.py \
+            python/paper_reproduction/validation.py \
+            scripts/run_paper_algorithm_reproduction.py \
+            scripts/generate_paper_reproduction_manifest.py \
+            scripts/process_particle_snapshot.py \
+            scripts/process_stage_series.py
+
+      - name: Run unit tests
+        run: |
+          set -euxo pipefail
+          python3 -m unittest discover -s tests -p "test_*.py"
+
+      - name: Generate paper reproduction outputs
+        run: |
+          set -euxo pipefail
+          python3 scripts/run_paper_algorithm_reproduction.py \
+            --paper "${{ inputs.paper || 'all' }}" \
+            --outdir outputs/paper_algorithm_reproduction
+          find outputs/paper_algorithm_reproduction -type f | sort
+
+      - name: Upload paper algorithm artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-algorithm-reproduction-${{ inputs.paper || 'all' }}
+          path: outputs/paper_algorithm_reproduction/**

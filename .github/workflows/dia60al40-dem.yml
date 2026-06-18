@@ -277,6 +277,21 @@ jobs:
             --metrics liggghts/DEM/plastic_morphology_metrics.csv
           python3 python/verify_plastic_morphology.py \
             --metrics liggghts/DEM/plastic_morphology_metrics.csv
+
+          # Paper-reproduction post-processing: connect the real DEM stage
+          # handoff tables to the Zhang/Yuan/Liu/Li metric and acceptance
+          # scaffold. These outputs are uploaded with the normal DEM artifact
+          # bundle under liggghts/DEM/paper_reproduction.
+          python3 scripts/process_stage_series.py \
+            --snapshot-dir liggghts/DEM \
+            --pressure-curve liggghts/DEM/pressure_density_curve.csv \
+            --outdir liggghts/DEM/paper_reproduction \
+            --width-um 400
+          echo '[PAPER REPRODUCTION ACCEPTANCE]'
+          cat liggghts/DEM/paper_reproduction/series_acceptance_summary.csv
+          echo '[PAPER REPRODUCTION REPORT HEAD]'
+          sed -n '1,120p' liggghts/DEM/paper_reproduction/series_report.md
+
           find liggghts/DEM/plots -maxdepth 1 -type f -ls | sort -k11
 
       - name: Upload DEM artifacts

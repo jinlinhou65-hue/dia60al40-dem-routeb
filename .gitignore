@@ -1,5 +1,6 @@
 ﻿# Ignore generated heavy outputs
 liggghts/DEM/
+outputs/
 *.restart
 *.log
 *.class
