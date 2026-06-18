@@ -8,8 +8,12 @@ echo "[CLOUD] Ubuntu info"
 cat /etc/os-release || true
 
 echo "[CLOUD] install LIGGGHTS dependencies"
-sudo apt-get update
-sudo apt-get install -y build-essential gcc g++ gfortran make git \
+sudo apt-get -o Acquire::Retries=3 \
+  -o Acquire::http::Timeout=30 \
+  -o Acquire::https::Timeout=30 \
+  update
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+  build-essential gcc g++ gfortran make git \
   libopenmpi-dev openmpi-bin python3 python3-pip python3-matplotlib
 
 if ! command -v liggghts >/dev/null 2>&1; then
