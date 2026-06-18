@@ -14,7 +14,7 @@ sudo apt-get -o Acquire::Retries=3 \
   update
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   build-essential gcc g++ gfortran make git \
-  libopenmpi-dev openmpi-bin python3 python3-pip
+  python3 python3-pip
 
 if python3 -c 'import matplotlib; print(matplotlib.__version__)'; then
   DEM_PLOTS_AVAILABLE=1
@@ -27,20 +27,15 @@ else
 fi
 
 if ! command -v liggghts >/dev/null 2>&1; then
-  echo "[CLOUD] build LIGGGHTS-PUBLIC from source"
+  echo "[CLOUD] build LIGGGHTS-PUBLIC serial binary from source"
   rm -rf /tmp/lpub
   git clone --depth=1 https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git /tmp/lpub
   (
     cd /tmp/lpub/src
     ( cd STUBS && make 2>&1 | tail -10 )
-    if ! make -j"$(nproc)" auto 2>&1 | tee /tmp/build_auto.log; then
-      echo "[CLOUD] auto build failed; falling back to serial"
-      make clean-all || true
-      ( cd STUBS && make 2>&1 | tail -5 )
-      make -j"$(nproc)" serial 2>&1 | tee /tmp/build_serial.log
-    fi
-    if [ -x lmp_auto ]; then sudo install -m 0755 lmp_auto /usr/local/bin/liggghts; fi
-    if [ -x lmp_serial ]; then sudo install -m 0755 lmp_serial /usr/local/bin/liggghts; fi
+    make -j"$(nproc)" serial 2>&1 | tee /tmp/build_serial.log
+    test -x lmp_serial
+    sudo install -m 0755 lmp_serial /usr/local/bin/liggghts
   )
 fi
 
