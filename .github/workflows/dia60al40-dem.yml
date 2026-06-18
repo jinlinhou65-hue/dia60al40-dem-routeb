@@ -73,6 +73,10 @@ on:
       - '.github/workflows/dia60al40-dem.yml'
       - 'scripts/**'
 
+concurrency:
+  group: dia60al40-dem-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dem:
     name: dem size=${{ matrix.diamond_size_case }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}
@@ -81,8 +85,10 @@ jobs:
       matrix:
         mu_scale: ${{ fromJSON(inputs.mu_scale_json || '["1.0"]') }}
         e_al_emax: ${{ fromJSON(inputs.e_al_emax_sweep_json || format('["{0}"]', inputs.e_al_emax_gpa || '12')) }}
-        dem_seed: ${{ fromJSON(inputs.dem_seed_json || '["0","1","2"]') }}
-        diamond_size_case: ${{ fromJSON(inputs.diamond_size_case_json || '["C","D","E"]') }}
+        # Push runs are a fast real-data demo: one representative case.
+        # Manual workflow_dispatch keeps the broader default 3x3 ensemble above.
+        dem_seed: ${{ fromJSON(inputs.dem_seed_json || '["0"]') }}
+        diamond_size_case: ${{ fromJSON(inputs.diamond_size_case_json || '["C"]') }}
     # Ubuntu apt repos do NOT ship a working `liggghts` package, so we
     # build LIGGGHTS-PUBLIC from source. Use 22.04 because its older
     # g++ 11 tolerates the LIGGGHTS-PUBLIC codebase without -Werror noise.

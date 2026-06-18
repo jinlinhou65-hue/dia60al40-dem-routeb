@@ -422,6 +422,12 @@ class PaperReproductionTest(unittest.TestCase):
         cloud_script = (REPO_ROOT / "scripts" / "cloud_run_liggghts_routeb.sh").read_text(
             encoding="utf-8"
         )
+        self.assertIn("cancel-in-progress: true", workflow)
+        self.assertIn("dem_seed: ${{ fromJSON(inputs.dem_seed_json || '[\"0\"]') }}", workflow)
+        self.assertIn(
+            "diamond_size_case: ${{ fromJSON(inputs.diamond_size_case_json || '[\"C\"]') }}",
+            workflow,
+        )
         for text in (workflow, cloud_script):
             self.assertIn("scripts/process_stage_series.py", text)
             self.assertIn("liggghts/DEM/pressure_density_curve.csv", text)

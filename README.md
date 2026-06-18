@@ -8,6 +8,11 @@ builds LIGGGHTS-PUBLIC from source, runs staged compaction, verifies each stage,
 exports pressure-density data, plots the results, runs the paper-reproduction
 stage-series post-processing, and uploads artifacts.
 
+Pushes run a single representative real-data demo (`diamond_size_case=C`,
+`dem_seed=0`) so code changes quickly prove that LIGGGHTS can generate the DEM
+stage data. Manual `workflow_dispatch` runs can expand this to the broader
+ensemble with JSON lists.
+
 Use the repository Actions tab, or run:
 
 ```powershell
