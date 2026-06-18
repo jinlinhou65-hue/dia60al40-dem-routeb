@@ -33,6 +33,9 @@ def process_stage_series(
     normal_stiffness: float = 1.0,
     force_exponent: float = 1.5,
     min_contact_force: float = 0.0,
+    sintering_time_s: float = 1.0,
+    sintering_law: str = "blended",
+    sintering_rate_scale: float = 1.0,
 ) -> dict[str, object]:
     curve_by_stage = read_pressure_curve(pressure_curve)
     stage_paths = sorted(snapshot_dir.glob(snapshot_glob), key=lambda path: stage_sort_key(stage_id_from_path(path)))
@@ -60,11 +63,19 @@ def process_stage_series(
             width_um=width_um,
             height_um=height_um,
         )
-        particle_fields, contact_fields = run_electrothermal_network(particles, contacts)
+        particle_fields, contact_fields = run_electrothermal_network(
+            particles,
+            contacts,
+            sintering_time_s=sintering_time_s,
+            sintering_law=sintering_law,
+            sintering_rate_scale=sintering_rate_scale,
+        )
         coupling = coupling_summary(contact_fields, particle_fields)
         arches = arch_bridges(particles, contacts)
         write_csv(details_dir / f"{stage_id}_contacts.csv", [asdict(contact) for contact in contacts])
         write_csv(details_dir / f"{stage_id}_arches.csv", [asdict(arch) for arch in arches])
+        write_csv(details_dir / f"{stage_id}_electrothermal_contacts.csv", contact_fields)
+        write_csv(details_dir / f"{stage_id}_electrothermal_particles.csv", particle_fields)
         row = {
             "stage_id": stage_id,
             "snapshot_file": path.name,
@@ -173,7 +184,7 @@ def render_series_report(
         "|---|---|",
         "| Zhang | pressure/density trajectory plus contact Gini, participation, D1, and local-stress D2 by stage |",
         "| Yuan | arch count, arch strength, direction angle, and buckling angle by stage |",
-        "| Liu | Heckel/Huang/Kawakita fits plus contact current, Joule heat, temperature, and neck-growth proxy |",
+        "| Liu | Heckel/Huang/Kawakita fits plus contact current, Joule heat, temperature, and diffusion-law neck growth by stage |",
         "| Li | same stage schema can compare coated-powder parameter sweeps across composition, temperature, friction, speed, and aspect ratio |",
         "",
         "## Acceptance Summary",
@@ -236,6 +247,7 @@ def render_series_report(
             "",
             "- Contact forces inferred from overlap are a reproducibility bridge; calibrated DEM contact forces should replace them when available.",
             "- Positive force-current and heat-neck correlations support the mechanical-contact-electrothermal-densification chain.",
+            "- Stage detail electrothermal CSVs expose particle potentials, heat sources, temperatures, diffusion mechanisms, neck ratios, and heat-isolated neck increments.",
             "- Trend mismatches should be resolved by changing one assumption at a time: contact law, electrode selection, thermal scaling, or arch threshold.",
             "",
         ]

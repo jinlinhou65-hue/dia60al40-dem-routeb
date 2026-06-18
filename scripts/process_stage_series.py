@@ -28,6 +28,9 @@ def main() -> None:
     parser.add_argument("--normal-stiffness", type=float, default=1.0)
     parser.add_argument("--force-exponent", type=float, default=1.5)
     parser.add_argument("--min-contact-force", type=float, default=0.0)
+    parser.add_argument("--sintering-time-s", type=float, default=1.0)
+    parser.add_argument("--sintering-law", default="blended")
+    parser.add_argument("--sintering-rate-scale", type=float, default=1.0)
     args = parser.parse_args()
 
     summary = process_stage_series(
@@ -41,6 +44,9 @@ def main() -> None:
         normal_stiffness=args.normal_stiffness,
         force_exponent=args.force_exponent,
         min_contact_force=args.min_contact_force,
+        sintering_time_s=args.sintering_time_s,
+        sintering_law=args.sintering_law,
+        sintering_rate_scale=args.sintering_rate_scale,
     )
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
 

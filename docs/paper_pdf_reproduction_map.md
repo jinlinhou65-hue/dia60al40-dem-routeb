@@ -16,7 +16,7 @@ The current implemented chain is:
 1. Render and run a staged powder compaction DEM deck.
 2. Export stage dumps, restarts, pressure-density curve, and DEM-FEM handoff CSVs.
 3. Infer contact network, force-chain proxies, arch candidates, electrical current,
-   Joule heat, temperature proxy, and neck-growth proxy from each stage.
+   Joule heat, temperature estimate, and diffusion-law neck growth from each stage.
 4. Produce one paper-level acceptance table for Zhang, Yuan, Liu, and Li.
 5. Validate that a real DEM artifact contains all required stage files and paper
    reproduction evidence.
@@ -89,12 +89,14 @@ Reproduction method:
 
 - Compaction: fit Huang, Heckel, and Kawakita equations to pressure-density data.
 - Coupling: map normal force to contact conductance/current; map Joule heat and
-  temperature to neck-growth proxy.
+  temperature to normalized Wilson/Johnson/Kuczynski/Coble/Nabarro-Herring
+  diffusion-law neck growth; use heat-isolated neck increment for coupling
+  correlation so particle-size effects do not mask the thermal contribution.
 - Gate: density rises; Heckel/Kawakita/Huang fits exist; force-current and
   Joule heat-neck correlations are positive.
-- Current limitation: the neck-growth step is a monotone proxy. Diffusion-law
-  equations from the PDF should replace it after calibrated material constants
-  are selected.
+- Current limitation: diffusion-law exponents and Arrhenius response are now
+  explicit, but alloy-specific diffusion constants and true temperature fields
+  still need calibration.
 
 ## Li - coated Cu@Fe powder densification
 

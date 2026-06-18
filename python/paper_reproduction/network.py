@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .core import contact_gini, contact_participation, pearson
+from .sintering import blended_neck_ratio, get_sintering_law, sintering_neck_ratio
 
 
 @dataclass(frozen=True)
@@ -186,7 +187,10 @@ def run_electrothermal_network(
     min_conductance: float = 1e-9,
     initial_temperature_k: float = 293.15,
     heat_to_temperature: float = 25.0,
-) -> tuple[list[dict[str, float | int]], list[dict[str, float | int]]]:
+    sintering_time_s: float = 1.0,
+    sintering_law: str = "blended",
+    sintering_rate_scale: float = 1.0,
+) -> tuple[list[dict[str, float | int | str]], list[dict[str, float | int]]]:
     potentials = solve_potentials(
         particles,
         contacts,
@@ -216,17 +220,56 @@ def run_electrothermal_network(
                 "joule_heat": joule,
             }
         )
-    particle_rows: list[dict[str, float | int]] = []
+    particle_rows: list[dict[str, float | int | str]] = []
     for particle in particles:
         heat = particle_heat[particle.pid]
         temperature = initial_temperature_k + heat_to_temperature * heat
-        neck_ratio = 0.02 + 0.18 * (1.0 - math.exp(-max(0.0, temperature - initial_temperature_k) / 25.0))
+        if sintering_law == "blended":
+            neck_ratio, mechanism, exponent = blended_neck_ratio(
+                temperature_k=temperature,
+                time_s=sintering_time_s,
+                particle_radius_um=particle.r_um,
+                reference_temperature_k=initial_temperature_k,
+                rate_scale=sintering_rate_scale,
+            )
+            isothermal_neck, _, _ = blended_neck_ratio(
+                temperature_k=initial_temperature_k,
+                time_s=sintering_time_s,
+                particle_radius_um=particle.r_um,
+                reference_temperature_k=initial_temperature_k,
+                rate_scale=sintering_rate_scale,
+            )
+        else:
+            selected = get_sintering_law(sintering_law)
+            neck_ratio = sintering_neck_ratio(
+                temperature_k=temperature,
+                time_s=sintering_time_s,
+                particle_radius_um=particle.r_um,
+                law=sintering_law,
+                reference_temperature_k=initial_temperature_k,
+                rate_scale=sintering_rate_scale,
+            )
+            isothermal_neck = sintering_neck_ratio(
+                temperature_k=initial_temperature_k,
+                time_s=sintering_time_s,
+                particle_radius_um=particle.r_um,
+                law=sintering_law,
+                reference_temperature_k=initial_temperature_k,
+                rate_scale=sintering_rate_scale,
+            )
+            mechanism = selected.name
+            exponent = selected.growth_exponent
+        thermal_gain = max(0.0, neck_ratio - isothermal_neck)
         particle_rows.append(
             {
                 "particle_id": particle.pid,
                 "potential": potentials[particle.pid],
                 "heat_source": heat,
                 "temperature_k": temperature,
+                "dominant_diffusion_mechanism": mechanism,
+                "neck_growth_exponent": exponent,
+                "neck_ratio_diffusion": neck_ratio,
+                "neck_ratio_thermal_gain": thermal_gain,
                 "neck_ratio_proxy": neck_ratio,
             }
         )
@@ -307,7 +350,13 @@ def coupling_summary(
     currents = [float(row["abs_current"]) for row in contact_rows]
     joule = [float(row["joule_heat"]) for row in contact_rows]
     heat = [float(row["heat_source"]) for row in particle_rows]
-    neck = [float(row["neck_ratio_proxy"]) for row in particle_rows]
+    if all("neck_ratio_thermal_gain" in row for row in particle_rows):
+        neck_field = "neck_ratio_thermal_gain"
+    elif all("neck_ratio_diffusion" in row for row in particle_rows):
+        neck_field = "neck_ratio_diffusion"
+    else:
+        neck_field = "neck_ratio_proxy"
+    neck = [float(row[neck_field]) for row in particle_rows]
     return {
         "normal_force_vs_abs_current": pearson(forces, currents),
         "normal_force_vs_joule_heat": pearson(forces, joule),

@@ -40,6 +40,7 @@ jobs:
             python/paper_reproduction/registry.py \
             python/paper_reproduction/report.py \
             python/paper_reproduction/series.py \
+            python/paper_reproduction/sintering.py \
             python/paper_reproduction/validation.py \
             scripts/validate_dem_evidence.py \
             scripts/run_paper_algorithm_reproduction.py \

@@ -97,10 +97,12 @@ def write_particles(path: Path) -> None:
 
 
 def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, float]]) -> None:
+    details = outdir / "stage_details"
+    details.mkdir()
     (outdir / "series_network_metrics.csv").write_text(
-        "stage_id,pressure_mpa,actual_rho_total,contact_gini\n"
+        "stage_id,pressure_mpa,actual_rho_total,contact_gini,coupling_particle_heat_vs_neck_ratio\n"
         + "\n".join(
-            f"{stage},{pressure},{rho},{0.5 - i * 0.05}"
+            f"{stage},{pressure},{rho},{0.5 - i * 0.05},0.9"
             for i, (stage, pressure, rho, _) in enumerate(stages)
         )
         + "\n",
@@ -117,6 +119,16 @@ def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, floa
         encoding="utf-8",
     )
     (outdir / "series_report.md").write_text("# series report\n", encoding="utf-8")
+    for stage, *_ in stages:
+        (details / f"{stage}_electrothermal_contacts.csv").write_text(
+            "i,j,normal_force,conductance,current,abs_current,joule_heat\n1,2,1,0.1,0.1,0.1,0.01\n",
+            encoding="utf-8",
+        )
+        (details / f"{stage}_electrothermal_particles.csv").write_text(
+            "particle_id,potential,heat_source,temperature_k,dominant_diffusion_mechanism,neck_growth_exponent,neck_ratio_diffusion,neck_ratio_thermal_gain,neck_ratio_proxy\n"
+            "1,0,0.01,294.15,surface,7,0.04,0.002,0.04\n",
+            encoding="utf-8",
+        )
 
 
 if __name__ == "__main__":

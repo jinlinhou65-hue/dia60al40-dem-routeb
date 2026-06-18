@@ -137,8 +137,8 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
                 "Early sintering neck growth laws are listed for volume diffusion, "
                 "grain-boundary diffusion, and surface diffusion."
             ),
-            reproduction_use="Future replacement for empirical neck-growth proxy.",
-            current_status="Current code uses monotone temperature-dependent neck proxy; diffusion laws are documented.",
+            reproduction_use="Diffusion-law neck-growth implementation and future material-constant calibration.",
+            current_status="Implemented as normalized Wilson/Johnson/Kuczynski/Coble/Nabarro-Herring diffusion-law scaffold.",
         ),
         PdfEvidence(
             page=14,

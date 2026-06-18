@@ -43,6 +43,9 @@ def main() -> None:
     parser.add_argument("--min-conductance", type=float, default=1e-9)
     parser.add_argument("--initial-temperature-k", type=float, default=293.15)
     parser.add_argument("--heat-to-temperature", type=float, default=25.0)
+    parser.add_argument("--sintering-time-s", type=float, default=1.0)
+    parser.add_argument("--sintering-law", default="blended")
+    parser.add_argument("--sintering-rate-scale", type=float, default=1.0)
     args = parser.parse_args()
 
     particles = read_particles(Path(args.particles), length_unit=args.length_unit)
@@ -69,6 +72,9 @@ def main() -> None:
         min_conductance=args.min_conductance,
         initial_temperature_k=args.initial_temperature_k,
         heat_to_temperature=args.heat_to_temperature,
+        sintering_time_s=args.sintering_time_s,
+        sintering_law=args.sintering_law,
+        sintering_rate_scale=args.sintering_rate_scale,
     )
     summary = {
         "input": str(args.particles),

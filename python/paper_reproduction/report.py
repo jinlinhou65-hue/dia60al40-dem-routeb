@@ -206,7 +206,7 @@ def render_report(outdir: Path, papers: list[str], plot_paths: list[Path]) -> st
         "# Powder Compaction Paper Reproduction Report",
         "",
         "This report is generated from the reproducible CSV/JSON outputs in this run.",
-        "It is a first-pass algorithm reproduction layer: proxy data can be replaced by DEM, MPFEM, or electrothermal solver exports without changing the evidence schema.",
+        "It is a first-pass algorithm reproduction layer: deterministic cases and normalized laws can be replaced by DEM, MPFEM, or electrothermal solver exports without changing the evidence schema.",
         "",
         "## Run Outputs",
         "",

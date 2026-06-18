@@ -24,6 +24,12 @@ from .network import (
     summarize_contact_network,
 )
 from .pdf_evidence import PAPER_PDF_EVIDENCE, get_pdf_evidence
+from .sintering import (
+    SINTERING_LAWS,
+    SinteringLaw,
+    blended_neck_ratio,
+    sintering_neck_ratio,
+)
 from .registry import (
     PAPER_TARGETS,
     build_manifest,
@@ -71,6 +77,10 @@ __all__ = [
     "reproduce_zhang",
     "run_electrothermal_network",
     "summarize_contact_network",
+    "SINTERING_LAWS",
+    "SinteringLaw",
+    "blended_neck_ratio",
+    "sintering_neck_ratio",
     "trend_direction",
     "validate_algorithm_reproduction",
     "validate_dem_evidence",

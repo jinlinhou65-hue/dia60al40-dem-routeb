@@ -27,7 +27,7 @@ def validate_stage_series(
             model_check(fit_rows, "Liu", "Kawakita fit exists", "Kawakita"),
             positive_check(metric_rows, "Liu", "force-current coupling is positive", "coupling_normal_force_vs_abs_current"),
             positive_check(metric_rows, "Liu", "force-Joule coupling is positive", "coupling_normal_force_vs_joule_heat"),
-            positive_check(metric_rows, "Liu", "particle heat-neck proxy is positive", "coupling_particle_heat_vs_neck_ratio"),
+            positive_check(metric_rows, "Liu", "particle heat-diffusion-neck coupling is positive", "coupling_particle_heat_vs_neck_ratio"),
             schema_check(metric_rows, "Li", "stage schema can support coated-powder sweeps", ["pressure_mpa", "actual_rho_total", "contact_gini"]),
         ]
     )

@@ -132,7 +132,7 @@ Outputs:
 - `arch_bridges.csv`: strong-contact connected arch-bridge candidates
 - `electrothermal_contacts.csv`: contact conductance, current, and Joule heat
 - `electrothermal_particles.csv`: particle potential, heat source, temperature,
-  and neck-growth proxy
+  diffusion mechanism, growth exponent, neck ratio, and thermal neck increment
 - `snapshot_summary.json`: Zhang/Yuan/Liu coupling metrics in one file
 
 This stage bridges the papers: Zhang's stress/contact nonuniformity, Yuan's
@@ -149,7 +149,10 @@ py scripts\process_stage_series.py `
   --snapshot-dir liggghts\DEM `
   --pressure-curve liggghts\DEM\pressure_density_curve.csv `
   --outdir outputs\stage_series `
-  --width-um 400
+  --width-um 400 `
+  --sintering-law blended `
+  --sintering-time-s 1.0 `
+  --sintering-rate-scale 1.0
 ```
 
 Expected outputs:
@@ -168,6 +171,10 @@ Expected outputs:
   evidence table
 - `stage_details/*_contacts.csv` and `stage_details/*_arches.csv`: per-stage
   inferred contacts and arch candidates
+- `stage_details/*_electrothermal_contacts.csv` and
+  `stage_details/*_electrothermal_particles.csv`: per-stage current, Joule heat,
+  temperature, diffusion mechanism, neck ratio, and heat-isolated neck-growth
+  increment outputs
 
 This is the current bridge from Route-B DEM artifacts to the four-paper
 reproduction program: it tracks stress/contact nonuniformity, arch formation,
@@ -181,7 +188,7 @@ assumption to inspect next rather than silently declaring reproduction success.
 | --- | --- |
 | Zhang | pressure and relative density increase while Gini, D1, and D2 decrease |
 | Yuan | circular particles show stronger arch obstruction than low-aspect-ratio strip proxies |
-| Liu | compaction fits are produced and contact force/current/heat/neck correlations are positive |
+| Liu | compaction fits are produced and contact force/current/heat/diffusion-neck correlations are positive |
 | Li | Cu coating and temperature increase predicted density; wall friction and pressing speed reduce it |
 
 This is not the final calibrated DEM/MPFEM solution. It is the reproducible

@@ -135,11 +135,14 @@ def validate_dem_evidence(
 
     for stage in EXPECTED_STAGES[:expected_stage_count]:
         handoff_path = dem_dir / f"dem_fem_handoff_{stage}.csv"
+        detail_dir = paper_dir / "stage_details"
         checks.extend(
             [
                 file_glob_check("stage", f"{stage} dump exists", dem_dir / f"{stage}_*.dump"),
                 file_check("stage", dem_dir / f"{stage}.restart", dem_dir),
                 file_check("stage", handoff_path, dem_dir),
+                file_check("stage", detail_dir / f"{stage}_electrothermal_contacts.csv", dem_dir),
+                file_check("stage", detail_dir / f"{stage}_electrothermal_particles.csv", dem_dir),
             ]
         )
         if expected_particles > 0:

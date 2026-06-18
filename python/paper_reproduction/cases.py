@@ -8,6 +8,7 @@ from pathlib import Path
 from .core import compaction_fits, contact_gini, contact_participation, pearson
 from .registry import write_manifest_outputs
 from .report import generate_paper_report
+from .sintering import blended_neck_ratio
 from .validation import validate_algorithm_reproduction, write_acceptance_outputs
 
 
@@ -116,7 +117,18 @@ def reproduce_liu(outdir: Path) -> dict[str, object]:
         current = conductance * 1.0
         joule_heat = current * current / conductance
         temperature = 293.15 + 35.0 * joule_heat
-        neck_ratio = 0.03 + 0.11 * (1.0 - math.exp(-(temperature - 293.15) / 25.0))
+        neck_ratio, mechanism, exponent = blended_neck_ratio(
+            temperature_k=temperature,
+            time_s=1.0,
+            particle_radius_um=10.0,
+            reference_temperature_k=293.15,
+        )
+        isothermal_neck, _, _ = blended_neck_ratio(
+            temperature_k=293.15,
+            time_s=1.0,
+            particle_radius_um=10.0,
+            reference_temperature_k=293.15,
+        )
         coupling_rows.append(
             {
                 "contact_id": idx,
@@ -125,6 +137,10 @@ def reproduce_liu(outdir: Path) -> dict[str, object]:
                 "current": current,
                 "joule_heat": joule_heat,
                 "temperature_k": temperature,
+                "dominant_diffusion_mechanism": mechanism,
+                "neck_growth_exponent": exponent,
+                "neck_ratio_diffusion": neck_ratio,
+                "neck_ratio_thermal_gain": max(0.0, neck_ratio - isothermal_neck),
                 "neck_ratio": neck_ratio,
             }
         )
