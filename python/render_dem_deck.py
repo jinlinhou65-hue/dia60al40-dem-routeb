@@ -175,7 +175,13 @@ def gpa_to_cgs(value_gpa: float) -> str:
     return f"{value_gpa * 1.0e10:.9g}"
 
 
-def stage_plan(case: DiamondCase, e_al_stages: list[float]) -> list[dict[str, float | str]]:
+def stage_plan(
+    case: DiamondCase,
+    e_al_stages: list[float],
+    *,
+    top_vel_cm_s: float = TOP_VEL_CM_S,
+    dt_seconds: float = DT_SECONDS,
+) -> list[dict[str, float | str]]:
     area_um2 = total_solid_area_um2(case)
     h0_um = initial_die_height_um(case)
     plan: list[dict[str, float | str]] = []
@@ -186,7 +192,7 @@ def stage_plan(case: DiamondCase, e_al_stages: list[float]) -> list[dict[str, fl
         if displacement < previous_displacement - 1.0e-9:
             raise SystemExit(f"[FAIL] {case.case_id} {stage_id} displacement is non-monotonic")
         incremental_um = displacement - previous_displacement
-        run_steps = max(1, int(round(incremental_um * 1.0e-4 / (TOP_VEL_CM_S * DT_SECONDS))))
+        run_steps = max(1, int(round(incremental_um * 1.0e-4 / (top_vel_cm_s * dt_seconds))))
         plan.append(
             {
                 "idx": i,
@@ -309,6 +315,12 @@ def replace_diamond_templates(text: str, case: DiamondCase) -> str:
         text,
         count=1,
     )
+    return text
+
+
+def replace_runtime_controls(text: str, *, top_vel_cm_s: float, dt_seconds: float) -> str:
+    text = re.sub(r"variable\s+topVel\s+equal\s+[-+0-9.eE]+", f"variable        topVel equal {top_vel_cm_s:.9g}", text, count=1)
+    text = re.sub(r"variable\s+dt\s+equal\s+[-+0-9.eE]+", f"variable        dt equal {dt_seconds:.9g}", text, count=1)
     return text
 
 
@@ -463,6 +475,9 @@ def stage_block(
     e_diamond_gpa: float,
     e_tool_gpa: float,
     e_wall_gpa: float,
+    *,
+    stage_settle_steps: int,
+    final_settle_steps: int,
 ) -> str:
     idx = int(stage["idx"])
     stage_id = str(stage["stage_id"])
@@ -481,7 +496,7 @@ def stage_block(
             f"{gpa_to_cgs(float(stage['e_gpa']))} {gpa_to_cgs(e_diamond_gpa)} "
             f"{gpa_to_cgs(e_tool_gpa)} {gpa_to_cgs(e_wall_gpa)}"
         )
-    settle_steps = FINAL_SETTLE_STEPS if idx == len(RHO_STAGES) - 1 else STAGE_SETTLE_STEPS
+    settle_steps = final_settle_steps if idx == len(RHO_STAGES) - 1 else stage_settle_steps
     lines.extend(
         [
             "fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0",
@@ -516,11 +531,21 @@ def replace_stage_schedule(
         raise SystemExit("[FAIL] could not locate staged loading block")
     blocks = [
         "# Initial settling before any punch motion.",
-        f"run             {INITIAL_SETTLE_STEPS}",
+        f"run             {args.initial_settle_steps}",
         "",
     ]
     for stage in plan:
-        blocks.append(stage_block(stage, case, args.e_diamond_gpa, args.e_tool_gpa, args.e_wall_gpa))
+        blocks.append(
+            stage_block(
+                stage,
+                case,
+                args.e_diamond_gpa,
+                args.e_tool_gpa,
+                args.e_wall_gpa,
+                stage_settle_steps=args.stage_settle_steps,
+                final_settle_steps=args.final_settle_steps,
+            )
+        )
         blocks.append("")
     return text[:start] + "\n".join(blocks) + text[end:]
 
@@ -543,9 +568,15 @@ def render(args: argparse.Namespace) -> None:
     output = Path(args.output)
     case = DIAMOND_CASES[args.diamond_size_case.upper()]
     e_al_stages = stage_moduli(args.e_al_e0_gpa, args.e_al_emax_gpa)
-    plan = stage_plan(case, e_al_stages)
+    plan = stage_plan(
+        case,
+        e_al_stages,
+        top_vel_cm_s=args.top_vel_cm_s,
+        dt_seconds=args.dt_seconds,
+    )
 
     text = source.read_text(encoding="utf-8")
+    text = replace_runtime_controls(text, top_vel_cm_s=args.top_vel_cm_s, dt_seconds=args.dt_seconds)
     text = replace_diamond_templates(text, case)
     text = replace_insertion_block(text, case)
     text = replace_moduli(text, e_al_stages, args.e_diamond_gpa, args.e_tool_gpa, args.e_wall_gpa)
@@ -566,6 +597,12 @@ def render(args: argparse.Namespace) -> None:
     )
     print("[PARAM] E_Al_stages_GPa=" + ",".join(f"{v:.6g}" for v in e_al_stages))
     print(f"[PARAM] seed_index={args.seed_index} seed_table_slot={args.seed_index % len(SEED_TABLE)}")
+    print(
+        "[PARAM] runtime "
+        f"top_vel_cm_s={args.top_vel_cm_s:.6g} dt_seconds={args.dt_seconds:.6g} "
+        f"initial_settle_steps={args.initial_settle_steps} "
+        f"stage_settle_steps={args.stage_settle_steps} final_settle_steps={args.final_settle_steps}"
+    )
 
 
 def main() -> None:
@@ -590,6 +627,11 @@ def main() -> None:
     parser.add_argument("--mu-wall-wall", type=float, default=0.08)
     parser.add_argument("--mu-scale", type=float, default=1.0)
     parser.add_argument("--seed-index", type=int, default=0)
+    parser.add_argument("--top-vel-cm-s", type=float, default=TOP_VEL_CM_S)
+    parser.add_argument("--dt-seconds", type=float, default=DT_SECONDS)
+    parser.add_argument("--initial-settle-steps", type=int, default=INITIAL_SETTLE_STEPS)
+    parser.add_argument("--stage-settle-steps", type=int, default=STAGE_SETTLE_STEPS)
+    parser.add_argument("--final-settle-steps", type=int, default=FINAL_SETTLE_STEPS)
     render(parser.parse_args())
 
 

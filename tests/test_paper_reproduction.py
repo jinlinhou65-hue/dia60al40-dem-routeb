@@ -189,6 +189,41 @@ class PaperReproductionTest(unittest.TestCase):
             self.assertEqual([paper["key"] for paper in manifest["papers"]], ["yuan"])
             self.assertTrue((outdir / "paper_reproduction_manifest.md").exists())
 
+    def test_render_dem_deck_supports_fast_demo_runtime(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            rendered = Path(tmp) / "demo.liggghts"
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(REPO_ROOT / "python" / "render_dem_deck.py"),
+                    "--input",
+                    str(REPO_ROOT / "liggghts" / "in.dia60al40_dem_staged.liggghts"),
+                    "--output",
+                    str(rendered),
+                    "--diamond-size-case",
+                    "C",
+                    "--seed-index",
+                    "0",
+                    "--top-vel-cm-s",
+                    "50",
+                    "--initial-settle-steps",
+                    "20",
+                    "--stage-settle-steps",
+                    "30",
+                    "--final-settle-steps",
+                    "40",
+                ],
+                cwd=REPO_ROOT,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            text = rendered.read_text(encoding="utf-8")
+            self.assertIn("variable        topVel equal 50", text)
+            self.assertIn("run             20", text)
+            self.assertIn("run             30", text)
+            self.assertIn("run             40", text)
+
     def test_particle_snapshot_network_pipeline(self):
         with tempfile.TemporaryDirectory() as tmp:
             particles_path = Path(tmp) / "particles.csv"
@@ -423,6 +458,8 @@ class PaperReproductionTest(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("cancel-in-progress: true", workflow)
+        self.assertIn("runtime_profile", workflow)
+        self.assertIn("--top-vel-cm-s 50", workflow)
         self.assertIn("dem_seed: ${{ fromJSON(inputs.dem_seed_json || '[\"0\"]') }}", workflow)
         self.assertIn(
             "diamond_size_case: ${{ fromJSON(inputs.diamond_size_case_json || '[\"C\"]') }}",

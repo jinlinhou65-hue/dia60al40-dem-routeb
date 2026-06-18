@@ -9,14 +9,17 @@ exports pressure-density data, plots the results, runs the paper-reproduction
 stage-series post-processing, and uploads artifacts.
 
 Pushes run a single representative real-data demo (`diamond_size_case=C`,
-`dem_seed=0`) so code changes quickly prove that LIGGGHTS can generate the DEM
-stage data. Manual `workflow_dispatch` runs can expand this to the broader
-ensemble with JSON lists.
+`dem_seed=0`, `runtime_profile=demo`) so code changes quickly prove that
+LIGGGHTS can generate the DEM stage data and feed the paper-reproduction
+post-processing chain. The demo profile is a feasibility rerun, not a calibrated
+pressure conclusion. Manual `workflow_dispatch` runs default to
+`runtime_profile=full` and can expand to the broader ensemble with JSON lists.
 
 Use the repository Actions tab, or run:
 
 ```powershell
 gh workflow run dia60al40-dem.yml `
+  -f runtime_profile=full `
   -f mu_scale_json='["1.0"]' `
   -f dem_seed_json='["0"]' `
   -f diamond_size_case_json='["C"]'

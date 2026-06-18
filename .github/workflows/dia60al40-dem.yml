@@ -66,6 +66,10 @@ on:
         description: 'JSON list of diamond size cases: C=80/130um, D=100um, E=60um. Counts keep Diamond/Al area near 60/40.'
         required: false
         default: '["C","D","E"]'
+      runtime_profile:
+        description: 'DEM runtime profile: full for calibrated runs, demo for fast feasibility reruns'
+        required: false
+        default: 'full'
   push:
     paths:
       - 'python/**'
@@ -160,6 +164,17 @@ jobs:
       - name: Render DEM parameter deck
         run: |
           set -euxo pipefail
+          RUNTIME_PROFILE="${{ inputs.runtime_profile || 'demo' }}"
+          runtime_args=()
+          if [ "$RUNTIME_PROFILE" = "demo" ]; then
+            runtime_args+=(--top-vel-cm-s 50)
+            runtime_args+=(--initial-settle-steps 20000)
+            runtime_args+=(--stage-settle-steps 20000)
+            runtime_args+=(--final-settle-steps 50000)
+          elif [ "$RUNTIME_PROFILE" != "full" ]; then
+            echo "[FATAL] unsupported runtime_profile=$RUNTIME_PROFILE; use full or demo"
+            exit 1
+          fi
           python3 python/render_dem_deck.py \
             --input liggghts/in.dia60al40_dem_staged.liggghts \
             --output liggghts/in.dia60al40_dem_staged.rendered.liggghts \
@@ -177,7 +192,8 @@ jobs:
             --mu-diamond-tool "${{ inputs.mu_diamond_tool || '0.08' }}" \
             --mu-diamond-wall "${{ inputs.mu_diamond_wall || '0.08' }}" \
             --mu-scale "${{ matrix.mu_scale }}" \
-            --seed-index "${{ matrix.dem_seed }}"
+            --seed-index "${{ matrix.dem_seed }}" \
+            "${runtime_args[@]}"
           sed -n '1,180p' liggghts/in.dia60al40_dem_staged.rendered.liggghts
 
       - name: Run staged DEM compaction
