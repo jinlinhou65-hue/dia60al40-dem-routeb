@@ -14,7 +14,17 @@ sudo apt-get -o Acquire::Retries=3 \
   update
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   build-essential gcc g++ gfortran make git \
-  libopenmpi-dev openmpi-bin python3 python3-pip python3-matplotlib
+  libopenmpi-dev openmpi-bin python3 python3-pip
+
+if python3 -c 'import matplotlib; print(matplotlib.__version__)'; then
+  DEM_PLOTS_AVAILABLE=1
+elif python3 -m pip install --user --only-binary=:all: matplotlib \
+  && python3 -c 'import matplotlib; print(matplotlib.__version__)'; then
+  DEM_PLOTS_AVAILABLE=1
+else
+  echo "[CLOUD] matplotlib unavailable; DEM data validation will continue without plots"
+  DEM_PLOTS_AVAILABLE=0
+fi
 
 if ! command -v liggghts >/dev/null 2>&1; then
   echo "[CLOUD] build LIGGGHTS-PUBLIC from source"
@@ -104,14 +114,20 @@ python3 python/analyze_pressure_density.py \
   --target-rho 0.95 \
   --target-pressure-mpa 200
 cat liggghts/DEM/pressure_density_summary.csv
-python3 python/plot_dem_results.py \
-  --root liggghts/DEM \
-  --curve liggghts/DEM/pressure_density_curve.csv \
-  --outdir liggghts/DEM/plots
-python3 python/plot_plastic_morphology.py \
-  --root liggghts/DEM \
-  --outdir liggghts/DEM/plots \
-  --metrics liggghts/DEM/plastic_morphology_metrics.csv
+mkdir -p liggghts/DEM/plots
+if [ "$DEM_PLOTS_AVAILABLE" = "1" ]; then
+  python3 python/plot_dem_results.py \
+    --root liggghts/DEM \
+    --curve liggghts/DEM/pressure_density_curve.csv \
+    --outdir liggghts/DEM/plots
+  python3 python/plot_plastic_morphology.py \
+    --root liggghts/DEM \
+    --outdir liggghts/DEM/plots \
+    --metrics liggghts/DEM/plastic_morphology_metrics.csv
+else
+  echo "[CLOUD] skipped plot generation because matplotlib is unavailable" \
+    > liggghts/DEM/plots/plots_skipped.txt
+fi
 python3 scripts/process_stage_series.py \
   --snapshot-dir liggghts/DEM \
   --pressure-curve liggghts/DEM/pressure_density_curve.csv \

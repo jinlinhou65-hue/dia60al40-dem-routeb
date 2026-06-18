@@ -258,8 +258,13 @@ def main() -> None:
     write_run_csv(outdir / "ensemble_runs.csv", runs)
     write_ensemble_csv(outdir / "ensemble_pressure_summary.csv", runs)
     write_case_summary_csv(outdir / "ensemble_pressure_summary_by_size_case.csv", runs)
-    plot_ensemble(outdir / "ensemble_pressure_density.png", runs)
-    plot_case_p95(outdir / "p95_by_diamond_size_case.png", runs)
+    try:
+        plot_ensemble(outdir / "ensemble_pressure_density.png", runs)
+        plot_case_p95(outdir / "p95_by_diamond_size_case.png", runs)
+    except ImportError as exc:
+        marker = outdir / "plots_skipped.txt"
+        marker.write_text(f"matplotlib unavailable: {exc}\n", encoding="utf-8")
+        print(f"[WARN] skipped ensemble plots: {exc}")
     print(f"[OK] aggregated {len(runs)} DEM run(s) into {outdir}")
 
 
