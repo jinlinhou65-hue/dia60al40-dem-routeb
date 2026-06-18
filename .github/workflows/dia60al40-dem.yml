@@ -314,6 +314,16 @@ jobs:
           echo '[PAPER REPRODUCTION REPORT HEAD]'
           sed -n '1,120p' liggghts/DEM/paper_reproduction/series_report.md
 
+          # Evidence gate: prove this run contains a complete real DEM stage
+          # series plus paper-reproduction metrics, not only generated stubs.
+          python3 scripts/validate_dem_evidence.py \
+            --dem-dir liggghts/DEM \
+            --outdir liggghts/DEM/paper_reproduction
+          echo '[DEM EVIDENCE VALIDATION]'
+          cat liggghts/DEM/paper_reproduction/dem_evidence_summary.csv
+          echo '[DEM EVIDENCE REPORT HEAD]'
+          sed -n '1,140p' liggghts/DEM/paper_reproduction/dem_evidence_report.md
+
           find liggghts/DEM/plots -maxdepth 1 -type f -ls | sort -k11
 
       - name: Upload DEM artifacts

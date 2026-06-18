@@ -115,6 +115,11 @@ python3 scripts/process_stage_series.py \
   --width-um 400
 echo "[CLOUD] paper reproduction acceptance"
 cat liggghts/DEM/paper_reproduction/series_acceptance_summary.csv
+python3 scripts/validate_dem_evidence.py \
+  --dem-dir liggghts/DEM \
+  --outdir liggghts/DEM/paper_reproduction
+echo "[CLOUD] DEM evidence validation"
+cat liggghts/DEM/paper_reproduction/dem_evidence_summary.csv
 find liggghts/DEM/plots -maxdepth 1 -type f | sort
 
 echo "[CLOUD] done."

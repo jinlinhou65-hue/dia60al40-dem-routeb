@@ -467,6 +467,8 @@ class PaperReproductionTest(unittest.TestCase):
         )
         for text in (workflow, cloud_script):
             self.assertIn("scripts/process_stage_series.py", text)
+            self.assertIn("scripts/validate_dem_evidence.py", text)
+            self.assertIn("dem_evidence_summary.csv", text)
             self.assertIn("liggghts/DEM/pressure_density_curve.csv", text)
             self.assertIn("liggghts/DEM/paper_reproduction", text)
             self.assertIn("--width-um 400", text)

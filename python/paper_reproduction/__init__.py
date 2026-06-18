@@ -11,6 +11,7 @@ from .core import (
     pearson,
 )
 from .cases import reproduce_all, reproduce_li, reproduce_liu, reproduce_yuan, reproduce_zhang
+from .dem_evidence import validate_dem_evidence, write_dem_evidence_outputs
 from .network import (
     ArchBridge,
     Contact,
@@ -69,7 +70,9 @@ __all__ = [
     "summarize_contact_network",
     "trend_direction",
     "validate_algorithm_reproduction",
+    "validate_dem_evidence",
     "validate_stage_series",
     "write_acceptance_outputs",
+    "write_dem_evidence_outputs",
     "write_manifest_outputs",
 ]

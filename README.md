@@ -38,6 +38,8 @@ For a broader ensemble, keep the default inputs or provide JSON lists for
 - `liggghts/DEM/paper_reproduction/series_network_metrics.csv`
 - `liggghts/DEM/paper_reproduction/series_acceptance_summary.csv`
 - `liggghts/DEM/paper_reproduction/series_report.md`
+- `liggghts/DEM/paper_reproduction/dem_evidence_summary.csv`
+- `liggghts/DEM/paper_reproduction/dem_evidence_report.md`
 
 Windows is still useful for editing scripts, reading artifacts, and optional
 post-processing. It is not the preferred place to install or run the DEM solver.

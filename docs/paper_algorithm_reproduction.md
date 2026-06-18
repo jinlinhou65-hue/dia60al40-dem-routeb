@@ -65,10 +65,17 @@ python3 scripts/process_stage_series.py \
   --pressure-curve liggghts/DEM/pressure_density_curve.csv \
   --outdir liggghts/DEM/paper_reproduction \
   --width-um 400
+
+python3 scripts/validate_dem_evidence.py \
+  --dem-dir liggghts/DEM \
+  --outdir liggghts/DEM/paper_reproduction
 ```
 
 The resulting `liggghts/DEM/paper_reproduction/**` files are uploaded with the
-normal DEM artifact bundle.
+normal DEM artifact bundle. `dem_evidence_summary.csv` and
+`dem_evidence_report.md` are the CI gate proving that the artifact contains real
+stage dumps, restarts, handoff tables, pressure-density data, paper acceptance
+outputs, and runtime controls.
 
 The first-pass algorithm run also writes:
 
@@ -151,6 +158,10 @@ Expected outputs:
   `pass`, `review`, `missing`, or `mismatch` status
 - `series_acceptance_summary.csv`: one-row-per-paper gate summary
 - `series_report.md`: paper-by-paper evidence map for Zhang, Yuan, Liu, and Li
+- `dem_evidence_summary.csv`: one-row gate summary for a complete real DEM
+  artifact
+- `dem_evidence_report.md`: detailed file, stage, curve, paper, and runtime
+  evidence table
 - `stage_details/*_contacts.csv` and `stage_details/*_arches.csv`: per-stage
   inferred contacts and arch candidates
 
