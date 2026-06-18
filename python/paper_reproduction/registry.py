@@ -4,6 +4,8 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from .pdf_evidence import get_pdf_evidence
+
 
 @dataclass(frozen=True)
 class PaperTarget:
@@ -227,6 +229,7 @@ def get_paper_targets(keys: list[str] | None = None) -> list[PaperTarget]:
 
 def build_manifest(keys: list[str] | None = None) -> dict[str, object]:
     targets = get_paper_targets(keys)
+    evidence = get_pdf_evidence([target.key for target in targets])
     return {
         "version": 1,
         "scope": "first-pass paper algorithm reproduction",
@@ -234,7 +237,10 @@ def build_manifest(keys: list[str] | None = None) -> dict[str, object]:
             "Keep paper algorithms, output schemas, and acceptance gates stable while "
             "swapping proxy data for DEM, MPFEM, or electrothermal solver exports."
         ),
-        "papers": [asdict(target) for target in targets],
+        "papers": [
+            {**asdict(target), "pdf_evidence": evidence.get(target.key, [])}
+            for target in targets
+        ],
     }
 
 
@@ -290,6 +296,16 @@ def render_manifest_markdown(manifest: dict[str, object]) -> str:
         lines.extend(f"- {item}" for item in paper["source_basis"])
         lines.extend(["", "### Paper Methods", ""])
         lines.extend(f"- {item}" for item in paper["paper_methods"])
+        lines.extend(["", "### PDF Evidence", ""])
+        for item in paper.get("pdf_evidence", []):
+            lines.append(
+                "- p{page}: {evidence} Reproduction use: {use} Status: {status}".format(
+                    page=item["page"],
+                    evidence=item["evidence"],
+                    use=item["reproduction_use"],
+                    status=item["current_status"],
+                )
+            )
         lines.extend(["", "### Reproduced Algorithms", ""])
         lines.extend(f"- {item}" for item in paper["reproduced_algorithms"])
         lines.extend(["", "### Calibration Targets", ""])

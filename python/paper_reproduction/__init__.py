@@ -23,6 +23,7 @@ from .network import (
     run_electrothermal_network,
     summarize_contact_network,
 )
+from .pdf_evidence import PAPER_PDF_EVIDENCE, get_pdf_evidence
 from .registry import (
     PAPER_TARGETS,
     build_manifest,
@@ -54,12 +55,14 @@ __all__ = [
     "infer_contacts",
     "linear_fit",
     "Particle",
+    "PAPER_PDF_EVIDENCE",
     "PAPER_TARGETS",
     "pearson",
     "process_stage_series",
     "read_particles",
     "build_manifest",
     "get_paper_targets",
+    "get_pdf_evidence",
     "render_manifest_markdown",
     "reproduce_all",
     "reproduce_li",

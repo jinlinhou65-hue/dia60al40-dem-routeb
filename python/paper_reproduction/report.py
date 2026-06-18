@@ -258,6 +258,19 @@ def render_report(outdir: Path, papers: list[str], plot_paths: list[Path]) -> st
             ]
         )
         lines.extend(f"  - {item}" for item in paper["reproduced_algorithms"])
+        pdf_items = paper.get("pdf_evidence", [])
+        lines.append("- PDF evidence anchors:")
+        if pdf_items:
+            for item in pdf_items:
+                lines.append(
+                    "  - p{page}: {evidence} Status: {status}".format(
+                        page=item["page"],
+                        evidence=item["evidence"],
+                        status=item["current_status"],
+                    )
+                )
+        else:
+            lines.append("  - no PDF evidence anchors found")
         lines.append("- Run output files:")
         if outputs:
             lines.extend(f"  - `{key}/{item}`" for item in outputs)

@@ -92,6 +92,10 @@ The first-pass algorithm run also writes:
 - `paper_acceptance_summary.csv`: one-row-per-paper gate summary
 - `paper_acceptance_report.md`: compact Markdown gate report
 
+The PDF-derived source anchors and paper-by-paper method map are documented in
+`docs/paper_pdf_reproduction_map.md`. The same anchors are embedded in
+`paper_reproduction_manifest.json` and `paper_reproduction_report.md`.
+
 To regenerate only the manifest:
 
 ```powershell

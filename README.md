@@ -61,6 +61,8 @@ Yuan's arch-bridge metrics, Liu's compaction/electrothermal/sintering coupling,
 and Li's coated-powder sweep laws. Real YADE/PFC/LAMMPS/LIGGGHTS/MPFEM outputs
 can later replace the deterministic proxy data while keeping the same CSV/JSON
 contracts.
+PDF page anchors and the paper-by-paper reproduction route are summarized in
+`docs/paper_pdf_reproduction_map.md`.
 
 The matching lightweight workflow is:
 

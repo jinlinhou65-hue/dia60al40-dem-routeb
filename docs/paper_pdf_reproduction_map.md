@@ -1,0 +1,140 @@
+# PDF-anchored paper reproduction map
+
+This document records the reproducible method extracted from the four user-provided
+PDFs. It is intentionally tied to PDF page anchors so later code changes can be
+checked against the papers instead of drifting into generic DEM examples.
+
+## Overall route
+
+The selected open solver route is LIGGGHTS-PUBLIC for the real DEM demo, run on
+Linux/GitHub Actions. Python is used for deck rendering, post-processing, paper
+metrics, and evidence gates. Windows is kept as the editing and artifact review
+environment.
+
+The current implemented chain is:
+
+1. Render and run a staged powder compaction DEM deck.
+2. Export stage dumps, restarts, pressure-density curve, and DEM-FEM handoff CSVs.
+3. Infer contact network, force-chain proxies, arch candidates, electrical current,
+   Joule heat, temperature proxy, and neck-growth proxy from each stage.
+4. Produce one paper-level acceptance table for Zhang, Yuan, Liu, and Li.
+5. Validate that a real DEM artifact contains all required stage files and paper
+   reproduction evidence.
+
+## Zhang - multiscale mechanical inhomogeneity
+
+PDF anchors:
+
+- p1: the paper studies macro stress, meso force chains, and micro contact-force
+  inhomogeneity with Gini, participation, D1, and D2.
+- p3: DEM model is 10 mm x 15 mm with 3000 iron particles, diameter 148-296 um,
+  mean 222 um, density 7800 kg/m3, E=209 GPa, nu=0.25, friction 0.25, punch
+  speed 0.2 m/s, endpoint about 600 MPa; experiment/simulation endpoint is
+  572 MPa vs 638 MPa.
+- p4: contact-force Gini and participation are defined; force chains require
+  force above mean, at least three particles, and an angle threshold based on
+  mean coordination.
+- p5: local stress is averaged in measurement circles and D2 is the normalized
+  standard deviation of local y-stress.
+
+Reproduction method:
+
+- DEM backend: run staged compaction and export particle/contact state.
+- Metrics: pressure, density, mean coordination, Gini, participation, D1, D2.
+- Gate: pressure/density/participation increase while Gini/D1/D2 decrease.
+- Current limitation: contact forces are inferred from stage geometry where direct
+  solver pair-force export is absent; direct force tensor export remains the next
+  calibration step.
+
+## Yuan - arch bridge structure
+
+PDF anchors:
+
+- p18-p19: DEM model is 0.016 m x 0.020 m, initial porosity 0.22, E=80 GPa,
+  nu=0.29, friction 0.20, wall stiffness 2e12 N/m, punch speed 2 cm/s, endpoint
+  600 MPa; Heckel fit has R2=0.9784.
+- p22-p23: MPFEM model uses 160 particles, 300-400 um, Abaqus plane strain,
+  0.01 mm mesh, Johnson-Cook material parameters, and 600 MPa endpoint.
+- p40-p42: arch criteria and arch metrics are defined: length, strength, buckling
+  angle, and direction angle.
+- p43-p49: particle shape controls densification and arch evolution; lower AR
+  strip powder improves density and lowers arch obstruction.
+
+Reproduction method:
+
+- DEM/MPFEM target: use DEM for particle arrangement and contact graph; use MPFEM
+  later when deformable particle shape is required.
+- Metrics: arch count, length, strength, buckling angle, direction angle, and
+  shape-dependent trends.
+- Gate: arch metrics are finite/positive; circle proxy has stronger arch
+  obstruction than strip proxy; real stage-series arch outputs exist.
+- Current limitation: LIGGGHTS route uses spherical particles; clumps, polygons,
+  superquadrics, or MPFEM are needed for exact circle/hexagon/strip reproduction.
+
+## Liu - compaction-sintering coupling
+
+PDF anchors:
+
+- p2: the paper is a cross-scale modelling review covering nonlinear elastic,
+  rigid-plastic compressible, and generalized plastic models.
+- p4: Huang, Heckel, and Kawakita pressure-density equations are stated.
+- p9: compaction microstructure should be passed to sintering as initial density,
+  pores, residual stress, and diffusion-path information.
+- p11-p14: sintering neck-growth laws are listed for volume diffusion,
+  grain-boundary diffusion, surface diffusion, Coble, and Nabarro-Herring routes.
+- p14: referenced DEM sintering geometries use relative density milestones
+  0.784, 0.836, 0.894, and 0.950.
+
+Reproduction method:
+
+- Compaction: fit Huang, Heckel, and Kawakita equations to pressure-density data.
+- Coupling: map normal force to contact conductance/current; map Joule heat and
+  temperature to neck-growth proxy.
+- Gate: density rises; Heckel/Kawakita/Huang fits exist; force-current and
+  Joule heat-neck correlations are positive.
+- Current limitation: the neck-growth step is a monotone proxy. Diffusion-law
+  equations from the PDF should replace it after calibrated material constants
+  are selected.
+
+## Li - coated Cu@Fe powder densification
+
+PDF anchors:
+
+- p3-p4: Cu20@Fe80 improves stress distribution and densification vs Fe; wall
+  friction blocks densification; temperature raises relative density; pressing
+  speed lowers density; Cu 20-25 percent gives lower stress and better plasticity;
+  diameter-height ratio near 2:1 gives 96.45 percent relative density.
+- p41: temperature raises density, but its effect weakens after 500 MPa.
+- p49: increasing Cu content reduces Cu/Fe and Cu-wall friction, improving flow.
+- p52: PFC2D generates random coordinates at porosity 0.22 and imports them into
+  MSC.MARC for multi-particle core-shell FEM.
+- p56: 100- and 197-particle models converge after 500 MPa; 197 particles is a
+  practical compromise.
+- p71: at 600 MPa, density peaks near diameter-height ratio 2:1.
+
+Reproduction method:
+
+- Equivalent model: sweep Cu fraction, temperature, wall friction, pressing speed,
+  and aspect ratio using monotone density laws derived from PDF trends.
+- Gate: Cu and temperature improve density; wall friction and speed reduce density;
+  aspect ratio peaks near 2:1.
+- Current limitation: true core-shell particles require MPFEM or a coupled
+  DEM-FEM route; the current open-source DEM route provides the particle handoff
+  schema and evidence gates needed to plug that in.
+
+## Acceptance state
+
+The current GitHub demo run proves the open-source backend can rerun data and
+produce the expected evidence bundle:
+
+- Workflow: `dia60al40-dem`, run `27760152576`
+- Artifact: `dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
+- Evidence summary: 49 checks, 49 pass, 0 missing, 0 mismatch
+- Final density: rho_total = 0.95
+- Final pressure: 297.8374 MPa
+- Paper acceptance: Zhang, Yuan, Liu, and Li all pass on the stage-series gates
+
+This does not yet mean the full thesis/article figures are calibrated one-to-one.
+It means the reproduction route is executable, source-backed by the PDFs, and
+ready for the next fidelity upgrades: direct DEM force export, particle-shape
+backend for Yuan, diffusion-law sintering for Liu, and core-shell MPFEM for Li.
