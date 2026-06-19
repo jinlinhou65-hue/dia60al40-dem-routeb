@@ -5,9 +5,9 @@
 ## 当前判定
 
 - 当前阶段结论：四篇论文的算法层已经可重复生成，真实 LIGGGHTS DEM 轻量 demo 已在 GitHub Actions 跑通。
-- 最新验证 commit：`40758fdfe7c53b36b1b153b4a58156ca68392f1b`
-- 论文算法 workflow：[paper-algorithm-reproduction run 27835484159](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27835484159)，状态 `success`
-- 真实 DEM workflow：[dia60al40-dem run 27835484161](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27835484161)，状态 `success`
+- 最新验证代码 commit：`a461664b80a0c5c7993554a761716ec49ffdc504`
+- 论文算法 workflow：[paper-algorithm-reproduction run 27836537652](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27836537652)，状态 `success`
+- 真实 DEM workflow：[dia60al40-dem run 27836537650](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27836537650)，状态 `success`
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
@@ -40,7 +40,8 @@
 
 | 证据项 | 当前值 |
 |---|---|
-| workflow | `dia60al40-dem` run `27835484161` |
+| workflow | `dia60al40-dem` run `27836537650` |
+| verified code commit | `a461664b80a0c5c7993554a761716ec49ffdc504` |
 | DEM backend | LIGGGHTS-PUBLIC serial build on `ubuntu-22.04` |
 | stage count | 6 stages: preload, rho065, rho072, rho080, rho088, rho095 |
 | particle count gate | 76 particles in each handoff stage |
