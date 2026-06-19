@@ -223,6 +223,16 @@ class PaperReproductionTest(unittest.TestCase):
             self.assertIn("run             20", text)
             self.assertIn("run             30", text)
             self.assertIn("run             40", text)
+            self.assertIn("compute         pairContacts all pair/gran/local", text)
+            for stage in [
+                "stage0_preload",
+                "stage1_rho065",
+                "stage2_rho072",
+                "stage3_rho080",
+                "stage4_rho088",
+                "stage5_rho095",
+            ]:
+                self.assertIn(f"DEM/{stage}_contacts_*.local", text)
 
     def test_particle_snapshot_network_pipeline(self):
         with tempfile.TemporaryDirectory() as tmp:

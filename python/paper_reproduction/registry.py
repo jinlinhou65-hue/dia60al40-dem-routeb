@@ -70,10 +70,9 @@ PAPER_TARGETS = [
             "local_stress_inhomogeneity_d2 decreasing",
             "wall and particle friction increase inhomogeneity metrics",
         ],
-        current_backend="proxy plus Route-B DEM stage-series post-processing",
+        current_backend="Route-B DEM stage-series post-processing with direct LIGGGHTS contact-force export",
         next_backend_steps=[
-            "replace overlap-inferred contacts with solver contact-force export",
-            "calibrate mu_p and mu_w sweeps against full DEM contact-force exports",
+            "calibrate mu_p and mu_w sweeps against DEM contact-force distributions",
             "compare pressure-density curve against the reported 572-638 MPa endpoint",
         ],
     ),

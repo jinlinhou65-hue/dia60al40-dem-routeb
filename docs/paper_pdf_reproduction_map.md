@@ -49,9 +49,11 @@ Reproduction method:
 - Gate: pressure/density/participation increase while Gini/D1/D2 decrease; wall
   and particle friction increase inhomogeneity, with particle friction producing
   the stronger micro contact and meso force-chain response.
-- Current limitation: contact forces are inferred from stage geometry where direct
-  solver pair-force export is absent; direct force tensor export remains the next
-  calibration step.
+- Current status: workflow DEM artifacts now export direct LIGGGHTS
+  `pair/gran/local` contact forces, which feed the virial stress tensor, fabric
+  tensor, force-chain, and electrothermal post-processing. Calibration against
+  thesis force-chain images and measured force distributions remains the next
+  Zhang-specific step.
 
 ## Yuan - arch bridge structure
 
@@ -166,5 +168,6 @@ expected evidence bundles:
 
 This does not yet mean the full thesis/article figures are calibrated one-to-one.
 It means the reproduction route is executable, source-backed by the PDFs, and
-ready for the next fidelity upgrades: direct DEM force export, particle-shape
-backend for Yuan, diffusion-law sintering for Liu, and core-shell MPFEM for Li.
+ready for the next fidelity upgrades: particle-shape backend for Yuan,
+diffusion-law sintering and temperature-field solving for Liu, and core-shell
+MPFEM for Li.

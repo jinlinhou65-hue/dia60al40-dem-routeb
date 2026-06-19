@@ -10,6 +10,10 @@ on:
   push:
     paths:
       - 'python/paper_reproduction/**'
+      - 'python/dem_case_config.py'
+      - 'python/dem_case_geometry.py'
+      - 'python/export_liggghts_contact_forces.py'
+      - 'python/render_dem_deck.py'
       - 'scripts/run_paper_algorithm_reproduction.py'
       - 'scripts/generate_paper_reproduction_manifest.py'
       - 'scripts/process_particle_snapshot.py'
@@ -51,6 +55,10 @@ jobs:
             python/paper_reproduction/validation.py \
             python/paper_reproduction/zhang_validation.py \
             python/paper_reproduction/yuan_validation.py \
+            python/dem_case_config.py \
+            python/dem_case_geometry.py \
+            python/export_liggghts_contact_forces.py \
+            python/render_dem_deck.py \
             scripts/validate_dem_evidence.py \
             scripts/run_paper_algorithm_reproduction.py \
             scripts/generate_paper_reproduction_manifest.py \

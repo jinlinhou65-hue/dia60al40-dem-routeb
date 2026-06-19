@@ -56,7 +56,7 @@ BACKEND_CANDIDATES = [
         ],
         limitations=[
             "Current route uses spherical particles, so Yuan shape fidelity still needs clumps, polygons, or MPFEM.",
-            "Direct pair-force tensor export must replace the current overlap-inferred contact-force proxy.",
+            "Direct pair-force export is now wired into the stage-series contact contract; next work is calibration and richer particle shape.",
             "LIGGGHTS-PUBLIC is older; long-term maintenance risk is higher than LAMMPS mainline.",
         ],
         paper_fit={

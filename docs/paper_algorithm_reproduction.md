@@ -62,14 +62,16 @@ the open-source solver route stays explicit. It does not install YADE or
 LIGGGHTS.
 
 For real DEM evidence, run `.github/workflows/dia60al40-dem.yml`. That workflow
-builds LIGGGHTS, generates `dem_fem_handoff_stage*.csv` and
-`pressure_density_curve.csv`, then automatically runs:
+builds LIGGGHTS, generates `dem_fem_handoff_stage*.csv`,
+`contact_forces/*_contacts.csv`, and `pressure_density_curve.csv`, then
+automatically runs:
 
 ```bash
 python3 scripts/process_stage_series.py \
   --snapshot-dir liggghts/DEM \
   --pressure-curve liggghts/DEM/pressure_density_curve.csv \
   --outdir liggghts/DEM/paper_reproduction \
+  --contact-dir liggghts/DEM/contact_forces \
   --width-um 400
 
 python3 scripts/validate_dem_evidence.py \
@@ -81,7 +83,7 @@ The resulting `liggghts/DEM/paper_reproduction/**` files are uploaded with the
 normal DEM artifact bundle. `dem_evidence_summary.csv` and
 `dem_evidence_report.md` are the CI gate proving that the artifact contains real
 stage dumps, restarts, handoff tables, pressure-density data, paper acceptance
-outputs, and runtime controls.
+outputs, direct pair-force contact CSVs, and runtime controls.
 
 The first-pass algorithm run also writes:
 
@@ -140,8 +142,9 @@ py scripts\process_particle_snapshot.py `
 
 Outputs:
 
-- `contacts_inferred.csv`: inferred particle-particle contacts, gaps, overlaps,
-  normals, and normal-force proxy
+- `contacts_direct.csv` when `--contacts` is supplied, otherwise
+  `contacts_inferred.csv`: particle-particle contacts, gaps, overlaps, normals,
+  and normal-force evidence
 - `arch_bridges.csv`: strong-contact connected arch-bridge candidates
 - `electrothermal_contacts.csv`: contact conductance, current, and Joule heat
 - `electrothermal_particles.csv`: particle potential, heat source, temperature,
@@ -184,7 +187,8 @@ Expected outputs:
 - `dem_evidence_report.md`: detailed file, stage, curve, paper, and runtime
   evidence table
 - `stage_details/*_contacts.csv` and `stage_details/*_arches.csv`: per-stage
-  inferred contacts and arch candidates
+  direct LIGGGHTS contacts when `--contact-dir` is supplied, otherwise inferred
+  contacts, plus arch candidates
 - `stage_details/*_electrothermal_contacts.csv` and
   `stage_details/*_electrothermal_particles.csv`: per-stage current, Joule heat,
   temperature, diffusion mechanism, neck ratio, and heat-isolated neck-growth
@@ -196,7 +200,9 @@ electrical/thermal transport, and density-related compaction fits in one
 repeatable command. Trend mismatches are useful: they identify which modeling
 assumption to inspect next rather than silently declaring reproduction success.
 
-If a solver exports direct pair-force contacts, pass them with
+The Route-B workflow already exports direct pair-force contacts from LIGGGHTS
+`compute pair/gran/local`, converts them with
+`python/export_liggghts_contact_forces.py`, and passes them with
 `--contact-dir <dir> --contact-glob "{stage_id}_contacts.csv"`. Direct contact
 files should include `i`, `j`, and either `normal_force` or `force_x,force_y`.
 The stage-series output records `contact_source=direct`; otherwise it records

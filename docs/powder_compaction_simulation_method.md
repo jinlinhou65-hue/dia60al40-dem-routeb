@@ -100,9 +100,8 @@ py scripts\process_stage_series.py `
 
 For each stage, the post-processor infers:
 
-- particle-particle contacts, gaps, overlaps, normals, and force proxies;
-- optional direct solver contact forces when `--contact-dir` points to per-stage
-  contact CSV files;
+- particle-particle contacts, gaps, overlaps, normals, and direct solver contact
+  forces exported from LIGGGHTS `compute pair/gran/local`;
 - virial stress tensor components and fabric tensor anisotropy;
 - force-chain and arch candidates;
 - conductance, current, Joule heat, particle heat source, and temperature;
@@ -139,8 +138,9 @@ contracts.
 | `stage_details/*_electrothermal_particles.csv` | particle heat, temperature, diffusion mechanism, and neck growth |
 | `dem_evidence_summary.csv` | one-row real-artifact gate result |
 
-Optional direct contact-force files can be supplied to `process_stage_series.py`
-with:
+The workflow converts LIGGGHTS `*_contacts_*.local` dumps into direct
+contact-force CSVs with `python/export_liggghts_contact_forces.py`, then supplies
+them to `process_stage_series.py` with:
 
 ```powershell
 py scripts\process_stage_series.py `
@@ -160,15 +160,13 @@ pipeline falls back to overlap-inferred contacts and records
 
 ## Next Fidelity Upgrades
 
-1. Direct DEM force export: replace overlap-inferred contact-force proxies with
-   solver pair forces, contact stress tensors, and fabric tensors.
-2. Yuan particle shape: add clumps, superquadrics, polygons, or MPFEM handoff so
+1. Yuan particle shape: add clumps, superquadrics, polygons, or MPFEM handoff so
    circular, hexagonal, and strip powder trends are geometric rather than proxy
    sweeps.
-3. Liu thermal field: solve a real temperature field from Joule heat and add
+2. Liu thermal field: solve a real temperature field from Joule heat and add
    calibrated diffusion constants and activation energies.
-4. Li core-shell deformation: add MPFEM or FEM handoff for Cu@Fe particles with
+3. Li core-shell deformation: add MPFEM or FEM handoff for Cu@Fe particles with
    Cu/Fe interface friction, plasticity, and thermal expansion.
-5. Calibration: compare pressure-density endpoints, force-chain images, arch
+4. Calibration: compare pressure-density endpoints, force-chain images, arch
    topology, density ranking, and temperature attenuation against the PDF
    anchors before claiming one-to-one reproduction.

@@ -65,6 +65,11 @@ fix             cof all property/global coefficientFriction peratomtypepair 4 &
 pair_style      gran model hertz tangential history
 pair_coeff      * *
 
+# Particle-particle contact evidence for force-chain and stress post-processing.
+# Column order is fixed by compute pair/gran/local: id(3), force(3),
+# force_normal(3), delta(1), contactPoint(3).
+compute         pairContacts all pair/gran/local id force force_normal delta contactPoint
+
 # Fast settling gravity. DEM-only; downstream COMSOL does not inherit gravity.
 fix             grav all gravity 98000 vector 0.0 -1.0 0.0
 fix             integr all nve/sphere
@@ -159,8 +164,14 @@ unfix           topMove
 run             1250000
 print           "stage0_preload,0.5668,201.779948,18.220052,5,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st0 all custom 1 DEM/stage0_preload_*.dump id type x y z vx vy vz radius
+dump            cst0 all local 1 DEM/stage0_preload_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
 run             0
 undump          st0
+undump          cst0
 write_restart   DEM/stage0_preload.restart
 
 # Stage 1: rho_total ~0.65. Additional travel to 44.047885 um.
@@ -172,8 +183,14 @@ unfix           topMove
 run             1250000
 print           "stage1_rho065,0.6500,175.952115,44.047885,5.84666,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st1 all custom 1 DEM/stage1_rho065_*.dump id type x y z vx vy vz radius
+dump            cst1 all local 1 DEM/stage1_rho065_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
 run             0
 undump          st1
+undump          cst1
 write_restart   DEM/stage1_rho065.restart
 
 # Stage 2: rho_total ~0.72. Additional travel to 61.154341 um.
@@ -185,8 +202,14 @@ unfix           topMove
 run             1250000
 print           "stage2_rho072,0.7200,158.845659,61.154341,7.4619,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st2 all custom 1 DEM/stage2_rho072_*.dump id type x y z vx vy vz radius
+dump            cst2 all local 1 DEM/stage2_rho072_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
 run             0
 undump          st2
+undump          cst2
 write_restart   DEM/stage2_rho072.restart
 
 # Stage 3: rho_total ~0.80. Additional travel to 77.038907 um.
@@ -198,8 +221,14 @@ unfix           topMove
 run             1250000
 print           "stage3_rho080,0.8000,142.961093,77.038907,9.62196,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st3 all custom 1 DEM/stage3_rho080_*.dump id type x y z vx vy vz radius
+dump            cst3 all local 1 DEM/stage3_rho080_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
 run             0
 undump          st3
+undump          cst3
 write_restart   DEM/stage3_rho080.restart
 
 # Stage 4: rho_total ~0.88. Additional travel to 90.035370 um.
@@ -211,8 +240,14 @@ unfix           topMove
 run             1250000
 print           "stage4_rho088,0.8800,129.964630,90.035370,11.3846,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st4 all custom 1 DEM/stage4_rho088_*.dump id type x y z vx vy vz radius
+dump            cst4 all local 1 DEM/stage4_rho088_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
 run             0
 undump          st4
+undump          cst4
 write_restart   DEM/stage4_rho088.restart
 
 # Stage 5: rho_total ~0.95. Additional travel to 99.611711 um.
@@ -224,8 +259,14 @@ unfix           topMove
 run             2500000
 print           "stage5_rho095,0.9500,120.388289,99.611711,12,${topForceYDyn},${topForceAbsDyn},${topPressureMPa},${bottomForceYDyn},${bottomPressureMPa},${leftForceXDyn},${rightForceXDyn}" append DEM/pressure_density_curve_raw.csv screen no
 dump            st5 all custom 1 DEM/stage5_rho095_*.dump id type x y z vx vy vz radius
+dump            cst5 all local 1 DEM/stage5_rho095_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
 run             0
 undump          st5
+undump          cst5
 write_restart   DEM/stage5_rho095.restart
 
 undump          dmp

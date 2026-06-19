@@ -241,6 +241,12 @@ jobs:
           ls DEM/stage3_rho080_*.dump
           ls DEM/stage4_rho088_*.dump
           ls DEM/stage5_rho095_*.dump
+          ls DEM/stage0_preload_contacts_*.local
+          ls DEM/stage1_rho065_contacts_*.local
+          ls DEM/stage2_rho072_contacts_*.local
+          ls DEM/stage3_rho080_contacts_*.local
+          ls DEM/stage4_rho088_contacts_*.local
+          ls DEM/stage5_rho095_contacts_*.local
 
           # Gate 3: the FINAL dump must contain the exact target composition.
           # `insert/pack particles_in_region` is easy to misuse because the value is a
@@ -277,6 +283,16 @@ jobs:
               --input "$dump" \
               --stage-id "$stage" \
               --output "liggghts/DEM/dem_fem_handoff_${stage}.csv"
+          done
+
+          mkdir -p liggghts/DEM/contact_forces
+          for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho088 stage5_rho095; do
+            contacts=$(ls -1 "liggghts/DEM/${stage}_contacts_"*.local | sort -V | tail -1)
+            python3 python/export_liggghts_contact_forces.py \
+              --local-dump "$contacts" \
+              --particles "liggghts/DEM/dem_fem_handoff_${stage}.csv" \
+              --stage-id "$stage" \
+              --output "liggghts/DEM/contact_forces/${stage}_contacts.csv"
           done
 
           # Main project result: 2D DEM pressure-density curve. This is the
@@ -319,6 +335,7 @@ jobs:
             --snapshot-dir liggghts/DEM \
             --pressure-curve liggghts/DEM/pressure_density_curve.csv \
             --outdir liggghts/DEM/paper_reproduction \
+            --contact-dir liggghts/DEM/contact_forces \
             --width-um 400
           echo '[PAPER REPRODUCTION ACCEPTANCE]'
           cat liggghts/DEM/paper_reproduction/series_acceptance_summary.csv

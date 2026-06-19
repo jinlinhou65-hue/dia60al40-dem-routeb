@@ -155,6 +155,8 @@ def validate_dem_evidence(
                 file_glob_check("stage", f"{stage} dump exists", dem_dir / f"{stage}_*.dump"),
                 file_check("stage", dem_dir / f"{stage}.restart", dem_dir),
                 file_check("stage", handoff_path, dem_dir),
+                file_check("stage", dem_dir / "contact_forces" / f"{stage}_contacts.csv", dem_dir),
+                file_check("stage", detail_dir / f"{stage}_contacts.csv", dem_dir),
                 file_check("stage", detail_dir / f"{stage}_electrothermal_contacts.csv", dem_dir),
                 file_check("stage", detail_dir / f"{stage}_electrothermal_particles.csv", dem_dir),
             ]
@@ -207,6 +209,25 @@ def validate_dem_evidence(
             numeric_last(metric_rows, "virial_von_mises"),
             evidence=str(metrics_path),
         )
+    )
+    checks.extend(
+        [
+            exact_string_check(
+                "paper",
+                "final stage uses direct solver contact forces",
+                metric_rows[-1].get("contact_source") if metric_rows else None,
+                "direct",
+                evidence=str(metrics_path),
+            ),
+            tolerance_check(
+                "paper",
+                "final direct contact force fraction is complete",
+                numeric_last(metric_rows, "direct_contact_force_fraction"),
+                1.0,
+                1e-12,
+                evidence=str(metrics_path),
+            ),
+        ]
     )
     for row in acceptance_rows:
         checks.append(

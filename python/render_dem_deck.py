@@ -1,225 +1,70 @@
 from __future__ import annotations
 
 import argparse
-import math
 import re
-from dataclasses import dataclass
 from pathlib import Path
 
-
-W_UM = 400.0
-TARGET_AL_AREA_FRACTION = 0.40
-TARGET_DIAMOND_AREA_FRACTION = 0.60
-INSERT_RHO_TOTAL = 0.38
-AL_RADIUS_UM = 13.0
-DT_SECONDS = 2.0e-10
-TOP_VEL_CM_S = 1.0
-INITIAL_SETTLE_STEPS = 1_250_000
-STAGE_SETTLE_STEPS = 1_250_000
-FINAL_SETTLE_STEPS = 2_500_000
-
-RHO_STAGES = [
-    ("stage0_preload", 0.5668),
-    ("stage1_rho065", 0.6500),
-    ("stage2_rho072", 0.7200),
-    ("stage3_rho080", 0.8000),
-    ("stage4_rho088", 0.8800),
-    ("stage5_rho095", 0.9500),
-]
-
-
-@dataclass(frozen=True)
-class DiamondCase:
-    case_id: str
-    description: str
-    ds_actual_um: float
-    dl_actual_um: float
-    ds_dem_um: float
-    dl_dem_um: float
-    ds_count: int
-    dl_count: int
-
-
-DIAMOND_CASES = {
-    # A is kept for optional comparison. The user-requested workflow default is C/D/E.
-    "A": DiamondCase("A", "dual diamond 40/70 um actual, scaled to 12/21 um DEM", 40.0, 70.0, 12.0, 21.0, 8, 8),
-    "B": DiamondCase("B", "dual diamond 60/100 um actual, scaled to 18/30 um DEM", 60.0, 100.0, 18.0, 30.0, 8, 8),
-    "C": DiamondCase("C", "dual diamond 80/130 um actual, scaled to 24/39 um DEM", 80.0, 130.0, 24.0, 39.0, 8, 8),
-    # Single-size counts keep the total diamond area close to case B. For every
-    # case, Al count is then back-calculated from the fixed 13 um Al radius so
-    # Al/Diamond area stays near 40/60 without changing powder particle size.
-    "D": DiamondCase("D", "single diamond 100 um actual, scaled to 30 um DEM", 0.0, 100.0, 0.0, 30.0, 0, 11),
-    "E": DiamondCase("E", "single diamond 60 um actual, scaled to 18 um DEM", 60.0, 0.0, 18.0, 0.0, 30, 0),
-}
-
-SEED_KEYS = {
-    "ptsAl": 15485863,
-    "ptsDS": 15485867,
-    "ptsDL": 49979693,
-    "pddAl": 32452843,
-    "pddDS": 32452867,
-    "pddDL": 67867967,
-    "insDL": 49979687,
-    "insDS": 67867979,
-    "insAl": 86028121,
-}
-
-# Fixed prime table keeps every workflow run reproducible while still sampling
-# different random mixed-powder packings. LIGGGHTS insertion has historically
-# been picky about seeds, so use known-prime values instead of arithmetic offsets.
-SEED_TABLE = [
-    {
-        "ptsAl": 15485863,
-        "ptsDS": 15485867,
-        "ptsDL": 49979693,
-        "pddAl": 32452843,
-        "pddDS": 32452867,
-        "pddDL": 67867967,
-        "insDL": 49979687,
-        "insDS": 67867979,
-        "insAl": 86028121,
-    },
-    {
-        "ptsAl": 32452867,
-        "ptsDS": 49979693,
-        "ptsDL": 67867979,
-        "pddAl": 86028121,
-        "pddDS": 15485863,
-        "pddDL": 15485867,
-        "insDL": 32452843,
-        "insDS": 67867967,
-        "insAl": 49979687,
-    },
-    {
-        "ptsAl": 67867967,
-        "ptsDS": 32452843,
-        "ptsDL": 86028121,
-        "pddAl": 49979687,
-        "pddDS": 49979693,
-        "pddDL": 15485863,
-        "insDL": 15485867,
-        "insDS": 32452867,
-        "insAl": 67867979,
-    },
-    {
-        "ptsAl": 86028121,
-        "ptsDS": 67867967,
-        "ptsDL": 32452843,
-        "pddAl": 15485867,
-        "pddDS": 49979687,
-        "pddDL": 32452867,
-        "insDL": 67867979,
-        "insDS": 15485863,
-        "insAl": 49979693,
-    },
-    {
-        "ptsAl": 49979687,
-        "ptsDS": 86028121,
-        "ptsDL": 15485867,
-        "pddAl": 67867979,
-        "pddDS": 32452843,
-        "pddDL": 49979693,
-        "insDL": 15485863,
-        "insDS": 49979687,
-        "insAl": 32452867,
-    },
-]
-
-
-def circle_area_um2(radius_um: float) -> float:
-    return math.pi * radius_um * radius_um
-
-
-def octagon_area_um2(radius_um: float) -> float:
-    # COMSOL handoff draws diamond as regular octagons with radius = circumradius.
-    return 2.0 * math.sqrt(2.0) * radius_um * radius_um
-
-
-def total_solid_area_um2(case: DiamondCase) -> float:
-    return al_area_um2(case) + diamond_area_um2(case)
-
-
-def al_count(case: DiamondCase) -> int:
-    # Hold Al particle radius fixed, then choose the count that best gives 40%
-    # Al area for the selected diamond-size recipe.
-    target_al_area = diamond_area_um2(case) * TARGET_AL_AREA_FRACTION / TARGET_DIAMOND_AREA_FRACTION
-    return max(1, int(round(target_al_area / circle_area_um2(AL_RADIUS_UM))))
-
-
-def al_area_um2(case: DiamondCase) -> float:
-    return al_count(case) * circle_area_um2(AL_RADIUS_UM)
-
-
-def diamond_area_um2(case: DiamondCase) -> float:
-    return case.ds_count * octagon_area_um2(case.ds_dem_um) + case.dl_count * octagon_area_um2(case.dl_dem_um)
-
-
-def smoothstep(x: float) -> float:
-    x = min(1.0, max(0.0, x))
-    return 3.0 * x * x - 2.0 * x * x * x
-
-
-def stage_moduli(e0_gpa: float, emax_gpa: float) -> list[float]:
-    rho0 = RHO_STAGES[0][1]
-    rho95 = RHO_STAGES[-1][1]
-    span = rho95 - rho0
-    values: list[float] = []
-    for _, rho in RHO_STAGES:
-        x = (rho - rho0) / span if span > 0.0 else 1.0
-        values.append(e0_gpa + (emax_gpa - e0_gpa) * smoothstep(x))
-    return values
+try:
+    from .dem_case_config import (
+        AL_RADIUS_UM,
+        DIAMOND_CASES,
+        DT_SECONDS,
+        FINAL_SETTLE_STEPS,
+        INITIAL_SETTLE_STEPS,
+        INSERT_RHO_TOTAL,
+        RHO_STAGES,
+        SEED_KEYS,
+        SEED_TABLE,
+        STAGE_SETTLE_STEPS,
+        TARGET_AL_AREA_FRACTION,
+        TARGET_DIAMOND_AREA_FRACTION,
+        TOP_VEL_CM_S,
+        W_UM,
+        DiamondCase,
+    )
+    from .dem_case_geometry import (
+        al_area_um2,
+        al_count,
+        diamond_area_um2,
+        initial_die_height_um,
+        stage0_height_um,
+        stage_moduli,
+        stage_plan,
+        total_solid_area_um2,
+    )
+except ImportError:
+    from dem_case_config import (
+        AL_RADIUS_UM,
+        DIAMOND_CASES,
+        DT_SECONDS,
+        FINAL_SETTLE_STEPS,
+        INITIAL_SETTLE_STEPS,
+        INSERT_RHO_TOTAL,
+        RHO_STAGES,
+        SEED_KEYS,
+        SEED_TABLE,
+        STAGE_SETTLE_STEPS,
+        TARGET_AL_AREA_FRACTION,
+        TARGET_DIAMOND_AREA_FRACTION,
+        TOP_VEL_CM_S,
+        W_UM,
+        DiamondCase,
+    )
+    from dem_case_geometry import (
+        al_area_um2,
+        al_count,
+        diamond_area_um2,
+        initial_die_height_um,
+        stage0_height_um,
+        stage_moduli,
+        stage_plan,
+        total_solid_area_um2,
+    )
 
 
 def gpa_to_cgs(value_gpa: float) -> str:
     # LIGGGHTS cgs unit: 1 GPa = 1e10 dyne/cm^2.
     return f"{value_gpa * 1.0e10:.9g}"
-
-
-def stage_plan(
-    case: DiamondCase,
-    e_al_stages: list[float],
-    *,
-    top_vel_cm_s: float = TOP_VEL_CM_S,
-    dt_seconds: float = DT_SECONDS,
-) -> list[dict[str, float | str]]:
-    area_um2 = total_solid_area_um2(case)
-    h0_um = initial_die_height_um(case)
-    plan: list[dict[str, float | str]] = []
-    previous_displacement = 0.0
-    for i, ((stage_id, rho), e_gpa) in enumerate(zip(RHO_STAGES, e_al_stages)):
-        height = area_um2 / (W_UM * rho)
-        displacement = h0_um - height
-        if displacement < previous_displacement - 1.0e-9:
-            raise SystemExit(f"[FAIL] {case.case_id} {stage_id} displacement is non-monotonic")
-        incremental_um = displacement - previous_displacement
-        run_steps = max(1, int(round(incremental_um * 1.0e-4 / (top_vel_cm_s * dt_seconds))))
-        plan.append(
-            {
-                "idx": i,
-                "stage_id": stage_id,
-                "rho": rho,
-                "requested_rho": rho,
-                "height_um": height,
-                "displacement_um": displacement,
-                "incremental_um": incremental_um,
-                "run_steps": run_steps,
-                "e_gpa": e_gpa,
-            }
-        )
-        previous_displacement = displacement
-    return plan
-
-
-def stage0_height_um(case: DiamondCase) -> float:
-    return total_solid_area_um2(case) / (W_UM * RHO_STAGES[0][1])
-
-
-def initial_die_height_um(case: DiamondCase) -> float:
-    # Random sequential insertion uses a smaller inner insertion region than the
-    # final die area. Start from a loose mixed bed so all particles are present,
-    # then let the punch preload to stage0=0.5668 before the density ladder.
-    insertion_height = total_solid_area_um2(case) / (W_UM * INSERT_RHO_TOTAL)
-    return max(stage0_height_um(case), insertion_height)
 
 
 def replace_moduli(
@@ -482,6 +327,7 @@ def stage_block(
     idx = int(stage["idx"])
     stage_id = str(stage["stage_id"])
     dump_id = f"st{idx}"
+    contact_dump_id = f"cst{idx}"
     lines: list[str] = []
     if idx == 0:
         lines.append(f"# Stage 0: preload reference for diamond_size_case={case.case_id}.")
@@ -511,8 +357,14 @@ def stage_block(
                 "append DEM/pressure_density_curve_raw.csv screen no"
             ),
             f"dump            {dump_id} all custom 1 DEM/{stage_id}_*.dump id type x y z vx vy vz radius",
+            f"dump            {contact_dump_id} all local 1 DEM/{stage_id}_contacts_*.local &",
+            "                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &",
+            "                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &",
+            "                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &",
+            "                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]",
             "run             0",
             f"undump          {dump_id}",
+            f"undump          {contact_dump_id}",
             f"write_restart   DEM/{stage_id}.restart",
         ]
     )

@@ -62,6 +62,7 @@ def create_complete_artifact(root: Path, dem_dir: Path, outdir: Path) -> None:
     dem_dir.mkdir()
     outdir.mkdir()
     (dem_dir / "plots").mkdir()
+    (dem_dir / "contact_forces").mkdir()
     (root / "in.dia60al40_dem_staged.rendered.liggghts").write_text(
         "variable        topVel equal 50\nvariable        dt equal 1.0e-8\n",
         encoding="utf-8",
@@ -83,6 +84,7 @@ def create_complete_artifact(root: Path, dem_dir: Path, outdir: Path) -> None:
     (dem_dir / "plots" / "pressure_density_curve.png").write_bytes(b"png")
     for stage, *_ in stages:
         write_particles(dem_dir / f"dem_fem_handoff_{stage}.csv")
+        write_direct_contacts(dem_dir / "contact_forces" / f"{stage}_contacts.csv", stage)
         (dem_dir / f"{stage}.restart").write_text("restart\n", encoding="utf-8")
         (dem_dir / f"{stage}_100.dump").write_text("dump\n", encoding="utf-8")
     write_paper_outputs(outdir, stages)
@@ -96,6 +98,15 @@ def write_particles(path: Path) -> None:
     )
 
 
+def write_direct_contacts(path: Path, stage: str) -> None:
+    path.write_text(
+        "stage_id,i,j,nx,ny,gap_um,overlap_um,force_x,force_y,normal_force,source,force_unit\n"
+        f"{stage},1,2,1,0,-2,2,10,0,10,liggghts_pair_gran_local,dyne\n"
+        f"{stage},2,3,-0.6,0.8,-1,1,-6,8,10,liggghts_pair_gran_local,dyne\n",
+        encoding="utf-8",
+    )
+
+
 def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, float]]) -> None:
     details = outdir / "stage_details"
     details.mkdir()
@@ -105,7 +116,7 @@ def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, floa
         "virial_stress_xy,virial_mean_pressure,virial_von_mises,fabric_tensor_xx,"
         "fabric_tensor_yy,fabric_tensor_xy,fabric_anisotropy\n"
         + "\n".join(
-            f"{stage},{pressure},{rho},inferred,0,{0.5 - i * 0.05},0.9,"
+            f"{stage},{pressure},{rho},direct,1,{0.5 - i * 0.05},0.9,"
             f"{1 + i},{2 + i},0.1,{1.5 + i},{3 + i},0.45,0.55,0.02,0.12"
             for i, (stage, pressure, rho, _) in enumerate(stages)
         )
@@ -124,6 +135,7 @@ def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, floa
     )
     (outdir / "series_report.md").write_text("# series report\n", encoding="utf-8")
     for stage, *_ in stages:
+        write_direct_contacts(details / f"{stage}_contacts.csv", stage)
         (details / f"{stage}_electrothermal_contacts.csv").write_text(
             "i,j,normal_force,conductance,current,abs_current,joule_heat\n1,2,1,0.1,0.1,0.1,0.01\n",
             encoding="utf-8",

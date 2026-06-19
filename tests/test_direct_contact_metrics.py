@@ -18,9 +18,41 @@ from paper_reproduction import (
     read_particles,
     summarize_contact_network,
 )
+from export_liggghts_contact_forces import export_contacts
 
 
 class DirectContactMetricsTest(unittest.TestCase):
+    def test_liggghts_local_contact_dump_converts_to_direct_contact_csv(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            particles_path = root / "particles.csv"
+            local_dump = root / "stage2_contacts_100.local"
+            contacts_path = root / "stage2_rho072_contacts.csv"
+            write_particles(particles_path)
+            local_dump.write_text(
+                "ITEM: TIMESTEP\n"
+                "100\n"
+                "ITEM: NUMBER OF ENTRIES\n"
+                "2\n"
+                "ITEM: ENTRIES c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] "
+                "c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] "
+                "c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] "
+                "c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]\n"
+                "1 2 0 20 0 0 20 0 0 0.0002 0.0009 0 0\n"
+                "1 3 0 5 8 0 4.8 8.0 0 0.0001 0.00045 0.00075 0\n",
+                encoding="utf-8",
+            )
+
+            export_contacts(local_dump, particles_path, "stage2_rho072", contacts_path)
+            particles = read_particles(particles_path)
+            contacts = read_contacts(contacts_path, particles)
+            metrics = summarize_contact_network(particles, contacts, width_um=40, height_um=40)
+
+            self.assertEqual(len(contacts), 2)
+            self.assertEqual(contacts[0].source, "liggghts_pair_gran_local")
+            self.assertAlmostEqual(contacts[0].overlap_um, 2.0)
+            self.assertEqual(metrics["direct_contact_force_fraction"], 1.0)
+
     def test_direct_contact_force_snapshot_pipeline(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
