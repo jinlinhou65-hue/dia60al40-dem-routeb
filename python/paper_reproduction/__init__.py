@@ -36,6 +36,11 @@ from .network import (
     virial_stress_tensor_2d,
 )
 from .pdf_evidence import PAPER_PDF_EVIDENCE, get_pdf_evidence
+from .zhang_force_chain_calibration import (
+    calibrate_zhang_force_chains,
+    connected_force_chains,
+    force_chain_metrics,
+)
 from .sintering import (
     SINTERING_LAWS,
     SinteringLaw,
@@ -84,6 +89,9 @@ __all__ = [
     "build_manifest",
     "BACKEND_CANDIDATES",
     "build_backend_selection_manifest",
+    "calibrate_zhang_force_chains",
+    "connected_force_chains",
+    "force_chain_metrics",
     "get_paper_targets",
     "get_pdf_evidence",
     "rank_backend_candidates",

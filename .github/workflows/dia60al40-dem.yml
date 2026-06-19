@@ -342,6 +342,23 @@ jobs:
           echo '[PAPER REPRODUCTION REPORT HEAD]'
           sed -n '1,120p' liggghts/DEM/paper_reproduction/series_report.md
 
+          # Zhang force-chain calibration sweep: scan strong-contact thresholds
+          # and minimum chain lengths on the direct LIGGGHTS pair-force series.
+          # A passing candidate is useful, but a review-only result is also
+          # valuable evidence that Zhang needs contact-law/scale calibration
+          # rather than only post-processing threshold tuning.
+          python3 scripts/calibrate_zhang_force_chain.py \
+            --snapshot-dir liggghts/DEM \
+            --pressure-curve liggghts/DEM/pressure_density_curve.csv \
+            --contact-dir liggghts/DEM/contact_forces \
+            --outdir liggghts/DEM/paper_reproduction/zhang_force_chain_calibration \
+            --threshold-factors 0.05,0.1,0.25,0.5,0.75,1.0,1.25,1.5,2.0 \
+            --min-chain-lengths 2,3,4
+          echo '[ZHANG FORCE-CHAIN CALIBRATION SUMMARY]'
+          cat liggghts/DEM/paper_reproduction/zhang_force_chain_calibration/zhang_force_chain_calibration_summary.csv
+          echo '[ZHANG FORCE-CHAIN CALIBRATION REPORT HEAD]'
+          sed -n '1,100p' liggghts/DEM/paper_reproduction/zhang_force_chain_calibration/zhang_force_chain_calibration_report.md
+
           # Evidence gate: prove this run contains a complete real DEM stage
           # series plus paper-reproduction metrics, not only generated stubs.
           python3 scripts/validate_dem_evidence.py \

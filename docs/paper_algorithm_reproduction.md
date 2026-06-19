@@ -90,6 +90,28 @@ series is present but not yet calibrated to the paper's monotonic trend. The
 evidence gate still requires all direct contact CSVs and
 `direct_contact_force_fraction=1.0`.
 
+The DEM workflow also runs a Zhang-specific force-chain calibration sweep:
+
+```bash
+python3 scripts/calibrate_zhang_force_chain.py \
+  --snapshot-dir liggghts/DEM \
+  --pressure-curve liggghts/DEM/pressure_density_curve.csv \
+  --contact-dir liggghts/DEM/contact_forces \
+  --outdir liggghts/DEM/paper_reproduction/zhang_force_chain_calibration \
+  --threshold-factors 0.05,0.1,0.25,0.5,0.75,1.0,1.25,1.5,2.0 \
+  --min-chain-lengths 2,3,4
+```
+
+It writes `zhang_force_chain_calibration.csv`,
+`zhang_force_chain_calibration_summary.csv`, and
+`zhang_force_chain_calibration_report.md`. On the current reduced direct-force
+artifact, all 27 threshold/chain-length candidates remain `review`: the best
+candidate has `threshold_factor=0.05`, `min_chain_length=2`, full chain
+coverage, and decreasing chain-strength D1, but strong-force participation
+still decreases. That narrows the next Zhang work to contact-law, friction,
+loading-path, and particle-count calibration rather than post-processing
+threshold tuning alone.
+
 The first-pass algorithm run also writes:
 
 - `dem_backend_selection.json`: machine-readable open-source DEM backend

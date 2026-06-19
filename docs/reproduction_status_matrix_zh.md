@@ -11,6 +11,7 @@
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
+- Zhang 力链校准扫描：27 组强接触阈值/最小链长组合均为 `review`；最佳组 `threshold_factor=0.05`、`min_chain_length=2`，D1 下降但 strong-force participation 下降
 - 运行环境策略：现阶段优先 GitHub Actions/Ubuntu；WSL2 在 workflow 稳定后用于本地长时间调参，而不是当前必要前置条件。
 
 ## 用户目标拆解
@@ -30,7 +31,7 @@
 
 | 论文 | PDF 中的核心机制 | 当前已复现内容 | 真实 DEM 状态 | 未完成高保真项 |
 |---|---|---|---|---|
-| Zhang：多尺度力学不均匀性 | 宏观压力、介观力链、微观接触力 Gini/participation、D1、D2，摩擦影响 | `zhang_multiscale_metrics.csv`、`zhang_friction_sensitivity.csv`、趋势 gate 全通过 | 真实 direct-force stage series 中压力、密度、coordination、D2 gate 通过；contact participation 和 D1 因未校准在 direct-force demo 中为 `review` | 需要按论文 3000 粒子/600 MPa/力链图像校准接触律、强力链阈值和 D1 单调趋势 |
+| Zhang：多尺度力学不均匀性 | 宏观压力、介观力链、微观接触力 Gini/participation、D1、D2，摩擦影响 | `zhang_multiscale_metrics.csv`、`zhang_friction_sensitivity.csv`、趋势 gate 全通过 | 真实 direct-force stage series 中压力、密度、coordination、D2 gate 通过；`zhang_force_chain_calibration` 扫描显示仅调强力阈值/最小链长仍为 `review` | 需要按论文 3000 粒子/600 MPa/力链图像校准接触律、摩擦参数、加载路径和 D1 单调趋势 |
 | Yuan：拱桥结构 | DEM/MPFEM 压制，arch count、length、strength、buckling、direction，颗粒形状影响致密化 | `yuan_arch_bridge_metrics.csv`，圆/条形代理趋势和 arch gate 通过 | 真实 stage 输出 arch candidates、strength、direction angle、buckling angle | 当前 LIGGGHTS 用球形颗粒；需 clump/polygon/superquadric 或 MPFEM 才能严格复现圆/六边形/条形颗粒 |
 | Liu：压制-烧结耦合 | Huang/Heckel/Kawakita 压实模型，压制微结构传给烧结，扩散 neck growth | `liu_compaction_curve.csv`、`liu_compaction_fits.csv`、`liu_electrothermal_sintering.csv` | 真实 stage 输出 force-current、force-Joule、particle heat-neck 正相关，Heckel/Kawakita fit 可用 | 当前温度是网络代理；需真实热传导场、扩散常数、活化能、烧结时间标定 |
 | Li：包覆式复合粉末 | Cu@Fe 包覆粉、温度/摩擦/速度/长径比/颗粒数对致密化影响，PFC2D 到 MSC.MARC | `li_coated_powder_sweeps.csv`、`li_core_shell_metrics.csv`、温度压力、颗粒数收敛输出 | 真实 DEM stage schema 支持把压力、密度、接触和非均匀性传入 Li 代理模型 | 需要核心-包覆 MPFEM/FEM handoff，加入 Cu/Fe 界面摩擦、塑性和热膨胀 |
@@ -49,8 +50,9 @@
 | final pressure | `297.8374 MPa` |
 | DEM evidence | `87 pass / 0 missing / 0 mismatch` |
 | paper acceptance on real DEM | Li pass, Liu pass, Yuan pass, Zhang review with 0 mismatch |
+| Zhang force-chain calibration | 27 threshold/chain-length candidates scanned; best `threshold_factor=0.05`, `min_chain_length=2`, `chain_coverage=1.0`, D1 decreases but strong-force participation decreases, so status remains `review` |
 
-Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的 force-chain participation 和 D1 还没有按 Zhang 原文的粒子数量、材料参数、压力终点和图像阈值校准。
+Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的 force-chain participation 和 D1 还没有按 Zhang 原文的粒子数量、材料参数、压力终点和图像阈值校准。新增的 `scripts/calibrate_zhang_force_chain.py` 已把“只调强接触阈值和最小链长是否足够”变成可重复扫描；当前真实 artifact 的答案是否定的，因此下一步应转向接触律、摩擦和粒子规模校准。
 
 ## 下一阶段制作方法
 
