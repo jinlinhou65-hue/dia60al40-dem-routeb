@@ -17,6 +17,8 @@ PAPER_TITLES = {
 
 CORE_FILES = [
     "summary.json",
+    "dem_backend_selection.json",
+    "dem_backend_selection.md",
     "paper_reproduction_manifest.json",
     "paper_reproduction_report.md",
     "paper_trend_checks.json",
@@ -162,6 +164,13 @@ def validate_content(outdir: Path, paper: str = "all") -> dict[str, object]:
         require(int_value(row.get("mismatch")) == 0, errors, f"{title} acceptance has mismatched checks")
 
     manifest = read_json_if_exists(outdir / "paper_reproduction_manifest.json", {})
+    backend_selection = manifest.get("dem_backend_selection", {})
+    require(
+        isinstance(backend_selection, dict) and backend_selection.get("decision") == "LIGGGHTS-PUBLIC",
+        errors,
+        "manifest missing LIGGGHTS-PUBLIC DEM backend decision",
+    )
+    validate_backend_selection_content(outdir, errors)
     manifest_papers = {
         str(row.get("key", "")): row
         for row in manifest.get("papers", [])
@@ -361,6 +370,29 @@ def validate_yuan_arch_content(path: Path, errors: list[str]) -> None:
         all(not math.isfinite(value) or abs(value - 90.0) <= 8.0 for value in direction),
         errors,
         "Yuan arch direction deviates too far from 90 degrees",
+    )
+
+
+def validate_backend_selection_content(outdir: Path, errors: list[str]) -> None:
+    selection = read_json_if_exists(outdir / "dem_backend_selection.json", {})
+    require(selection.get("decision") == "LIGGGHTS-PUBLIC", errors, "backend selection JSON has wrong decision")
+    ranked = selection.get("ranked_candidates", [])
+    names = {row.get("name", "") for row in ranked if isinstance(row, dict)}
+    required_names = {
+        "LIGGGHTS-PUBLIC",
+        "LAMMPS GRANULAR package",
+        "YADE",
+        "MercuryDPM",
+        "Project Chrono DEM / DEM-Engine",
+    }
+    require(required_names <= names, errors, "backend selection JSON missing required open-source candidates")
+    docs = read_text_if_exists(outdir / "dem_backend_selection.md")
+    for required in required_names:
+        require(required in docs, errors, f"backend selection markdown missing {required}")
+    require(
+        "PFC/PFC2D" in docs and "non-open-source" in docs.lower(),
+        errors,
+        "backend selection markdown missing non-open-source paper-tool boundary",
     )
 
 

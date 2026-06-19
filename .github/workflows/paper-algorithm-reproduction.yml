@@ -17,6 +17,8 @@ on:
       - 'tests/**'
       - 'docs/paper_algorithm_reproduction.md'
       - 'docs/paper_pdf_reproduction_map.md'
+      - 'docs/dem_algorithm_selection.md'
+      - 'docs/powder_compaction_simulation_method.md'
       - '.github/scripts/validate_paper_reproduction_content.py'
       - '.github/workflows/paper-algorithm-reproduction.yml'
 
@@ -33,6 +35,7 @@ jobs:
           python3 -m py_compile \
             python/paper_reproduction/__init__.py \
             python/paper_reproduction/core.py \
+            python/paper_reproduction/dem_backend_selection.py \
             python/paper_reproduction/cases.py \
             python/paper_reproduction/dem_evidence.py \
             python/paper_reproduction/dem_evidence_checks.py \
@@ -50,6 +53,7 @@ jobs:
             scripts/validate_dem_evidence.py \
             scripts/run_paper_algorithm_reproduction.py \
             scripts/generate_paper_reproduction_manifest.py \
+            scripts/generate_dem_backend_selection_doc.py \
             scripts/process_particle_snapshot.py \
             scripts/process_stage_series.py \
             .github/scripts/validate_paper_reproduction_content.py

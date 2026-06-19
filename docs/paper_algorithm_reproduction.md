@@ -57,7 +57,9 @@ outputs, validates the generated content, and uploads
 that acceptance summaries, manifest entries, report PDF evidence anchors, plots,
 trend checks, Zhang multiscale/friction fields, Liu electrothermal
 diffusion-neck fields, and Li core-shell/convergence fields are present and
-passing. It does not install YADE or LIGGGHTS.
+passing. It also checks the generated DEM backend-selection JSON/Markdown so
+the open-source solver route stays explicit. It does not install YADE or
+LIGGGHTS.
 
 For real DEM evidence, run `.github/workflows/dia60al40-dem.yml`. That workflow
 builds LIGGGHTS, generates `dem_fem_handoff_stage*.csv` and
@@ -83,6 +85,11 @@ outputs, and runtime controls.
 
 The first-pass algorithm run also writes:
 
+- `dem_backend_selection.json`: machine-readable open-source DEM backend
+  decision, scored candidates, non-open-source paper-tool boundary, and next
+  backend upgrades
+- `dem_backend_selection.md`: readable version of the backend selection route;
+  the tracked repository copy is `docs/dem_algorithm_selection.md`
 - `paper_reproduction_manifest.json`: machine-readable target registry for the
   four papers, including source basis, reproduced algorithms, expected outputs,
   acceptance gates, current backend, and next backend steps
@@ -97,8 +104,10 @@ The first-pass algorithm run also writes:
 - `paper_acceptance_report.md`: compact Markdown gate report
 
 The PDF-derived source anchors and paper-by-paper method map are documented in
-`docs/paper_pdf_reproduction_map.md`. The same anchors are embedded in
-`paper_reproduction_manifest.json` and `paper_reproduction_report.md`.
+`docs/paper_pdf_reproduction_map.md`. The open-source DEM backend selection is
+documented in `docs/dem_algorithm_selection.md`. The same PDF anchors and
+backend decision are embedded in `paper_reproduction_manifest.json` and
+`paper_reproduction_report.md`.
 
 To regenerate only the manifest:
 

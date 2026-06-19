@@ -63,6 +63,13 @@ can later replace the deterministic proxy data while keeping the same CSV/JSON
 contracts.
 PDF page anchors and the paper-by-paper reproduction route are summarized in
 `docs/paper_pdf_reproduction_map.md`.
+The step-by-step stress/contact/arch/electrothermal/densification method is in
+`docs/powder_compaction_simulation_method.md`.
+The open-source DEM backend decision and fallback ranking are tracked in
+`docs/dem_algorithm_selection.md`; it selects LIGGGHTS-PUBLIC for the current
+GitHub Actions demo because that route has already produced real stage data,
+while LAMMPS, YADE, MercuryDPM, and Chrono DEM/DEME remain documented upgrade
+paths.
 
 The matching lightweight workflow is:
 
@@ -73,9 +80,10 @@ gh workflow run paper-algorithm-reproduction.yml -f paper=all
 The first-pass run writes `paper_trend_checks.json`,
 `paper_acceptance_summary.csv`, `paper_acceptance_report.md`,
 `paper_reproduction_manifest.json`, `paper_reproduction_manifest.md`,
+`dem_backend_selection.json`, `dem_backend_selection.md`,
 `paper_reproduction_report.md`, and dependency-free `plots/*.svg` figures so
-each paper has both an explicit trend-gate result and a readable demo artifact
-before any full DEM calibration.
+each paper has both an explicit trend-gate result, a backend-route decision, and
+a readable demo artifact before any full DEM calibration.
 
 To process a real DEM/FEM handoff snapshot through the paper metrics:
 

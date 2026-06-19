@@ -10,6 +10,9 @@ The selected open solver route is LIGGGHTS-PUBLIC for the real DEM demo, run on
 Linux/GitHub Actions. Python is used for deck rendering, post-processing, paper
 metrics, and evidence gates. Windows is kept as the editing and artifact review
 environment.
+The backend choice is tracked in `docs/dem_algorithm_selection.md`:
+LIGGGHTS-PUBLIC is the current workflow-proven backend, while LAMMPS, YADE,
+MercuryDPM, and Chrono DEM/DEME remain documented upgrade or fallback routes.
 
 The current implemented chain is:
 
@@ -145,11 +148,12 @@ Reproduction method:
 The current GitHub demo runs prove both layers can rerun data and produce the
 expected evidence bundles:
 
-- Workflow: `paper-algorithm-reproduction`, commit `0a8944b`
+- Workflow: `paper-algorithm-reproduction`, run `27810869616`, commit `9d8cc55`
 - Content gate: acceptance summary, manifest, report PDF evidence anchors,
   generated plots, trend checks, Zhang multiscale fields, Liu diffusion-neck
-  fields, and Li core-shell/convergence fields all validated
-- Workflow: `dia60al40-dem`, run `27776072563`
+  fields, Li core-shell/convergence fields, and DEM backend-selection outputs
+  all validated
+- Workflow: `dia60al40-dem`, run `27810869643`, commit `9d8cc55`
 - Artifact: `dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - Evidence summary: 61 checks, 61 pass, 0 missing, 0 mismatch
 - Final density: rho_total = 0.95

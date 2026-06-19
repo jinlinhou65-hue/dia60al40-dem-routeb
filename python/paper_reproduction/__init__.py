@@ -12,6 +12,14 @@ from .core import (
 )
 from .cases import reproduce_all, reproduce_li, reproduce_liu, reproduce_yuan, reproduce_zhang
 from .dem_evidence import validate_dem_evidence, write_dem_evidence_outputs
+from .dem_backend_selection import (
+    BACKEND_CANDIDATES,
+    build_backend_selection_manifest,
+    rank_backend_candidates,
+    render_backend_selection_markdown,
+    selected_backend,
+    write_backend_selection_outputs,
+)
 from .network import (
     ArchBridge,
     Contact,
@@ -67,8 +75,12 @@ __all__ = [
     "process_stage_series",
     "read_particles",
     "build_manifest",
+    "BACKEND_CANDIDATES",
+    "build_backend_selection_manifest",
     "get_paper_targets",
     "get_pdf_evidence",
+    "rank_backend_candidates",
+    "render_backend_selection_markdown",
     "render_manifest_markdown",
     "reproduce_all",
     "reproduce_li",
@@ -82,10 +94,12 @@ __all__ = [
     "blended_neck_ratio",
     "sintering_neck_ratio",
     "trend_direction",
+    "selected_backend",
     "validate_algorithm_reproduction",
     "validate_dem_evidence",
     "validate_stage_series",
     "write_acceptance_outputs",
+    "write_backend_selection_outputs",
     "write_dem_evidence_outputs",
     "write_manifest_outputs",
 ]

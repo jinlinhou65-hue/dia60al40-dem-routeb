@@ -4,6 +4,7 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from .dem_backend_selection import build_backend_selection_manifest, write_backend_selection_outputs
 from .pdf_evidence import get_pdf_evidence
 
 
@@ -263,6 +264,7 @@ def build_manifest(keys: list[str] | None = None) -> dict[str, object]:
             "Keep paper algorithms, output schemas, and acceptance gates stable while "
             "swapping proxy data for DEM, MPFEM, or electrothermal solver exports."
         ),
+        "dem_backend_selection": build_backend_selection_manifest(),
         "papers": [
             {**asdict(target), "pdf_evidence": evidence.get(target.key, [])}
             for target in targets
@@ -284,7 +286,13 @@ def write_manifest_outputs(
         encoding="utf-8",
     )
     markdown_path.write_text(render_manifest_markdown(manifest), encoding="utf-8")
-    return {"json": json_path, "markdown": markdown_path}
+    backend_outputs = write_backend_selection_outputs(outdir)
+    return {
+        "json": json_path,
+        "markdown": markdown_path,
+        "backend_json": backend_outputs["json"],
+        "backend_markdown": backend_outputs["markdown"],
+    }
 
 
 def render_manifest_markdown(manifest: dict[str, object]) -> str:
@@ -294,6 +302,16 @@ def render_manifest_markdown(manifest: dict[str, object]) -> str:
         "",
         f"- Scope: {manifest['scope']}",
         f"- Backend policy: {manifest['backend_policy']}",
+        f"- DEM backend decision: {manifest['dem_backend_selection']['decision']}",
+        "",
+        "## DEM Backend Selection",
+        "",
+        (
+            "The current real-data backend is "
+            f"`{manifest['dem_backend_selection']['decision']}`. "
+            "See `dem_backend_selection.md` for the full open-source solver ranking, "
+            "candidate limitations, and next backend upgrades."
+        ),
         "",
         "## Paper Targets",
         "",
