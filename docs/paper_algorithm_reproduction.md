@@ -52,8 +52,11 @@ gh workflow run paper-algorithm-reproduction.yml -f paper=all
 ```
 
 The workflow runs Python syntax checks, unit tests, generates the four paper
-outputs, and uploads `outputs/paper_algorithm_reproduction/**` as an artifact.
-It does not install YADE or LIGGGHTS.
+outputs, validates the generated content, and uploads
+`outputs/paper_algorithm_reproduction/**` as an artifact. The content gate checks
+that acceptance summaries, manifest entries, report PDF evidence anchors, plots,
+trend checks, and Liu electrothermal diffusion-neck fields are present and
+passing. It does not install YADE or LIGGGHTS.
 
 For real DEM evidence, run `.github/workflows/dia60al40-dem.yml`. That workflow
 builds LIGGGHTS, generates `dem_fem_handoff_stage*.csv` and
