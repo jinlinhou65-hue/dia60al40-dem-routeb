@@ -150,19 +150,21 @@ Reproduction method:
 The current GitHub demo runs prove both layers can rerun data and produce the
 expected evidence bundles:
 
-- Workflow: `paper-algorithm-reproduction`, run `27810869616`, commit `9d8cc55`
+- Workflow: `paper-algorithm-reproduction`, run `27835484159`, commit `40758fd`
 - Content gate: acceptance summary, manifest, report PDF evidence anchors,
   generated plots, trend checks, Zhang multiscale fields, Liu diffusion-neck
   fields, Li core-shell/convergence fields, and DEM backend-selection outputs
   all validated
-- Workflow: `dia60al40-dem`, run `27810869643`, commit `9d8cc55`
+- Workflow: `dia60al40-dem`, run `27835484161`, commit `40758fd`
 - Artifact: `dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
-- Evidence summary: 61 checks, 61 pass, 0 missing, 0 mismatch
+- Evidence summary: 87 checks, 87 pass, 0 missing, 0 mismatch
 - Final density: rho_total = 0.95
 - Final pressure: 297.8374 MPa
-- Stage-series paper acceptance: Zhang, Yuan, Liu, and Li all pass on the
-  real-artifact gates
-- Extra stage evidence: every stage exports inferred contacts, arch candidates,
+- Stage-series paper acceptance: Li, Liu, and Yuan pass; Zhang is review with
+  zero mismatches because direct solver force-chain participation and D1 still
+  need paper-level calibration
+- Extra stage evidence: every stage exports direct LIGGGHTS contact forces,
+  arch candidates,
   electrothermal contact fields, particle temperature fields, diffusion
   mechanisms, diffusion neck ratios, and heat-isolated neck increments
 
@@ -171,3 +173,5 @@ It means the reproduction route is executable, source-backed by the PDFs, and
 ready for the next fidelity upgrades: particle-shape backend for Yuan,
 diffusion-law sintering and temperature-field solving for Liu, and core-shell
 MPFEM for Li.
+The consolidated Chinese progress matrix is tracked in
+`docs/reproduction_status_matrix_zh.md`.

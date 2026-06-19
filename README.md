@@ -64,6 +64,8 @@ can later replace the deterministic proxy data while keeping the same CSV/JSON
 contracts.
 PDF page anchors and the paper-by-paper reproduction route are summarized in
 `docs/paper_pdf_reproduction_map.md`.
+The current Chinese status matrix, including verified workflow runs and
+remaining fidelity gaps, is in `docs/reproduction_status_matrix_zh.md`.
 The step-by-step stress/contact/arch/electrothermal/densification method is in
 `docs/powder_compaction_simulation_method.md`.
 The open-source DEM backend decision and fallback ranking are tracked in
