@@ -171,7 +171,8 @@ py scripts\process_stage_series.py `
 Expected outputs:
 
 - `series_network_metrics.csv`: one row per pressure/density stage, including
-  contact Gini, participation, D1, D2, arch metrics, and coupling correlations
+  contact Gini, participation, D1, D2, virial stress tensor, fabric tensor,
+  arch metrics, and coupling correlations
 - `series_compaction_fits.csv` and `series_compaction_fits.json`: Heckel,
   Huang, and Kawakita fitting parameters
 - `series_trend_checks.json`: machine-readable paper trend checks with
@@ -194,6 +195,12 @@ reproduction program: it tracks stress/contact nonuniformity, arch formation,
 electrical/thermal transport, and density-related compaction fits in one
 repeatable command. Trend mismatches are useful: they identify which modeling
 assumption to inspect next rather than silently declaring reproduction success.
+
+If a solver exports direct pair-force contacts, pass them with
+`--contact-dir <dir> --contact-glob "{stage_id}_contacts.csv"`. Direct contact
+files should include `i`, `j`, and either `normal_force` or `force_x,force_y`.
+The stage-series output records `contact_source=direct`; otherwise it records
+`contact_source=inferred` and uses the existing geometry-overlap contact proxy.
 
 ## Acceptance Gates
 

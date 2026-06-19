@@ -5,6 +5,12 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
+from .contact_metrics import (
+    contact_force_components,
+    direct_contact_force_fraction,
+    fabric_tensor_2d,
+    virial_stress_tensor_2d,
+)
 from .core import contact_gini, contact_participation, pearson
 from .sintering import blended_neck_ratio, get_sintering_law, sintering_neck_ratio
 
@@ -27,6 +33,9 @@ class Contact:
     gap_um: float
     overlap_um: float
     normal_force: float
+    source: str = "inferred"
+    force_x: float | None = None
+    force_y: float | None = None
 
 
 @dataclass(frozen=True)
@@ -56,6 +65,55 @@ def read_particles(path: Path, *, length_unit: str = "um") -> list[Particle]:
         material = row.get("material") or row.get("shape") or row.get("type") or "unknown"
         particles.append(Particle(pid, x_um, y_um, r_um, material))
     return particles
+
+
+def read_contacts(
+    path: Path,
+    particles: list[Particle],
+    *,
+    length_unit: str = "um",
+    default_source: str = "direct",
+) -> list[Contact]:
+    scale = unit_to_um(length_unit)
+    by_id = {particle.pid: particle for particle in particles}
+    with path.open(newline="", encoding="utf-8-sig") as handle:
+        rows = list(csv.DictReader(handle))
+    contacts: list[Contact] = []
+    for row in rows:
+        i = int(row_float(row, "i", "particle_i", "id_i", "id1", "particle1"))
+        j = int(row_float(row, "j", "particle_j", "id_j", "id2", "particle2"))
+        a = by_id.get(i)
+        b = by_id.get(j)
+        if not a or not b:
+            continue
+        branch_x = b.x_um - a.x_um
+        branch_y = b.y_um - a.y_um
+        dist = math.hypot(branch_x, branch_y)
+        if dist == 0:
+            continue
+        nx = row_optional_float(row, "nx", "normal_x")
+        ny = row_optional_float(row, "ny", "normal_y")
+        if nx is None or ny is None:
+            nx, ny = branch_x / dist, branch_y / dist
+        gap = row_optional_float(row, "gap_um")
+        if gap is None:
+            gap_raw = row_optional_float(row, "gap")
+            gap = gap_raw * scale if gap_raw is not None else dist - (a.r_um + b.r_um)
+        overlap = row_optional_float(row, "overlap_um")
+        if overlap is None:
+            overlap_raw = row_optional_float(row, "overlap")
+            overlap = overlap_raw * scale if overlap_raw is not None else max(0.0, -gap)
+        fx = row_optional_float(row, "force_x", "force_x_n", "fx", "f_x")
+        fy = row_optional_float(row, "force_y", "force_y_n", "fy", "f_y")
+        normal_force = row_optional_float(row, "normal_force", "normal_force_n", "force_n", "fn")
+        if normal_force is None:
+            if fx is not None and fy is not None:
+                normal_force = abs(fx * nx + fy * ny)
+            else:
+                normal_force = 0.0
+        source = row.get("source") or default_source
+        contacts.append(Contact(i, j, nx, ny, gap, overlap, normal_force, source, fx, fy))
+    return contacts
 
 
 def infer_contacts(
@@ -98,11 +156,14 @@ def summarize_contact_network(
 ) -> dict[str, float | int | None]:
     forces = [contact.normal_force for contact in contacts]
     stress_values = local_stress_yy(particles, contacts)
+    virial = virial_stress_tensor_2d(particles, contacts, width_um=width_um, height_um=height_um)
+    fabric = fabric_tensor_2d(contacts)
     arches = arch_bridges(particles, contacts)
     density = relative_density_2d(particles, width_um, height_um)
     return {
         "particle_count": len(particles),
         "contact_count": len(contacts),
+        "direct_contact_force_fraction": direct_contact_force_fraction(contacts),
         "mean_coordination": 2.0 * len(contacts) / len(particles) if particles else 0.0,
         "relative_density_2d": density,
         "contact_gini": contact_gini(forces),
@@ -113,6 +174,8 @@ def summarize_contact_network(
         "arch_mean_strength": mean([arch.strength for arch in arches]),
         "arch_mean_direction_angle_degrees": mean([arch.direction_angle_degrees for arch in arches]),
         "arch_mean_buckling_angle_degrees": mean([arch.buckling_angle_degrees for arch in arches]),
+        **virial,
+        **fabric,
     }
 
 
@@ -373,7 +436,8 @@ def local_stress_yy(particles: list[Particle], contacts: list[Contact]) -> list[
         if not a or not b:
             continue
         branch_y = b.y_um - a.y_um
-        contribution = abs(contact.normal_force * branch_y * contact.ny)
+        _, force_y = contact_force_components(contact)
+        contribution = abs(force_y * branch_y)
         values[contact.i] += contribution / 2.0
         values[contact.j] += contribution / 2.0
     return list(values.values())
@@ -425,3 +489,18 @@ def mean(values: list[float]) -> float | None:
 
 def unit_to_um(unit: str) -> float:
     return {"um": 1.0, "micron": 1.0, "cm": 10000.0, "m": 1e6}[unit]
+
+
+def row_optional_float(row: dict[str, str], *keys: str) -> float | None:
+    for key in keys:
+        value = row.get(key)
+        if value not in (None, ""):
+            return float(value)
+    return None
+
+
+def row_float(row: dict[str, str], *keys: str) -> float:
+    value = row_optional_float(row, *keys)
+    if value is None:
+        raise ValueError(f"missing numeric column; tried {keys}")
+    return value

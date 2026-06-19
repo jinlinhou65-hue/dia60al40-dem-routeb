@@ -22,6 +22,8 @@ def main() -> None:
     parser.add_argument("--pressure-curve", required=True)
     parser.add_argument("--outdir", required=True)
     parser.add_argument("--snapshot-glob", default="dem_fem_handoff_stage*.csv")
+    parser.add_argument("--contact-dir", default=None)
+    parser.add_argument("--contact-glob", default="{stage_id}_contacts.csv")
     parser.add_argument("--length-unit", choices=["um", "micron", "cm", "m"], default="um")
     parser.add_argument("--width-um", type=float, default=None)
     parser.add_argument("--gap-tolerance-um", type=float, default=0.0)
@@ -38,6 +40,8 @@ def main() -> None:
         pressure_curve=Path(args.pressure_curve),
         outdir=Path(args.outdir),
         snapshot_glob=args.snapshot_glob,
+        contact_dir=Path(args.contact_dir) if args.contact_dir else None,
+        contact_glob=args.contact_glob,
         length_unit=args.length_unit,
         width_um=args.width_um,
         gap_tolerance_um=args.gap_tolerance_um,

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from .dem_evidence_checks import (
+    column_check,
     exact_string_check,
     file_check,
     file_glob_check,
@@ -35,6 +36,19 @@ EXPECTED_STAGES = [
     "stage5_rho095",
 ]
 EXPECTED_PAPERS = ["Li", "Liu", "Yuan", "Zhang"]
+EXPECTED_SERIES_FIELDS = [
+    "contact_source",
+    "direct_contact_force_fraction",
+    "virial_stress_xx",
+    "virial_stress_yy",
+    "virial_stress_xy",
+    "virial_mean_pressure",
+    "virial_von_mises",
+    "fabric_tensor_xx",
+    "fabric_tensor_yy",
+    "fabric_tensor_xy",
+    "fabric_anisotropy",
+]
 
 
 def validate_dem_evidence(
@@ -175,6 +189,24 @@ def validate_dem_evidence(
                 evidence=str(acceptance_path),
             ),
         ]
+    )
+    for field in EXPECTED_SERIES_FIELDS:
+        checks.append(
+            column_check(
+                "paper",
+                f"stage-series metrics include {field}",
+                metric_rows,
+                field,
+                evidence=str(metrics_path),
+            )
+        )
+    checks.append(
+        positive_scalar_check(
+            "paper",
+            "final virial von Mises stress is positive",
+            numeric_last(metric_rows, "virial_von_mises"),
+            evidence=str(metrics_path),
+        )
     )
     for row in acceptance_rows:
         checks.append(

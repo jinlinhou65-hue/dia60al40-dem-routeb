@@ -167,6 +167,25 @@ def set_check(
     }
 
 
+def column_check(
+    domain: str,
+    label: str,
+    rows: list[dict[str, object]],
+    field: str,
+    *,
+    evidence: str,
+) -> dict[str, object]:
+    present = bool(rows) and field in rows[0]
+    return {
+        "domain": domain,
+        "label": label,
+        "expected": field,
+        "actual": field if present else None,
+        "status": "pass" if present else "missing",
+        "evidence": evidence,
+    }
+
+
 def exact_string_check(domain: str, label: str, actual: object, expected: str, *, evidence: str) -> dict[str, object]:
     return {
         "domain": domain,

@@ -100,9 +100,13 @@ def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, floa
     details = outdir / "stage_details"
     details.mkdir()
     (outdir / "series_network_metrics.csv").write_text(
-        "stage_id,pressure_mpa,actual_rho_total,contact_gini,coupling_particle_heat_vs_neck_ratio\n"
+        "stage_id,pressure_mpa,actual_rho_total,contact_source,direct_contact_force_fraction,"
+        "contact_gini,coupling_particle_heat_vs_neck_ratio,virial_stress_xx,virial_stress_yy,"
+        "virial_stress_xy,virial_mean_pressure,virial_von_mises,fabric_tensor_xx,"
+        "fabric_tensor_yy,fabric_tensor_xy,fabric_anisotropy\n"
         + "\n".join(
-            f"{stage},{pressure},{rho},{0.5 - i * 0.05},0.9"
+            f"{stage},{pressure},{rho},inferred,0,{0.5 - i * 0.05},0.9,"
+            f"{1 + i},{2 + i},0.1,{1.5 + i},{3 + i},0.45,0.55,0.02,0.12"
             for i, (stage, pressure, rho, _) in enumerate(stages)
         )
         + "\n",

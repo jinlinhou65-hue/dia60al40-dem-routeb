@@ -243,6 +243,9 @@ class PaperReproductionTest(unittest.TestCase):
             self.assertGreaterEqual(len(contacts), 4)
             self.assertGreater(metrics["mean_coordination"], 1.0)
             self.assertGreaterEqual(metrics["arch_count"], 1)
+            self.assertIn("virial_stress_yy", metrics)
+            self.assertIn("fabric_anisotropy", metrics)
+            self.assertGreater(metrics["virial_von_mises"], 0.0)
             self.assertTrue(any(row["joule_heat"] > 0 for row in contact_fields))
             self.assertTrue(any(row["temperature_k"] > 293.15 for row in particle_fields))
 
@@ -318,6 +321,8 @@ class PaperReproductionTest(unittest.TestCase):
             trend_checks = json.loads((outdir / "series_trend_checks.json").read_text(encoding="utf-8"))
             report = (outdir / "series_report.md").read_text(encoding="utf-8")
             self.assertEqual(len(metrics), 4)
+            self.assertIn("virial_stress_yy", metrics[0])
+            self.assertIn("fabric_anisotropy", metrics[0])
             self.assertTrue(any(row["model"] == "Heckel" for row in fits))
             self.assertTrue(any(row["paper"] == "Zhang" for row in acceptance))
             self.assertTrue(

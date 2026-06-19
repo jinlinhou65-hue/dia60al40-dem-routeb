@@ -11,6 +11,7 @@ from .network import (
     arch_bridges,
     coupling_summary,
     infer_contacts,
+    read_contacts,
     read_particles,
     run_electrothermal_network,
     summarize_contact_network,
@@ -27,6 +28,8 @@ def process_stage_series(
     pressure_curve: Path,
     outdir: Path,
     snapshot_glob: str = "dem_fem_handoff_stage*.csv",
+    contact_dir: Path | None = None,
+    contact_glob: str = "{stage_id}_contacts.csv",
     length_unit: str = "um",
     width_um: float | None = None,
     gap_tolerance_um: float = 0.0,
@@ -50,13 +53,21 @@ def process_stage_series(
         curve = curve_by_stage.get(stage_id, {})
         height_um = optional_float(curve.get("current_height_um"))
         particles = read_particles(path, length_unit=length_unit)
-        contacts = infer_contacts(
-            particles,
-            gap_tolerance_um=gap_tolerance_um,
-            normal_stiffness=normal_stiffness,
-            force_exponent=force_exponent,
-            min_contact_force=min_contact_force,
-        )
+        direct_contact_path = contact_path_for_stage(contact_dir, contact_glob, stage_id)
+        if direct_contact_path:
+            contacts = read_contacts(direct_contact_path, particles, length_unit=length_unit)
+            contact_source = "direct"
+            contact_file = direct_contact_path.name
+        else:
+            contacts = infer_contacts(
+                particles,
+                gap_tolerance_um=gap_tolerance_um,
+                normal_stiffness=normal_stiffness,
+                force_exponent=force_exponent,
+                min_contact_force=min_contact_force,
+            )
+            contact_source = "inferred"
+            contact_file = ""
         metrics = summarize_contact_network(
             particles,
             contacts,
@@ -79,6 +90,8 @@ def process_stage_series(
         row = {
             "stage_id": stage_id,
             "snapshot_file": path.name,
+            "contact_source": contact_source,
+            "contact_file": contact_file,
             "pressure_mpa": optional_float(curve.get("pressure_mpa")),
             "target_rho_total": optional_float(curve.get("target_rho_total")),
             "actual_rho_total": optional_float(curve.get("actual_rho_total")),
@@ -135,6 +148,18 @@ def read_pressure_curve(path: Path) -> dict[str, dict[str, str]]:
         if stage_id:
             result[stage_id] = row
     return result
+
+
+def contact_path_for_stage(
+    contact_dir: Path | None,
+    contact_glob: str,
+    stage_id: str,
+) -> Path | None:
+    if contact_dir is None:
+        return None
+    pattern = contact_glob.format(stage_id=stage_id)
+    matches = sorted(contact_dir.glob(pattern))
+    return matches[0] if matches else None
 
 
 def fit_rows_from_metrics(metric_rows: list[dict[str, object]]) -> list[dict[str, object]]:
@@ -214,20 +239,22 @@ def render_series_report(
             "",
             "## Stage Metrics",
             "",
-            "| Stage | Pressure MPa | Density | Contacts | Gini | D2 | Arches | Force-current corr |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|",
+            "| Stage | Pressure MPa | Density | Contact Source | Contacts | Gini | D2 | Virial YY | Fabric anisotropy | Force-current corr |",
+            "|---|---:|---:|---|---:|---:|---:|---:|---:|---:|",
         ]
     )
     for row in metric_rows:
         lines.append(
-            "| {stage} | {pressure} | {density} | {contacts} | {gini} | {d2} | {arches} | {corr} |".format(
+            "| {stage} | {pressure} | {density} | {source} | {contacts} | {gini} | {d2} | {stress} | {fabric} | {corr} |".format(
                 stage=row["stage_id"],
                 pressure=format_optional(row.get("pressure_mpa")),
                 density=format_optional(row.get("actual_rho_total")),
+                source=row.get("contact_source", "missing"),
                 contacts=format_optional(row.get("contact_count")),
                 gini=format_optional(row.get("contact_gini")),
                 d2=format_optional(row.get("local_stress_inhomogeneity_d2")),
-                arches=format_optional(row.get("arch_count")),
+                stress=format_optional(row.get("virial_stress_yy")),
+                fabric=format_optional(row.get("fabric_anisotropy")),
                 corr=format_optional(row.get("coupling_normal_force_vs_abs_current")),
             )
         )
@@ -246,6 +273,7 @@ def render_series_report(
             "## Interpretation Notes",
             "",
             "- Contact forces inferred from overlap are a reproducibility bridge; calibrated DEM contact forces should replace them when available.",
+            "- If direct solver contact-force CSVs are supplied through `--contact-dir`, the same stress, fabric, arch, and electrothermal outputs use those forces instead.",
             "- Positive force-current and heat-neck correlations support the mechanical-contact-electrothermal-densification chain.",
             "- Stage detail electrothermal CSVs expose particle potentials, heat sources, temperatures, diffusion mechanisms, neck ratios, and heat-isolated neck increments.",
             "- Trend mismatches should be resolved by changing one assumption at a time: contact law, electrode selection, thermal scaling, or arch threshold.",

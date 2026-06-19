@@ -182,7 +182,7 @@ keeping the paper-reproduction algorithms solver-neutral.
 
 ## Next Backend Upgrades
 
-- export direct solver pair forces and stress tensors
+- wire solver pair-force exports into the existing --contact-dir stage-series contract
 - add a shape-capable backend for Yuan particle morphology
 - add a thermal field solve and calibrated diffusion constants for Liu
 - add MPFEM or FEM handoff for Li core-shell deformation

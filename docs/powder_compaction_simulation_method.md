@@ -101,6 +101,9 @@ py scripts\process_stage_series.py `
 For each stage, the post-processor infers:
 
 - particle-particle contacts, gaps, overlaps, normals, and force proxies;
+- optional direct solver contact forces when `--contact-dir` points to per-stage
+  contact CSV files;
+- virial stress tensor components and fabric tensor anisotropy;
 - force-chain and arch candidates;
 - conductance, current, Joule heat, particle heat source, and temperature;
 - diffusion mechanism, neck ratio, and heat-isolated thermal neck increment;
@@ -135,6 +138,25 @@ contracts.
 | `stage_details/*_electrothermal_contacts.csv` | contact conductance, current, and Joule heat |
 | `stage_details/*_electrothermal_particles.csv` | particle heat, temperature, diffusion mechanism, and neck growth |
 | `dem_evidence_summary.csv` | one-row real-artifact gate result |
+
+Optional direct contact-force files can be supplied to `process_stage_series.py`
+with:
+
+```powershell
+py scripts\process_stage_series.py `
+  --snapshot-dir liggghts\DEM `
+  --pressure-curve liggghts\DEM\pressure_density_curve.csv `
+  --outdir outputs\stage_series `
+  --width-um 400 `
+  --contact-dir liggghts\DEM\contact_forces `
+  --contact-glob "{stage_id}_contacts.csv"
+```
+
+Each direct contact CSV should include `i`, `j`, and either
+`normal_force` or `force_x,force_y`. Optional columns are `nx`, `ny`, `gap_um`,
+`overlap_um`, and `source`. If no direct file is present for a stage, the
+pipeline falls back to overlap-inferred contacts and records
+`contact_source=inferred`.
 
 ## Next Fidelity Upgrades
 

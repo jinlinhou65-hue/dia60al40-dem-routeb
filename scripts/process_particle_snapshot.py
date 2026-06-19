@@ -19,6 +19,7 @@ from paper_reproduction import (
     arch_bridges,
     coupling_summary,
     infer_contacts,
+    read_contacts,
     read_particles,
     run_electrothermal_network,
     summarize_contact_network,
@@ -28,6 +29,7 @@ from paper_reproduction import (
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--particles", required=True, help="CSV particle snapshot or DEM-FEM handoff table")
+    parser.add_argument("--contacts", default=None, help="Optional direct contact-force CSV")
     parser.add_argument("--outdir", required=True)
     parser.add_argument("--length-unit", choices=["um", "micron", "cm", "m"], default="um")
     parser.add_argument("--width-um", type=float, default=None)
@@ -49,13 +51,18 @@ def main() -> None:
     args = parser.parse_args()
 
     particles = read_particles(Path(args.particles), length_unit=args.length_unit)
-    contacts = infer_contacts(
-        particles,
-        gap_tolerance_um=args.gap_tolerance_um,
-        normal_stiffness=args.normal_stiffness,
-        force_exponent=args.force_exponent,
-        min_contact_force=args.min_contact_force,
-    )
+    if args.contacts:
+        contacts = read_contacts(Path(args.contacts), particles, length_unit=args.length_unit)
+        contact_output_name = "contacts_direct.csv"
+    else:
+        contacts = infer_contacts(
+            particles,
+            gap_tolerance_um=args.gap_tolerance_um,
+            normal_stiffness=args.normal_stiffness,
+            force_exponent=args.force_exponent,
+            min_contact_force=args.min_contact_force,
+        )
+        contact_output_name = "contacts_inferred.csv"
     metrics = summarize_contact_network(
         particles,
         contacts,
@@ -78,13 +85,14 @@ def main() -> None:
     )
     summary = {
         "input": str(args.particles),
+        "contacts": str(args.contacts) if args.contacts else None,
         "metrics": metrics,
         "coupling": coupling_summary(contact_fields, particle_fields),
     }
 
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
-    write_csv(outdir / "contacts_inferred.csv", [asdict(contact) for contact in contacts])
+    write_csv(outdir / contact_output_name, [asdict(contact) for contact in contacts])
     write_csv(outdir / "arch_bridges.csv", [asdict(arch) for arch in arch_bridges(particles, contacts)])
     write_csv(outdir / "electrothermal_contacts.csv", contact_fields)
     write_csv(outdir / "electrothermal_particles.csv", merge_particle_fields(particles, particle_fields))
