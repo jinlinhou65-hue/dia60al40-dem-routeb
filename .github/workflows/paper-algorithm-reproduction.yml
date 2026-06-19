@@ -36,6 +36,8 @@ jobs:
             python/paper_reproduction/cases.py \
             python/paper_reproduction/dem_evidence.py \
             python/paper_reproduction/dem_evidence_checks.py \
+            python/paper_reproduction/li_model.py \
+            python/paper_reproduction/li_validation.py \
             python/paper_reproduction/network.py \
             python/paper_reproduction/pdf_evidence.py \
             python/paper_reproduction/registry.py \

@@ -159,25 +159,25 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
                 "Cu 20-25 percent gives lower stress and better plasticity."
             ),
             reproduction_use="Coated-powder sweep directions and acceptance gates.",
-            current_status="Implemented in equivalent Li sweep generator and trend checks.",
+            current_status="Implemented in sweep and core-shell stress/plasticity proxy tables.",
         ),
         PdfEvidence(
             page=4,
             evidence="Diameter-height ratio near 2:1 gives Cu20@Fe80 relative density 96.45 percent; experiment trend is Cu30@Fe70 > Cu20@Fe80 > Cu10@Fe90 > Fe.",
             reproduction_use="Aspect-ratio and composition trend targets.",
-            current_status="Implemented as aspect-ratio peak and composition trend gates.",
+            current_status="Implemented as aspect-ratio peak, stress-growth, and composition density-ranking gates.",
         ),
         PdfEvidence(
             page=41,
             evidence="Temperature raises relative density; after pressure exceeds 500 MPa the temperature effect weakens.",
             reproduction_use="Temperature sweep trend and high-pressure diminishing-effect note.",
-            current_status="Implemented as monotone temperature sweep; high-pressure attenuation remains next step.",
+            current_status="Implemented in temperature-pressure response and attenuation gates.",
         ),
         PdfEvidence(
             page=49,
             evidence="Increasing Cu content lowers Cu/Fe interface friction and Cu-wall friction, improving flow and density.",
             reproduction_use="Composition-to-friction coupling rule.",
-            current_status="Implemented as equivalent density gain; explicit core-shell contact model remains next step.",
+            current_status="Implemented as interface-friction and wall-friction proxy gates.",
         ),
         PdfEvidence(
             page=52,
@@ -186,13 +186,13 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
                 "coordinates are imported into MSC.MARC for multi-particle core-shell FEM."
             ),
             reproduction_use="Hybrid DEM-to-FEM construction route.",
-            current_status="Documented; open-source LIGGGHTS route currently supplies DEM handoff CSVs.",
+            current_status="Documented; Li proxy now exposes MPFEM-replaceable core-shell output schemas.",
         ),
         PdfEvidence(
             page=56,
             evidence="Above 500 MPa, 100-particle and 197-particle model densities converge; 197 particles is selected for efficiency and realism.",
             reproduction_use="Reduced-model adequacy criterion.",
-            current_status="Analogous reduced DEM demo is validated with explicit evidence gates.",
+            current_status="Implemented in Li particle-count convergence output and gate.",
         ),
         PdfEvidence(
             page=71,

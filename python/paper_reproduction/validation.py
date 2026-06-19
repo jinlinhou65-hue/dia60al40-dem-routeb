@@ -6,6 +6,7 @@ import math
 from collections import Counter
 from pathlib import Path
 
+from .li_validation import validate_li_algorithm
 from .zhang_validation import validate_zhang_algorithm
 from .yuan_validation import validate_yuan_algorithm
 
@@ -62,7 +63,14 @@ def validate_algorithm_reproduction(
             )
         )
     if "li" in requested:
-        checks.extend(validate_li_algorithm(outdir / "li" / "li_coated_powder_sweeps.csv"))
+        checks.extend(
+            validate_li_algorithm(
+                outdir / "li" / "li_coated_powder_sweeps.csv",
+                outdir / "li" / "li_core_shell_metrics.csv",
+                outdir / "li" / "li_temperature_pressure_response.csv",
+                outdir / "li" / "li_particle_count_convergence.csv",
+            )
+        )
     return checks, summarize_by_paper(checks)
 
 
@@ -96,17 +104,6 @@ def validate_liu_algorithm(curve_path: Path, fits_path: Path, coupling_path: Pat
         model_check(fit_rows, "Liu", "Huang fit exists", "Huang"),
         scalar_positive_check(coupling, "Liu", "force-current correlation is positive", "normal_force_vs_current"),
         scalar_positive_check(coupling, "Liu", "Joule heat-neck correlation is positive", "joule_heat_vs_neck_ratio"),
-    ]
-
-
-def validate_li_algorithm(path: Path) -> list[dict[str, object]]:
-    rows = read_csv_or_empty(path)
-    return [
-        sweep_order_check(rows, "Li", "Cu coating improves density", "composition", "cu_fraction", 0.0, 0.25, "increasing"),
-        sweep_order_check(rows, "Li", "temperature improves density", "temperature", "temperature_c", 20.0, 140.0, "increasing"),
-        sweep_order_check(rows, "Li", "wall friction reduces density", "wall_friction", "wall_mu", 0.02, 0.20, "decreasing"),
-        sweep_order_check(rows, "Li", "pressing speed reduces density", "pressing_speed", "pressing_speed", 0.005, 0.16, "decreasing"),
-        sweep_peak_check(rows, "Li", "aspect ratio near 2 is favorable", "aspect_ratio", "aspect_ratio", 2.0),
     ]
 
 

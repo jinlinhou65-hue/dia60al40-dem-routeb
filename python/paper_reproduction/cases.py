@@ -6,6 +6,12 @@ import math
 from pathlib import Path
 
 from .core import compaction_fits, contact_gini, contact_participation, pearson
+from .li_model import (
+    li_core_shell_rows,
+    li_particle_count_convergence_rows,
+    li_sweep_rows,
+    li_temperature_pressure_rows,
+)
 from .registry import write_manifest_outputs
 from .report import generate_paper_report
 from .sintering import blended_neck_ratio
@@ -204,22 +210,19 @@ def reproduce_liu(outdir: Path) -> dict[str, object]:
 
 def reproduce_li(outdir: Path) -> dict[str, object]:
     outdir.mkdir(parents=True, exist_ok=True)
-    rows = []
-    for cu_fraction in [0.0, 0.10, 0.20, 0.25, 0.30]:
-        rows.append(li_row("composition", cu_fraction, 120.0, 0.1, 0.02, 2.0))
-    for temperature_c in [20, 60, 100, 140, 180]:
-        rows.append(li_row("temperature", 0.20, temperature_c, 0.1, 0.02, 2.0))
-    for wall_mu in [0.02, 0.08, 0.14, 0.20]:
-        rows.append(li_row("wall_friction", 0.20, 120.0, wall_mu, 0.02, 2.0))
-    for speed in [0.005, 0.02, 0.08, 0.16]:
-        rows.append(li_row("pressing_speed", 0.20, 120.0, 0.1, speed, 2.0))
-    for aspect in [0.8, 1.2, 2.0, 3.0]:
-        rows.append(li_row("aspect_ratio", 0.20, 120.0, 0.1, 0.02, aspect))
-    write_csv(outdir / "li_coated_powder_sweeps.csv", rows)
+    write_csv(outdir / "li_coated_powder_sweeps.csv", li_sweep_rows())
+    write_csv(outdir / "li_core_shell_metrics.csv", li_core_shell_rows())
+    write_csv(outdir / "li_temperature_pressure_response.csv", li_temperature_pressure_rows())
+    write_csv(outdir / "li_particle_count_convergence.csv", li_particle_count_convergence_rows())
     return {
-        "algorithm": "equivalent coated-powder parameter sweeps for composition, temperature, friction, speed and aspect ratio",
-        "outputs": ["li_coated_powder_sweeps.csv"],
-        "acceptance": "Cu coating and temperature improve density; wall friction and speed reduce it",
+        "algorithm": "equivalent core-shell coated-powder sweeps plus thermal and particle-count convergence gates",
+        "outputs": [
+            "li_coated_powder_sweeps.csv",
+            "li_core_shell_metrics.csv",
+            "li_temperature_pressure_response.csv",
+            "li_particle_count_convergence.csv",
+        ],
+        "acceptance": "Cu coating, temperature, friction, speed, aspect-ratio, core-shell and convergence trends pass",
     }
 
 
@@ -286,31 +289,6 @@ def normalized_std(values: list[float]) -> float:
     if abs(average) < 1e-12:
         return 0.0
     return stddev(values) / abs(average)
-
-
-def li_row(
-    sweep: str,
-    cu_fraction: float,
-    temperature_c: float,
-    wall_mu: float,
-    speed: float,
-    aspect_ratio: float,
-) -> dict[str, float | str]:
-    cu_gain = 0.11 * (1.0 - math.exp(-7.0 * cu_fraction))
-    temp_gain = 0.08 * (1.0 - math.exp(-max(0.0, temperature_c - 20.0) / 75.0))
-    friction_loss = 0.35 * wall_mu
-    speed_loss = 0.035 * math.log1p(speed / 0.01)
-    aspect_gain = 0.035 * math.exp(-((aspect_ratio - 2.0) / 0.9) ** 2)
-    density = 0.70 + cu_gain + temp_gain + aspect_gain - friction_loss - speed_loss
-    return {
-        "sweep": sweep,
-        "cu_fraction": cu_fraction,
-        "temperature_c": temperature_c,
-        "wall_mu": wall_mu,
-        "pressing_speed": speed,
-        "aspect_ratio": aspect_ratio,
-        "predicted_relative_density": max(0.55, min(0.96, density)),
-    }
 
 
 def write_csv(path: Path, rows: list[dict[str, object]]) -> None:

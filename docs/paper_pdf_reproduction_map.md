@@ -122,9 +122,20 @@ PDF anchors:
 Reproduction method:
 
 - Equivalent model: sweep Cu fraction, temperature, wall friction, pressing speed,
-  and aspect ratio using monotone density laws derived from PDF trends.
+  and aspect ratio using density, stress, flow, interface-friction, and wall-friction
+  proxy laws derived from PDF trends.
+- Core-shell outputs: composition table for Fe, Cu10@Fe90, Cu20@Fe80, Cu25@Fe75,
+  and Cu30@Fe70 with density at 600 MPa, stress uniformity, plastic strain,
+  interface friction, wall friction, and flow factor.
+- Temperature-pressure outputs: density is computed at 100, 300, 500, and 600 MPa
+  across 20-300 C so the high-pressure weakening of the temperature effect is
+  explicitly checked.
+- Convergence outputs: 100- and 197-particle densities are compared at 300, 500,
+  and 600 MPa to reproduce the paper's reduced-model adequacy criterion.
 - Gate: Cu and temperature improve density; wall friction and speed reduce density;
-  aspect ratio peaks near 2:1.
+  aspect ratio peaks near 2:1; Cu30@Fe70 > Cu20@Fe80 > Cu10@Fe90 > Fe; interface
+  and wall friction decrease with Cu fraction; temperature effect weakens above
+  500 MPa; 100- and 197-particle models converge by 600 MPa.
 - Current limitation: true core-shell particles require MPFEM or a coupled
   DEM-FEM route; the current open-source DEM route provides the particle handoff
   schema and evidence gates needed to plug that in.
@@ -136,7 +147,8 @@ expected evidence bundles:
 
 - Workflow: `paper-algorithm-reproduction`, commit `0a8944b`
 - Content gate: acceptance summary, manifest, report PDF evidence anchors,
-  generated plots, trend checks, and Liu diffusion-neck fields all validated
+  generated plots, trend checks, Zhang multiscale fields, Liu diffusion-neck
+  fields, and Li core-shell/convergence fields all validated
 - Workflow: `dia60al40-dem`, run `27776072563`
 - Artifact: `dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - Evidence summary: 61 checks, 61 pass, 0 missing, 0 mismatch

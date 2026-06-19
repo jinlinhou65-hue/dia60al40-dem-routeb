@@ -69,6 +69,55 @@ LIU_REQUIRED_FIELDS = {
     "neck_ratio_thermal_gain",
 }
 
+LI_REQUIRED_FIELDS = {
+    "sweep",
+    "cu_fraction",
+    "temperature_c",
+    "wall_mu",
+    "pressing_speed",
+    "aspect_ratio",
+    "interface_friction_proxy",
+    "wall_friction_proxy",
+    "flow_factor",
+    "thermal_softening_gain",
+    "thermal_expansion_penalty",
+    "max_von_mises_mpa",
+    "predicted_relative_density",
+}
+
+LI_CORE_REQUIRED_FIELDS = {
+    "composition",
+    "cu_fraction",
+    "fe_fraction",
+    "shell_thickness_ratio",
+    "relative_density_600mpa",
+    "mean_von_mises_mpa",
+    "stress_uniformity_index",
+    "plastic_strain_proxy",
+    "interface_friction_proxy",
+    "wall_friction_proxy",
+    "flow_factor",
+}
+
+LI_TEMPERATURE_REQUIRED_FIELDS = {
+    "material",
+    "pressure_mpa",
+    "temperature_c",
+    "relative_density",
+    "thermal_softening_gain",
+    "thermal_expansion_penalty",
+    "temperature_effect_attenuation",
+}
+
+LI_CONVERGENCE_REQUIRED_FIELDS = {
+    "pressure_mpa",
+    "particle_count",
+    "relative_density",
+    "density_difference_from_197",
+    "rearrangement_contribution",
+    "plastic_deformation_contribution",
+}
+
 YUAN_REQUIRED_FIELDS = {
     "shape",
     "pressure_mpa",
@@ -180,6 +229,8 @@ def validate_content(outdir: Path, paper: str = "all") -> dict[str, object]:
         )
     if "yuan" in expected_keys:
         validate_yuan_arch_content(outdir / "yuan" / "yuan_arch_bridge_metrics.csv", errors)
+    if "li" in expected_keys:
+        validate_li_coated_content(outdir / "li", errors)
 
     if errors:
         raise ContentValidationError(errors)
@@ -251,6 +302,47 @@ def validate_liu_diffusion_content(path: Path, errors: list[str]) -> None:
     )
 
 
+def validate_li_coated_content(root: Path, errors: list[str]) -> None:
+    sweeps = read_csv_if_exists(root / "li_coated_powder_sweeps.csv")
+    core = read_csv_if_exists(root / "li_core_shell_metrics.csv")
+    temperature = read_csv_if_exists(root / "li_temperature_pressure_response.csv")
+    convergence = read_csv_if_exists(root / "li_particle_count_convergence.csv")
+
+    require_required_fields(sweeps, LI_REQUIRED_FIELDS, "Li sweep CSV", errors)
+    require_required_fields(core, LI_CORE_REQUIRED_FIELDS, "Li core-shell CSV", errors)
+    require_required_fields(temperature, LI_TEMPERATURE_REQUIRED_FIELDS, "Li temperature-pressure CSV", errors)
+    require_required_fields(convergence, LI_CONVERGENCE_REQUIRED_FIELDS, "Li particle-count convergence CSV", errors)
+    if core:
+        compositions = {row.get("composition", "") for row in core}
+        require(
+            {"Fe", "Cu10@Fe90", "Cu20@Fe80", "Cu30@Fe70"} <= compositions,
+            errors,
+            "Li core-shell CSV missing required composition rows",
+        )
+        interface = [float_value(row.get("interface_friction_proxy")) for row in core]
+        require(
+            finite_end_delta(interface) < 0.0,
+            errors,
+            "Li interface friction does not decrease with Cu fraction",
+        )
+    if temperature:
+        low = temperature_density(temperature, "Cu20@Fe80", 300.0, 20.0)
+        high = temperature_density(temperature, "Cu20@Fe80", 300.0, 140.0)
+        require(
+            math.isfinite(low) and math.isfinite(high) and high > low,
+            errors,
+            "Li temperature-pressure CSV does not raise density with temperature at 300 MPa",
+        )
+    if convergence:
+        early = particle_count_delta(convergence, 300.0)
+        final = particle_count_delta(convergence, 600.0)
+        require(
+            math.isfinite(early) and math.isfinite(final) and final < early and final < 0.001,
+            errors,
+            "Li particle-count convergence is not demonstrated at 600 MPa",
+        )
+
+
 def validate_yuan_arch_content(path: Path, errors: list[str]) -> None:
     rows = read_csv_if_exists(path)
     require(bool(rows), errors, "Yuan arch-bridge CSV has no rows")
@@ -270,6 +362,51 @@ def validate_yuan_arch_content(path: Path, errors: list[str]) -> None:
         errors,
         "Yuan arch direction deviates too far from 90 degrees",
     )
+
+
+def require_required_fields(
+    rows: list[dict[str, str]],
+    required: set[str],
+    label: str,
+    errors: list[str],
+) -> None:
+    require(bool(rows), errors, f"{label} has no rows")
+    if not rows:
+        return
+    missing_fields = sorted(required - set(rows[0]))
+    require(not missing_fields, errors, f"{label} missing fields: {missing_fields}")
+
+
+def finite_end_delta(values: list[float]) -> float:
+    finite_values = [value for value in values if math.isfinite(value)]
+    if len(finite_values) < 2:
+        return math.nan
+    return finite_values[-1] - finite_values[0]
+
+
+def temperature_density(
+    rows: list[dict[str, str]],
+    material: str,
+    pressure_mpa: float,
+    temperature_c: float,
+) -> float:
+    for row in rows:
+        pressure = float_value(row.get("pressure_mpa"))
+        temperature = float_value(row.get("temperature_c"))
+        if row.get("material") == material and pressure == pressure_mpa and temperature == temperature_c:
+            return float_value(row.get("relative_density"))
+    return math.nan
+
+
+def particle_count_delta(rows: list[dict[str, str]], pressure_mpa: float) -> float:
+    values = {
+        int(float_value(row.get("particle_count"))): float_value(row.get("relative_density"))
+        for row in rows
+        if float_value(row.get("pressure_mpa")) == pressure_mpa
+    }
+    if not (math.isfinite(values.get(100, math.nan)) and math.isfinite(values.get(197, math.nan))):
+        return math.nan
+    return abs(values[197] - values[100])
 
 
 def extract_summary_papers(summary: object) -> dict[str, object]:

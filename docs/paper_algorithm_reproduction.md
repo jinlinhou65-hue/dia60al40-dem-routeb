@@ -24,7 +24,7 @@ research logic stable:
 | Zhang | DEM contact-force statistics, force-chain strength D1, measurement-circle local stress D2, and wall/particle friction sensitivity | `zhang/zhang_multiscale_metrics.csv`, `zhang/zhang_friction_sensitivity.csv` |
 | Yuan | DEM force-chain extraction and arch-bridge morphology metrics, including count, length, obstruction, strength, direction, and buckling trends | `yuan/yuan_arch_bridge_metrics.csv` |
 | Liu | Huang/Heckel/Kawakita compaction fits plus contact electrical-thermal-sintering network | `liu/liu_compaction_curve.csv`, `liu/liu_compaction_fits.csv`, `liu/liu_electrothermal_sintering.csv`, `liu/liu_coupling_summary.json` |
-| Li | Equivalent coated-powder sweeps for composition, temperature, wall friction, pressing speed, and aspect ratio | `li/li_coated_powder_sweeps.csv` |
+| Li | Equivalent core-shell coated-powder sweeps, interface/wall friction, temperature-pressure attenuation, and particle-count convergence | `li/li_coated_powder_sweeps.csv`, `li/li_core_shell_metrics.csv`, `li/li_temperature_pressure_response.csv`, `li/li_particle_count_convergence.csv` |
 
 ## Run
 
@@ -55,9 +55,9 @@ The workflow runs Python syntax checks, unit tests, generates the four paper
 outputs, validates the generated content, and uploads
 `outputs/paper_algorithm_reproduction/**` as an artifact. The content gate checks
 that acceptance summaries, manifest entries, report PDF evidence anchors, plots,
-trend checks, Zhang multiscale/friction fields, and Liu electrothermal
-diffusion-neck fields are present and passing. It does not install YADE or
-LIGGGHTS.
+trend checks, Zhang multiscale/friction fields, Liu electrothermal
+diffusion-neck fields, and Li core-shell/convergence fields are present and
+passing. It does not install YADE or LIGGGHTS.
 
 For real DEM evidence, run `.github/workflows/dia60al40-dem.yml`. That workflow
 builds LIGGGHTS, generates `dem_fem_handoff_stage*.csv` and
@@ -193,7 +193,7 @@ assumption to inspect next rather than silently declaring reproduction success.
 | Zhang | pressure and relative density increase while Gini, D1, and D2 decrease; wall and particle friction raise inhomogeneity |
 | Yuan | arch count rises then fluctuates, total length fluctuates, strength growth slows after about 100 MPa, direction remains near 90 degrees, and circular particles show stronger obstruction than low-aspect-ratio strip proxies |
 | Liu | compaction fits are produced and contact force/current/heat/diffusion-neck correlations are positive |
-| Li | Cu coating and temperature increase predicted density; wall friction and pressing speed reduce it |
+| Li | Cu coating and temperature increase predicted density; wall friction and pressing speed reduce it; core-shell density ranking, interface-friction decrease, high-pressure thermal attenuation, and 100/197-particle convergence pass |
 
 This is not the final calibrated DEM/MPFEM solution. It is the reproducible
 algorithm scaffold. Once real particle snapshots are available, the same output
