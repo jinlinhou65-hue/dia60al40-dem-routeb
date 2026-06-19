@@ -93,7 +93,7 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
             page=42,
             evidence="Arch length, strength, buckling angle, and direction angle are defined by equations 4-2 to 4-5.",
             reproduction_use="Arch metric output schema.",
-            current_status="Implemented in yuan metrics and stage_details arch CSV outputs.",
+            current_status="Implemented in yuan count, length, obstruction, strength, direction, and buckling outputs.",
         ),
         PdfEvidence(
             page=49,
@@ -103,7 +103,7 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
                 "slows after about 100 MPa, direction stays near 90 degrees."
             ),
             reproduction_use="Shape and pressure trend acceptance gates.",
-            current_status="Implemented in proxy shape sweep; clump/polygon DEM remains next step.",
+            current_status="Implemented with count-peak, length-fluctuation, strength-slowdown, direction, and shape gates; clump/polygon DEM remains next step.",
         ),
     ],
     "liu": [

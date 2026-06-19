@@ -64,10 +64,11 @@ Reproduction method:
 
 - DEM/MPFEM target: use DEM for particle arrangement and contact graph; use MPFEM
   later when deformable particle shape is required.
-- Metrics: arch count, length, strength, buckling angle, direction angle, and
-  shape-dependent trends.
-- Gate: arch metrics are finite/positive; circle proxy has stronger arch
-  obstruction than strip proxy; real stage-series arch outputs exist.
+- Metrics: arch count, mean length, total length, obstruction index, strength,
+  buckling angle, direction angle, and shape-dependent trends.
+- Gate: arch count has an interior peak, total length fluctuates, strength growth
+  slows after about 100 MPa, direction stays near 90 degrees, circle proxy has
+  stronger obstruction than strip proxy, and real stage-series arch outputs exist.
 - Current limitation: LIGGGHTS route uses spherical particles; clumps, polygons,
   superquadrics, or MPFEM are needed for exact circle/hexagon/strip reproduction.
 

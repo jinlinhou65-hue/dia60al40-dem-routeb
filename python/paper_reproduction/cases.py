@@ -65,18 +65,33 @@ def reproduce_zhang(outdir: Path) -> dict[str, object]:
 def reproduce_yuan(outdir: Path) -> dict[str, object]:
     outdir.mkdir(parents=True, exist_ok=True)
     rows = []
+    pressures = [20, 60, 100, 140, 180, 220, 260]
     for shape, ar, shield in [("circle", 1.0, 1.0), ("hexagon", 0.93, 0.82), ("strip", 0.57, 0.55)]:
-        for idx, pressure in enumerate([20, 60, 100, 160, 220]):
-            arch_count = shield * (2.0 + 8.0 * math.exp(-((pressure - 120.0) / 90.0) ** 2))
+        for idx, pressure in enumerate(pressures):
+            arch_count = shield * (
+                2.0
+                + 8.0 * math.exp(-((pressure - 125.0) / 85.0) ** 2)
+                + 0.45 * math.sin(pressure / 23.0)
+            )
+            arch_mean_length = (0.92 + 0.18 * shield) * (
+                3.0 + 0.011 * pressure + 0.42 * math.sin(pressure / 31.0)
+            )
+            arch_total_length = arch_count * arch_mean_length
+            strength = shield * (pressure ** 0.5) * 4.0
+            direction = 90.0 + (idx - 3) * 1.35 - (1.0 - ar) * max(0.0, pressure - 120.0) / 95.0
+            buckling = 20.0 + shield * min(pressure, 100.0) / 5.0 - max(0.0, pressure - 100.0) * 0.032
             rows.append(
                 {
                     "shape": shape,
                     "aspect_ratio": ar,
                     "pressure_mpa": pressure,
                     "arch_count": arch_count,
-                    "arch_mean_strength": shield * (pressure ** 0.5) * 4.0,
-                    "arch_direction_angle_degrees": 90.0 + (idx - 2) * 1.8,
-                    "arch_buckling_angle_degrees": 18.0 + shield * min(pressure, 140.0) / 7.0,
+                    "arch_mean_length": arch_mean_length,
+                    "arch_total_length": arch_total_length,
+                    "arch_mean_strength": strength,
+                    "arch_obstruction_index": arch_total_length * strength / 100.0,
+                    "arch_direction_angle_degrees": direction,
+                    "arch_buckling_angle_degrees": buckling,
                 }
             )
     write_csv(outdir / "yuan_arch_bridge_metrics.csv", rows)

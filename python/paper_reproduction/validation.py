@@ -6,6 +6,8 @@ import math
 from collections import Counter
 from pathlib import Path
 
+from .yuan_validation import validate_yuan_algorithm
+
 
 def validate_stage_series(
     metric_rows: list[dict[str, object]],
@@ -86,33 +88,6 @@ def validate_zhang_algorithm(path: Path) -> list[dict[str, object]]:
         trend_check(rows, "Zhang", "contact participation increases", "contact_participation", "increasing"),
         trend_check(rows, "Zhang", "force-chain D1 decreases", "force_chain_strength_inhomogeneity_d1", "decreasing"),
         trend_check(rows, "Zhang", "local-stress D2 decreases", "local_stress_inhomogeneity_d2", "decreasing"),
-    ]
-
-
-def validate_yuan_algorithm(path: Path) -> list[dict[str, object]]:
-    rows = read_csv_or_empty(path)
-    return [
-        positive_check(rows, "Yuan", "arch candidates exist", "arch_count"),
-        grouped_order_check(
-            rows,
-            "Yuan",
-            "circle has stronger arch obstruction than strip",
-            group_field="shape",
-            value_field="arch_count",
-            higher_group="circle",
-            lower_group="strip",
-        ),
-        grouped_order_check(
-            rows,
-            "Yuan",
-            "circle arch strength exceeds strip",
-            group_field="shape",
-            value_field="arch_mean_strength",
-            higher_group="circle",
-            lower_group="strip",
-        ),
-        finite_check(rows, "Yuan", "arch direction angle is measured", "arch_direction_angle_degrees"),
-        finite_check(rows, "Yuan", "arch buckling angle is measured", "arch_buckling_angle_degrees"),
     ]
 
 
@@ -225,38 +200,6 @@ def scalar_positive_check(
         "actual": number if math.isfinite(number) else None,
         "status": status,
         "sample_count": 1 if math.isfinite(number) else 0,
-    }
-
-
-def grouped_order_check(
-    rows: list[dict[str, object]],
-    paper: str,
-    label: str,
-    *,
-    group_field: str,
-    value_field: str,
-    higher_group: str,
-    lower_group: str,
-) -> dict[str, object]:
-    high = mean_for_group(rows, group_field, higher_group, value_field)
-    low = mean_for_group(rows, group_field, lower_group, value_field)
-    if high is None or low is None:
-        status = "missing"
-        actual = None
-    elif high > low:
-        status = "pass"
-        actual = high - low
-    else:
-        status = "mismatch"
-        actual = high - low
-    return {
-        "paper": paper,
-        "label": label,
-        "field": value_field,
-        "expected": f"{higher_group}>{lower_group}",
-        "actual": actual,
-        "status": status,
-        "sample_count": len(rows),
     }
 
 
@@ -463,20 +406,6 @@ def numeric_values(rows: list[dict[str, object]], field: str) -> list[float]:
         if math.isfinite(number):
             values.append(number)
     return values
-
-
-def mean_for_group(
-    rows: list[dict[str, object]],
-    group_field: str,
-    group_value: str,
-    value_field: str,
-) -> float | None:
-    values = [
-        float(row[value_field])
-        for row in rows
-        if row.get(group_field) == group_value and row.get(value_field) not in (None, "")
-    ]
-    return sum(values) / len(values) if values else None
 
 
 def value_at(

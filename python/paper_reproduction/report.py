@@ -103,8 +103,24 @@ def plot_yuan(outdir: Path, plots_dir: Path) -> list[Path]:
         )
         for group in groups
     ]
+    length_series = [
+        (
+            group,
+            [(number(row, "pressure_mpa"), number(row, "arch_total_length")) for row in rows if row["shape"] == group],
+        )
+        for group in groups
+    ]
+    obstruction_series = [
+        (
+            group,
+            [(number(row, "pressure_mpa"), number(row, "arch_obstruction_index")) for row in rows if row["shape"] == group],
+        )
+        for group in groups
+    ]
     arch_path = plots_dir / "yuan_arch_count_by_shape.svg"
     strength_path = plots_dir / "yuan_arch_strength_by_shape.svg"
+    length_path = plots_dir / "yuan_arch_total_length_by_shape.svg"
+    obstruction_path = plots_dir / "yuan_arch_obstruction_by_shape.svg"
     write_svg_line_chart(
         arch_path,
         title="Yuan: Arch Count Depends On Particle Shape",
@@ -119,7 +135,21 @@ def plot_yuan(outdir: Path, plots_dir: Path) -> list[Path]:
         y_label="Arch strength proxy",
         series=strength_series,
     )
-    return [arch_path, strength_path]
+    write_svg_line_chart(
+        length_path,
+        title="Yuan: Arch Total Length Fluctuates",
+        x_label="Pressure MPa",
+        y_label="Arch total length proxy",
+        series=length_series,
+    )
+    write_svg_line_chart(
+        obstruction_path,
+        title="Yuan: Arch Obstruction Drops With Lower AR",
+        x_label="Pressure MPa",
+        y_label="Arch obstruction proxy",
+        series=obstruction_series,
+    )
+    return [arch_path, strength_path, length_path, obstruction_path]
 
 
 def plot_liu(outdir: Path, plots_dir: Path) -> list[Path]:

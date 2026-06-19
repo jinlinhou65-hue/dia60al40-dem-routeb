@@ -22,7 +22,7 @@ research logic stable:
 | Paper | Reproduced Algorithm Layer | Output |
 | --- | --- | --- |
 | Zhang | DEM contact-force statistics, force-chain inhomogeneity, local stress inhomogeneity | `zhang/zhang_multiscale_metrics.csv` |
-| Yuan | DEM force-chain extraction and arch-bridge morphology metrics | `yuan/yuan_arch_bridge_metrics.csv` |
+| Yuan | DEM force-chain extraction and arch-bridge morphology metrics, including count, length, obstruction, strength, direction, and buckling trends | `yuan/yuan_arch_bridge_metrics.csv` |
 | Liu | Huang/Heckel/Kawakita compaction fits plus contact electrical-thermal-sintering network | `liu/liu_compaction_curve.csv`, `liu/liu_compaction_fits.csv`, `liu/liu_electrothermal_sintering.csv`, `liu/liu_coupling_summary.json` |
 | Li | Equivalent coated-powder sweeps for composition, temperature, wall friction, pressing speed, and aspect ratio | `li/li_coated_powder_sweeps.csv` |
 
@@ -190,7 +190,7 @@ assumption to inspect next rather than silently declaring reproduction success.
 | Paper | First Gate |
 | --- | --- |
 | Zhang | pressure and relative density increase while Gini, D1, and D2 decrease |
-| Yuan | circular particles show stronger arch obstruction than low-aspect-ratio strip proxies |
+| Yuan | arch count rises then fluctuates, total length fluctuates, strength growth slows after about 100 MPa, direction remains near 90 degrees, and circular particles show stronger obstruction than low-aspect-ratio strip proxies |
 | Liu | compaction fits are produced and contact force/current/heat/diffusion-neck correlations are positive |
 | Li | Cu coating and temperature increase predicted density; wall friction and pressing speed reduce it |
 

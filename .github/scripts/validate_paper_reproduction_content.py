@@ -36,6 +36,18 @@ LIU_REQUIRED_FIELDS = {
     "neck_ratio_thermal_gain",
 }
 
+YUAN_REQUIRED_FIELDS = {
+    "shape",
+    "pressure_mpa",
+    "arch_count",
+    "arch_mean_length",
+    "arch_total_length",
+    "arch_mean_strength",
+    "arch_obstruction_index",
+    "arch_direction_angle_degrees",
+    "arch_buckling_angle_degrees",
+}
+
 
 class ContentValidationError(Exception):
     def __init__(self, errors: list[str]) -> None:
@@ -127,6 +139,8 @@ def validate_content(outdir: Path, paper: str = "all") -> dict[str, object]:
             errors,
             "report missing Liu diffusion-law content",
         )
+    if "yuan" in expected_keys:
+        validate_yuan_arch_content(outdir / "yuan" / "yuan_arch_bridge_metrics.csv", errors)
 
     if errors:
         raise ContentValidationError(errors)
@@ -162,6 +176,27 @@ def validate_liu_diffusion_content(path: Path, errors: list[str]) -> None:
         any(math.isfinite(value) and value > 0.0 for value in diffusion_ratios),
         errors,
         "Liu neck_ratio_diffusion never becomes positive",
+    )
+
+
+def validate_yuan_arch_content(path: Path, errors: list[str]) -> None:
+    rows = read_csv_if_exists(path)
+    require(bool(rows), errors, "Yuan arch-bridge CSV has no rows")
+    if not rows:
+        return
+    missing_fields = sorted(YUAN_REQUIRED_FIELDS - set(rows[0]))
+    require(not missing_fields, errors, f"Yuan arch CSV missing fields: {missing_fields}")
+    obstruction = [float_value(row.get("arch_obstruction_index")) for row in rows]
+    direction = [float_value(row.get("arch_direction_angle_degrees")) for row in rows]
+    require(
+        any(math.isfinite(value) and value > 0.0 for value in obstruction),
+        errors,
+        "Yuan arch obstruction never becomes positive",
+    )
+    require(
+        all(not math.isfinite(value) or abs(value - 90.0) <= 8.0 for value in direction),
+        errors,
+        "Yuan arch direction deviates too far from 90 degrees",
     )
 
 

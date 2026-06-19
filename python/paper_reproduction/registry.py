@@ -86,12 +86,13 @@ PAPER_TARGETS = [
         paper_methods=[
             "DEM force-chain extraction",
             "arch-bridge identification from strong connected force chains",
-            "arch count, obstruction, strength, direction angle, and buckling angle",
+            "arch count, length, obstruction, strength, direction angle, and buckling angle",
             "particle-shape comparison using circle, hexagon, and strip proxies",
         ],
         reproduced_algorithms=[
             "shape-dependent arch metric generator",
             "arch candidates from inferred contact network",
+            "paper-level arch count, length, obstruction, strength, direction, and buckling trend gates",
             "stage-series arch count, strength, direction, and buckling outputs",
         ],
         calibration_targets=[
@@ -107,9 +108,13 @@ PAPER_TARGETS = [
         ],
         acceptance_gates=[
             "arch_count positive",
-            "circle arch_count greater than strip arch_count",
+            "arch length and obstruction positive",
+            "circle arch obstruction greater than strip arch obstruction",
             "circle arch strength greater than strip arch strength",
-            "arch direction angle finite",
+            "arch count increases then fluctuates",
+            "arch total length fluctuates",
+            "arch strength growth slows after about 100 MPa",
+            "arch direction angle near 90 degrees",
             "arch buckling angle finite",
         ],
         current_backend="proxy shape sweep plus Route-B contact-network arch extraction",
