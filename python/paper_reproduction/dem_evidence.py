@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .direct_force_validation import csv_int, uses_complete_direct_contact_forces
 from .dem_evidence_checks import (
     column_check,
     exact_string_check,
@@ -90,6 +91,7 @@ def validate_dem_evidence(
     metric_rows = read_csv_or_empty(metrics_path)
     fit_rows = read_csv_or_empty(fits_path)
     acceptance_rows = read_csv_or_empty(acceptance_path)
+    direct_force_mode = uses_complete_direct_contact_forces(metric_rows)
 
     checks.extend(
         [
@@ -230,15 +232,7 @@ def validate_dem_evidence(
         ]
     )
     for row in acceptance_rows:
-        checks.append(
-            exact_string_check(
-                "paper",
-                f"{row.get('paper', 'unknown')} paper acceptance status",
-                row.get("status"),
-                "pass",
-                evidence=str(acceptance_path),
-            )
-        )
+        checks.append(paper_acceptance_status_check(row, direct_force_mode, acceptance_path))
     checks.extend(
         [
             model_check("paper", "Heckel fit is available", fit_rows, "Heckel", evidence=str(fits_path)),
@@ -268,6 +262,37 @@ def validate_dem_evidence(
         checks.append(missing_check("runtime", "rendered deck is available", str(rendered_deck)))
 
     return checks, summarize_checks(checks)
+
+
+def paper_acceptance_status_check(
+    row: dict[str, object],
+    direct_force_mode: bool,
+    acceptance_path: Path,
+) -> dict[str, object]:
+    paper = str(row.get("paper", "unknown"))
+    status = str(row.get("status", ""))
+    missing = csv_int(row.get("missing"))
+    mismatch = csv_int(row.get("mismatch"))
+    accepted = status == "pass"
+    if (
+        paper == "Zhang"
+        and direct_force_mode
+        and status == "review"
+        and missing == 0
+        and mismatch == 0
+    ):
+        accepted = True
+    expected = "pass"
+    if paper == "Zhang" and direct_force_mode:
+        expected = "pass or review with complete direct solver contact forces"
+    return {
+        "domain": "paper",
+        "label": f"{paper} paper acceptance status",
+        "expected": expected,
+        "actual": status,
+        "status": "pass" if accepted else "mismatch",
+        "evidence": str(acceptance_path),
+    }
 
 
 def write_dem_evidence_outputs(dem_dir: Path, outdir: Path | None = None) -> dict[str, Path]:

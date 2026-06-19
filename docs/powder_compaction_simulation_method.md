@@ -85,6 +85,9 @@ gh workflow run dia60al40-dem.yml `
 The workflow builds LIGGGHTS-PUBLIC, renders the deck, generates meshes, runs
 six density stages, exports DEM-FEM handoff CSVs, processes the stage series,
 and validates the evidence bundle.
+This is the preferred first validation path on Windows machines; WSL2 becomes
+useful after the workflow is green and parameter iteration needs local
+Linux-style solver runs.
 
 ### 4. Convert each DEM stage into paper metrics
 
@@ -121,6 +124,9 @@ py scripts\validate_dem_evidence.py `
 The gate proves that the artifact contains real stage dumps, restarts, pressure
 curve data, handoff tables, stage-series paper metrics, electrothermal outputs,
 and runtime controls.
+If direct LIGGGHTS contact forces are complete, the gate allows Zhang's
+contact-participation and D1 monotonic checks to remain `review` in the reduced
+demo rather than falsely marking them as calibrated paper reproduction.
 
 ## Data Contract
 
@@ -157,6 +163,9 @@ Each direct contact CSV should include `i`, `j`, and either
 `overlap_um`, and `source`. If no direct file is present for a stage, the
 pipeline falls back to overlap-inferred contacts and records
 `contact_source=inferred`.
+For the lightweight workflow demo, `contact_source=direct` and
+`direct_contact_force_fraction=1.0` are required so contact, current,
+temperature, and densification proxies are driven by exported solver contacts.
 
 ## Next Fidelity Upgrades
 

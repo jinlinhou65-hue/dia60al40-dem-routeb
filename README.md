@@ -33,6 +33,7 @@ For a broader ensemble, keep the default inputs or provide JSON lists for
 - `liggghts/DEM/pressure_density_curve.csv`
 - `liggghts/DEM/pressure_density_summary.csv`
 - `liggghts/DEM/dem_fem_handoff_stage*.csv`
+- `liggghts/DEM/contact_forces/*_contacts.csv`
 - `liggghts/DEM/plastic_morphology_metrics.csv`
 - `liggghts/DEM/plots/*.png`
 - `liggghts/DEM/paper_reproduction/series_network_metrics.csv`
@@ -108,6 +109,9 @@ py scripts\process_stage_series.py `
 The stage-series run also writes `series_trend_checks.json` and
 `series_acceptance_summary.csv`, so every paper has a visible pass/review/
 missing/mismatch status instead of just raw plots.
+In the reduced direct-force demo, a Zhang `review` status means real LIGGGHTS
+pair-force contacts are present but the small run has not yet been calibrated
+to Zhang's monotonic force-chain trend.
 
 The main `dia60al40-dem.yml` workflow now runs this stage-series command
 automatically after real DEM handoff tables and `pressure_density_curve.csv`

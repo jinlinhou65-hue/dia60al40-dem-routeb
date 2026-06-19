@@ -84,8 +84,10 @@ python3 python/verify_dem_stages.py --root liggghts/DEM
 test -s liggghts/DEM/pressure_density_curve_raw.csv
 
 echo "[CLOUD] convert stage dumps to COMSOL CSV"
+mkdir -p liggghts/DEM/contact_forces
 for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho088 stage5_rho095; do
   dump=$(ls -1 "liggghts/DEM/${stage}_"*.dump | sort -V | tail -1)
+  contacts=$(ls -1 "liggghts/DEM/${stage}_contacts_"*.local | sort -V | tail -1)
   python3 python/convert_liggghts_csv_to_comsol.py \
     --input "$dump" \
     --mode 2d \
@@ -96,6 +98,11 @@ for stage in stage0_preload stage1_rho065 stage2_rho072 stage3_rho080 stage4_rho
     --input "$dump" \
     --stage-id "$stage" \
     --output "liggghts/DEM/dem_fem_handoff_${stage}.csv"
+  python3 python/export_liggghts_contact_forces.py \
+    --local-dump "$contacts" \
+    --particles "liggghts/DEM/dem_fem_handoff_${stage}.csv" \
+    --stage-id "$stage" \
+    --output "liggghts/DEM/contact_forces/${stage}_contacts.csv"
 done
 
 python3 python/export_pressure_density_curve.py \
@@ -127,6 +134,7 @@ python3 scripts/process_stage_series.py \
   --snapshot-dir liggghts/DEM \
   --pressure-curve liggghts/DEM/pressure_density_curve.csv \
   --outdir liggghts/DEM/paper_reproduction \
+  --contact-dir liggghts/DEM/contact_forces \
   --width-um 400
 echo "[CLOUD] paper reproduction acceptance"
 cat liggghts/DEM/paper_reproduction/series_acceptance_summary.csv

@@ -84,6 +84,11 @@ normal DEM artifact bundle. `dem_evidence_summary.csv` and
 `dem_evidence_report.md` are the CI gate proving that the artifact contains real
 stage dumps, restarts, handoff tables, pressure-density data, paper acceptance
 outputs, direct pair-force contact CSVs, and runtime controls.
+For reduced direct-force DEM demos, Zhang's contact-participation and D1 trend
+checks may be `review` rather than `pass` when the full LIGGGHTS pair-force
+series is present but not yet calibrated to the paper's monotonic trend. The
+evidence gate still requires all direct contact CSVs and
+`direct_contact_force_fraction=1.0`.
 
 The first-pass algorithm run also writes:
 
@@ -165,6 +170,7 @@ py scripts\process_stage_series.py `
   --snapshot-dir liggghts\DEM `
   --pressure-curve liggghts\DEM\pressure_density_curve.csv `
   --outdir outputs\stage_series `
+  --contact-dir liggghts\DEM\contact_forces `
   --width-um 400 `
   --sintering-law blended `
   --sintering-time-s 1.0 `
@@ -212,7 +218,7 @@ The stage-series output records `contact_source=direct`; otherwise it records
 
 | Paper | First Gate |
 | --- | --- |
-| Zhang | pressure and relative density increase while Gini, D1, and D2 decrease; wall and particle friction raise inhomogeneity |
+| Zhang | pressure, density, and coordination increase while D2 decreases; contact participation and D1 are hard trend gates for calibrated/proxy runs and review items for complete direct-force demo runs until Zhang-level calibration is finished |
 | Yuan | arch count rises then fluctuates, total length fluctuates, strength growth slows after about 100 MPa, direction remains near 90 degrees, and circular particles show stronger obstruction than low-aspect-ratio strip proxies |
 | Liu | compaction fits are produced and contact force/current/heat/diffusion-neck correlations are positive |
 | Li | Cu coating and temperature increase predicted density; wall friction and pressing speed reduce it; core-shell density ranking, interface-friction decrease, high-pressure thermal attenuation, and 100/197-particle convergence pass |

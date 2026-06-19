@@ -49,8 +49,31 @@ class DemEvidenceTest(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertTrue((Path(tmp) / "evidence" / "dem_evidence_summary.csv").exists())
 
+    def test_zhang_direct_force_review_is_accepted_when_artifacts_are_complete(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dem_dir = root / "DEM"
+            outdir = dem_dir / "paper_reproduction"
+            create_complete_artifact(root, dem_dir, outdir, zhang_status="review")
 
-def create_complete_artifact(root: Path, dem_dir: Path, outdir: Path) -> None:
+            checks, summary = validate_dem_evidence(dem_dir)
+            zhang_status_check = next(
+                check
+                for check in checks
+                if check["label"] == "Zhang paper acceptance status"
+            )
+
+            self.assertEqual(summary[0]["status"], "pass")
+            self.assertEqual(zhang_status_check["status"], "pass")
+
+
+def create_complete_artifact(
+    root: Path,
+    dem_dir: Path,
+    outdir: Path,
+    *,
+    zhang_status: str = "pass",
+) -> None:
     stages = [
         ("stage0_preload", 0.0, 0.56, 50.0),
         ("stage1_rho065", 35.0, 0.65, 43.0),
@@ -87,7 +110,7 @@ def create_complete_artifact(root: Path, dem_dir: Path, outdir: Path) -> None:
         write_direct_contacts(dem_dir / "contact_forces" / f"{stage}_contacts.csv", stage)
         (dem_dir / f"{stage}.restart").write_text("restart\n", encoding="utf-8")
         (dem_dir / f"{stage}_100.dump").write_text("dump\n", encoding="utf-8")
-    write_paper_outputs(outdir, stages)
+    write_paper_outputs(outdir, stages, zhang_status=zhang_status)
 
 
 def write_particles(path: Path) -> None:
@@ -107,7 +130,12 @@ def write_direct_contacts(path: Path, stage: str) -> None:
     )
 
 
-def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, float]]) -> None:
+def write_paper_outputs(
+    outdir: Path,
+    stages: list[tuple[str, float, float, float]],
+    *,
+    zhang_status: str,
+) -> None:
     details = outdir / "stage_details"
     details.mkdir()
     (outdir / "series_network_metrics.csv").write_text(
@@ -130,7 +158,7 @@ def write_paper_outputs(outdir: Path, stages: list[tuple[str, float, float, floa
     (outdir / "series_acceptance_summary.csv").write_text(
         "paper,status,pass,review,missing,mismatch,check_count\n"
         "Li,pass,1,0,0,0,1\nLiu,pass,5,0,0,0,5\n"
-        "Yuan,pass,3,0,0,0,3\nZhang,pass,6,0,0,0,6\n",
+        f"Yuan,pass,3,0,0,0,3\nZhang,{zhang_status},4,{2 if zhang_status == 'review' else 0},0,0,6\n",
         encoding="utf-8",
     )
     (outdir / "series_report.md").write_text("# series report\n", encoding="utf-8")

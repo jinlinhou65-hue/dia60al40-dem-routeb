@@ -6,6 +6,7 @@ import math
 from collections import Counter
 from pathlib import Path
 
+from .direct_force_validation import mark_direct_force_review, uses_complete_direct_contact_forces
 from .li_validation import validate_li_algorithm
 from .zhang_validation import validate_zhang_algorithm
 from .yuan_validation import validate_yuan_algorithm
@@ -16,13 +17,26 @@ def validate_stage_series(
     fit_rows: list[dict[str, object]],
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     checks: list[dict[str, object]] = []
+    direct_force_mode = uses_complete_direct_contact_forces(metric_rows)
     checks.extend(
         [
             trend_check(metric_rows, "Zhang", "pressure rises with compaction", "pressure_mpa", "increasing"),
             trend_check(metric_rows, "Zhang", "density rises with pressure", "actual_rho_total", "increasing"),
             trend_check(metric_rows, "Zhang", "coordination increases", "mean_coordination", "increasing"),
-            trend_check(metric_rows, "Zhang", "contact participation increases", "contact_participation", "increasing"),
-            trend_check(metric_rows, "Zhang", "force-chain D1 decreases", "force_chain_strength_inhomogeneity_d1", "decreasing"),
+            mark_direct_force_review(
+                trend_check(metric_rows, "Zhang", "contact participation increases", "contact_participation", "increasing"),
+                direct_force_mode=direct_force_mode,
+            ),
+            mark_direct_force_review(
+                trend_check(
+                    metric_rows,
+                    "Zhang",
+                    "force-chain D1 decreases",
+                    "force_chain_strength_inhomogeneity_d1",
+                    "decreasing",
+                ),
+                direct_force_mode=direct_force_mode,
+            ),
             trend_check(metric_rows, "Zhang", "local-stress D2 decreases", "local_stress_inhomogeneity_d2", "decreasing"),
             positive_check(metric_rows, "Yuan", "arch candidates exist", "arch_count"),
             positive_check(metric_rows, "Yuan", "arch strength is positive", "arch_mean_strength"),

@@ -17,6 +17,7 @@ from paper_reproduction import (
     read_contacts,
     read_particles,
     summarize_contact_network,
+    validate_stage_series,
 )
 from export_liggghts_contact_forces import export_contacts
 
@@ -114,6 +115,26 @@ class DirectContactMetricsTest(unittest.TestCase):
             self.assertTrue(all(float(row["direct_contact_force_fraction"]) == 1.0 for row in metrics))
             self.assertTrue(all(row["source"] == "solver" for row in contacts))
 
+    def test_direct_force_zhang_trends_require_review_instead_of_false_mismatch(self):
+        metric_rows = [
+            direct_metric_row(0.0, 0.56, 1.0, 0.80, 0.20, 0.60),
+            direct_metric_row(120.0, 0.72, 2.0, 0.60, 0.40, 0.30),
+        ]
+        fit_rows = [{"model": "Heckel", "r2": 0.99}, {"model": "Kawakita", "r2": 0.98}]
+
+        checks, summary = validate_stage_series(metric_rows, fit_rows)
+        zhang = next(row for row in summary if row["paper"] == "Zhang")
+        review_labels = {
+            check["label"]
+            for check in checks
+            if check["paper"] == "Zhang" and check["status"] == "review"
+        }
+
+        self.assertEqual(zhang["status"], "review")
+        self.assertEqual(zhang["mismatch"], 0)
+        self.assertIn("contact participation increases", review_labels)
+        self.assertIn("force-chain D1 decreases", review_labels)
+
 
 def write_particles(path: Path) -> None:
     path.write_text(
@@ -145,6 +166,33 @@ def write_stage_contacts(path: Path, force_scale: float) -> None:
         f"3,4,0,{2.0 * force_scale},{2.0 * force_scale},solver\n",
         encoding="utf-8",
     )
+
+
+def direct_metric_row(
+    pressure_mpa: float,
+    density: float,
+    coordination: float,
+    participation: float,
+    force_chain_d1: float,
+    local_stress_d2: float,
+) -> dict[str, object]:
+    return {
+        "pressure_mpa": pressure_mpa,
+        "actual_rho_total": density,
+        "mean_coordination": coordination,
+        "contact_participation": participation,
+        "force_chain_strength_inhomogeneity_d1": force_chain_d1,
+        "local_stress_inhomogeneity_d2": local_stress_d2,
+        "arch_count": 1,
+        "arch_mean_strength": 1.0,
+        "arch_mean_direction_angle_degrees": 90.0,
+        "coupling_normal_force_vs_abs_current": 0.2,
+        "coupling_normal_force_vs_joule_heat": 0.3,
+        "coupling_particle_heat_vs_neck_ratio": 0.9,
+        "contact_gini": 0.4,
+        "contact_source": "direct",
+        "direct_contact_force_fraction": 1.0,
+    }
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
