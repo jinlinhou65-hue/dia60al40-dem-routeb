@@ -17,6 +17,7 @@ on:
       - 'tests/**'
       - 'docs/paper_algorithm_reproduction.md'
       - 'docs/paper_pdf_reproduction_map.md'
+      - '.github/scripts/validate_paper_reproduction_content.py'
       - '.github/workflows/paper-algorithm-reproduction.yml'
 
 jobs:
@@ -46,7 +47,8 @@ jobs:
             scripts/run_paper_algorithm_reproduction.py \
             scripts/generate_paper_reproduction_manifest.py \
             scripts/process_particle_snapshot.py \
-            scripts/process_stage_series.py
+            scripts/process_stage_series.py \
+            .github/scripts/validate_paper_reproduction_content.py
 
       - name: Run unit tests
         run: |
@@ -60,6 +62,13 @@ jobs:
             --paper "${{ inputs.paper || 'all' }}" \
             --outdir outputs/paper_algorithm_reproduction
           find outputs/paper_algorithm_reproduction -type f | sort
+
+      - name: Validate generated paper content
+        run: |
+          set -euxo pipefail
+          python3 .github/scripts/validate_paper_reproduction_content.py \
+            --paper "${{ inputs.paper || 'all' }}" \
+            --outdir outputs/paper_algorithm_reproduction
 
       - name: Upload paper algorithm artifacts
         uses: actions/upload-artifact@v4
