@@ -6,6 +6,7 @@ import math
 from collections import Counter
 from pathlib import Path
 
+from .zhang_validation import validate_zhang_algorithm
 from .yuan_validation import validate_yuan_algorithm
 
 
@@ -44,7 +45,12 @@ def validate_algorithm_reproduction(
     requested = set(papers or ["zhang", "yuan", "liu", "li"])
     checks: list[dict[str, object]] = []
     if "zhang" in requested:
-        checks.extend(validate_zhang_algorithm(outdir / "zhang" / "zhang_multiscale_metrics.csv"))
+        checks.extend(
+            validate_zhang_algorithm(
+                outdir / "zhang" / "zhang_multiscale_metrics.csv",
+                outdir / "zhang" / "zhang_friction_sensitivity.csv",
+            )
+        )
     if "yuan" in requested:
         checks.extend(validate_yuan_algorithm(outdir / "yuan" / "yuan_arch_bridge_metrics.csv"))
     if "liu" in requested:
@@ -77,18 +83,6 @@ def write_acceptance_outputs(
         render_acceptance_report(checks, summary, title=f"{prefix} acceptance report"),
         encoding="utf-8",
     )
-
-
-def validate_zhang_algorithm(path: Path) -> list[dict[str, object]]:
-    rows = read_csv_or_empty(path)
-    return [
-        trend_check(rows, "Zhang", "pressure rises with axial strain", "pressure_mpa", "increasing"),
-        trend_check(rows, "Zhang", "relative density rises", "relative_density", "increasing"),
-        trend_check(rows, "Zhang", "contact Gini decreases", "contact_gini", "decreasing"),
-        trend_check(rows, "Zhang", "contact participation increases", "contact_participation", "increasing"),
-        trend_check(rows, "Zhang", "force-chain D1 decreases", "force_chain_strength_inhomogeneity_d1", "decreasing"),
-        trend_check(rows, "Zhang", "local-stress D2 decreases", "local_stress_inhomogeneity_d2", "decreasing"),
-    ]
 
 
 def validate_liu_algorithm(curve_path: Path, fits_path: Path, coupling_path: Path) -> list[dict[str, object]]:

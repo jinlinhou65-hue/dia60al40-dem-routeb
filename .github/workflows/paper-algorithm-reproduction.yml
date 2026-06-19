@@ -43,6 +43,7 @@ jobs:
             python/paper_reproduction/series.py \
             python/paper_reproduction/sintering.py \
             python/paper_reproduction/validation.py \
+            python/paper_reproduction/zhang_validation.py \
             python/paper_reproduction/yuan_validation.py \
             scripts/validate_dem_evidence.py \
             scripts/run_paper_algorithm_reproduction.py \

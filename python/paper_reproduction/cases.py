@@ -40,6 +40,9 @@ def reproduce_zhang(outdir: Path) -> dict[str, object]:
         pressure = 600.0 * (1.0 - math.exp(-9.0 * strain))
         density = 0.58 + 0.35 * (1.0 - math.exp(-7.0 * strain))
         forces = synthetic_forces(step)
+        force_chains = synthetic_force_chain_strengths(step)
+        local_stresses = synthetic_local_stresses(step, pressure)
+        contact_mean = mean(forces)
         gini = contact_gini(forces)
         participation = contact_participation(forces)
         rows.append(
@@ -48,17 +51,30 @@ def reproduce_zhang(outdir: Path) -> dict[str, object]:
                 "axial_strain": strain,
                 "pressure_mpa": pressure,
                 "relative_density": density,
+                "contact_count": len(forces),
+                "contact_force_mean": contact_mean,
+                "contact_force_std": stddev(forces),
                 "contact_gini": gini,
                 "contact_participation": participation,
-                "force_chain_strength_inhomogeneity_d1": gini,
-                "local_stress_inhomogeneity_d2": max(0.0, 0.62 - 0.07 * step),
+                "strong_contact_threshold": contact_mean,
+                "strong_contact_fraction": sum(1 for force in forces if force > contact_mean) / len(forces),
+                "force_chain_count": len(force_chains),
+                "force_chain_mean_length": 3.0 + 0.35 * step,
+                "force_chain_mean_strength": mean(force_chains),
+                "force_chain_strength_std": stddev(force_chains),
+                "force_chain_strength_inhomogeneity_d1": normalized_std(force_chains),
+                "measurement_circle_count": len(local_stresses),
+                "local_stress_mean": mean(local_stresses),
+                "local_stress_std": stddev(local_stresses),
+                "local_stress_inhomogeneity_d2": normalized_std(local_stresses),
             }
         )
     write_csv(outdir / "zhang_multiscale_metrics.csv", rows)
+    write_csv(outdir / "zhang_friction_sensitivity.csv", friction_sensitivity_rows())
     return {
         "algorithm": "DEM contact-force statistics and multi-scale inhomogeneity indices",
-        "outputs": ["zhang_multiscale_metrics.csv"],
-        "acceptance": "density/pressure rise while Gini, D1 and D2 decrease",
+        "outputs": ["zhang_multiscale_metrics.csv", "zhang_friction_sensitivity.csv"],
+        "acceptance": "density/pressure rise while Gini, D1 and D2 decrease; friction raises inhomogeneity",
     }
 
 
@@ -211,6 +227,65 @@ def synthetic_forces(step: int) -> list[float]:
     base = 1.0 + step * 0.7
     spread = max(0.15, 1.2 - step * 0.14)
     return [base * (1.0 + spread * math.sin(i * 1.7) ** 2) for i in range(1, 25)]
+
+
+def synthetic_force_chain_strengths(step: int) -> list[float]:
+    base = 3.2 + step * 1.1
+    spread = max(0.10, 0.75 - step * 0.08)
+    return [base * (1.0 + spread * math.sin(i * 1.13) ** 2) for i in range(1, 8)]
+
+
+def synthetic_local_stresses(step: int, pressure_mpa: float) -> list[float]:
+    base = 15.0 + 0.82 * max(pressure_mpa, 1.0)
+    spread = max(0.08, 0.55 - 0.06 * step)
+    return [base * (1.0 + spread * math.cos(i * 1.37) ** 2) for i in range(1, 11)]
+
+
+def friction_sensitivity_rows() -> list[dict[str, float | str]]:
+    rows: list[dict[str, float | str]] = []
+    for wall_mu in [0.05, 0.15, 0.25]:
+        rows.append(zhang_friction_row("wall", wall_mu=wall_mu, particle_mu=0.15))
+    for particle_mu in [0.05, 0.15, 0.25]:
+        rows.append(zhang_friction_row("particle", wall_mu=0.10, particle_mu=particle_mu))
+    return rows
+
+
+def zhang_friction_row(
+    friction_type: str,
+    *,
+    wall_mu: float,
+    particle_mu: float,
+) -> dict[str, float | str]:
+    contact_gini_value = 0.18 + 0.32 * wall_mu + 0.65 * particle_mu
+    d1 = 0.16 + 0.25 * wall_mu + 0.70 * particle_mu
+    d2 = 0.22 + 0.45 * wall_mu + 0.28 * particle_mu
+    return {
+        "friction_type": friction_type,
+        "wall_mu": wall_mu,
+        "particle_mu": particle_mu,
+        "contact_gini": contact_gini_value,
+        "contact_participation": max(0.05, 0.86 - 1.25 * contact_gini_value),
+        "force_chain_strength_inhomogeneity_d1": d1,
+        "local_stress_inhomogeneity_d2": d2,
+    }
+
+
+def mean(values: list[float]) -> float:
+    return sum(values) / len(values) if values else 0.0
+
+
+def stddev(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    average = mean(values)
+    return math.sqrt(sum((value - average) ** 2 for value in values) / len(values))
+
+
+def normalized_std(values: list[float]) -> float:
+    average = mean(values)
+    if abs(average) < 1e-12:
+        return 0.0
+    return stddev(values) / abs(average)
 
 
 def li_row(

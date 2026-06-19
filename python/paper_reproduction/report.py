@@ -47,6 +47,7 @@ def plot_zhang(outdir: Path, plots_dir: Path) -> list[Path]:
     rows = read_csv(outdir / "zhang" / "zhang_multiscale_metrics.csv")
     if not rows:
         return []
+    friction_rows = read_csv(outdir / "zhang" / "zhang_friction_sensitivity.csv")
     density = [(number(row, "pressure_mpa"), number(row, "relative_density")) for row in rows]
     inhomogeneity = [
         (
@@ -67,6 +68,7 @@ def plot_zhang(outdir: Path, plots_dir: Path) -> list[Path]:
     ]
     density_path = plots_dir / "zhang_density_pressure.svg"
     inhomogeneity_path = plots_dir / "zhang_inhomogeneity_pressure.svg"
+    paths = [density_path, inhomogeneity_path]
     write_svg_line_chart(
         density_path,
         title="Zhang: Density Rises With Pressure",
@@ -81,8 +83,53 @@ def plot_zhang(outdir: Path, plots_dir: Path) -> list[Path]:
         y_label="Inhomogeneity index",
         series=inhomogeneity,
     )
-    return [density_path, inhomogeneity_path]
-
+    if friction_rows:
+        friction_path = plots_dir / "zhang_friction_sensitivity.svg"
+        write_svg_line_chart(
+            friction_path,
+            title="Zhang: Friction Raises Contact And Chain Inhomogeneity",
+            x_label="Active friction coefficient",
+            y_label="Inhomogeneity index",
+            series=[
+                (
+                    "wall Gini",
+                    [
+                        (number(row, "wall_mu"), number(row, "contact_gini"))
+                        for row in friction_rows
+                        if row["friction_type"] == "wall"
+                    ],
+                ),
+                (
+                    "particle Gini",
+                    [
+                        (number(row, "particle_mu"), number(row, "contact_gini"))
+                        for row in friction_rows
+                        if row["friction_type"] == "particle"
+                    ],
+                ),
+                (
+                    "particle D1",
+                    [
+                        (
+                            number(row, "particle_mu"),
+                            number(row, "force_chain_strength_inhomogeneity_d1"),
+                        )
+                        for row in friction_rows
+                        if row["friction_type"] == "particle"
+                    ],
+                ),
+                (
+                    "wall D2",
+                    [
+                        (number(row, "wall_mu"), number(row, "local_stress_inhomogeneity_d2"))
+                        for row in friction_rows
+                        if row["friction_type"] == "wall"
+                    ],
+                ),
+            ],
+        )
+        paths.append(friction_path)
+    return paths
 
 def plot_yuan(outdir: Path, plots_dir: Path) -> list[Path]:
     rows = read_csv(outdir / "yuan" / "yuan_arch_bridge_metrics.csv")
@@ -150,7 +197,6 @@ def plot_yuan(outdir: Path, plots_dir: Path) -> list[Path]:
         series=obstruction_series,
     )
     return [arch_path, strength_path, length_path, obstruction_path]
-
 
 def plot_liu(outdir: Path, plots_dir: Path) -> list[Path]:
     curve_rows = read_csv(outdir / "liu" / "liu_compaction_curve.csv")

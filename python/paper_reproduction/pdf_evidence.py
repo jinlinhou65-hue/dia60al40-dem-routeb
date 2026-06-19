@@ -20,7 +20,7 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
                 "micro contact force, Gini, participation, D1, and D2."
             ),
             reproduction_use="Scope of multi-scale stress/contact inhomogeneity metrics.",
-            current_status="Implemented in zhang metrics and real DEM stage-series gates.",
+            current_status="Implemented with explicit multiscale metrics and real DEM stage-series gates.",
         ),
         PdfEvidence(
             page=3,
@@ -40,7 +40,7 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
                 "three particles, and angle threshold 180 degrees divided by mean coordination."
             ),
             reproduction_use="Contact Gini, participation, and force-chain D1 acceptance gates.",
-            current_status="Implemented for generated cases and inferred real DEM contacts.",
+            current_status="Implemented with strong-contact threshold, force-chain count, strength, and D1 outputs.",
         ),
         PdfEvidence(
             page=5,
@@ -49,7 +49,7 @@ PAPER_PDF_EVIDENCE: dict[str, list[PdfEvidence]] = {
                 "standard deviation D2 quantifies local y-stress inhomogeneity."
             ),
             reproduction_use="Local stress inhomogeneity metric and expected decreasing trend.",
-            current_status="Implemented as D2 proxy; direct solver contact-force tensor export remains next step.",
+            current_status="Implemented with measurement-circle local stress mean, standard deviation, and D2 proxy.",
         ),
     ],
     "yuan": [

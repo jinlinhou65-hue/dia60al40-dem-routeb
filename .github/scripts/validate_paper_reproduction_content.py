@@ -23,6 +23,39 @@ CORE_FILES = [
     "paper_acceptance_summary.csv",
 ]
 
+ZHANG_REQUIRED_FIELDS = {
+    "step",
+    "axial_strain",
+    "pressure_mpa",
+    "relative_density",
+    "contact_count",
+    "contact_force_mean",
+    "contact_force_std",
+    "contact_gini",
+    "contact_participation",
+    "strong_contact_threshold",
+    "strong_contact_fraction",
+    "force_chain_count",
+    "force_chain_mean_length",
+    "force_chain_mean_strength",
+    "force_chain_strength_std",
+    "force_chain_strength_inhomogeneity_d1",
+    "measurement_circle_count",
+    "local_stress_mean",
+    "local_stress_std",
+    "local_stress_inhomogeneity_d2",
+}
+
+ZHANG_FRICTION_REQUIRED_FIELDS = {
+    "friction_type",
+    "wall_mu",
+    "particle_mu",
+    "contact_gini",
+    "contact_participation",
+    "force_chain_strength_inhomogeneity_d1",
+    "local_stress_inhomogeneity_d2",
+}
+
 LIU_REQUIRED_FIELDS = {
     "contact_id",
     "normal_force",
@@ -139,6 +172,12 @@ def validate_content(outdir: Path, paper: str = "all") -> dict[str, object]:
             errors,
             "report missing Liu diffusion-law content",
         )
+    if "zhang" in expected_keys:
+        validate_zhang_multiscale_content(
+            outdir / "zhang" / "zhang_multiscale_metrics.csv",
+            outdir / "zhang" / "zhang_friction_sensitivity.csv",
+            errors,
+        )
     if "yuan" in expected_keys:
         validate_yuan_arch_content(outdir / "yuan" / "yuan_arch_bridge_metrics.csv", errors)
 
@@ -153,6 +192,39 @@ def validate_content(outdir: Path, paper: str = "all") -> dict[str, object]:
         "trend_checks": len(trend_checks),
         "plots": len(plots),
     }
+
+
+def validate_zhang_multiscale_content(metrics_path: Path, friction_path: Path, errors: list[str]) -> None:
+    metrics = read_csv_if_exists(metrics_path)
+    require(bool(metrics), errors, "Zhang multiscale CSV has no rows")
+    if metrics:
+        missing_fields = sorted(ZHANG_REQUIRED_FIELDS - set(metrics[0]))
+        require(not missing_fields, errors, f"Zhang multiscale CSV missing fields: {missing_fields}")
+        chain_counts = [float_value(row.get("force_chain_count")) for row in metrics]
+        local_d2 = [float_value(row.get("local_stress_inhomogeneity_d2")) for row in metrics]
+        require(
+            any(math.isfinite(value) and value > 0.0 for value in chain_counts),
+            errors,
+            "Zhang force_chain_count never becomes positive",
+        )
+        require(
+            all(math.isfinite(value) and value > 0.0 for value in local_d2),
+            errors,
+            "Zhang local_stress_inhomogeneity_d2 is not positive and finite",
+        )
+
+    friction = read_csv_if_exists(friction_path)
+    require(bool(friction), errors, "Zhang friction sensitivity CSV has no rows")
+    if not friction:
+        return
+    missing_friction_fields = sorted(ZHANG_FRICTION_REQUIRED_FIELDS - set(friction[0]))
+    require(
+        not missing_friction_fields,
+        errors,
+        f"Zhang friction sensitivity CSV missing fields: {missing_friction_fields}",
+    )
+    friction_types = {row.get("friction_type", "") for row in friction}
+    require({"wall", "particle"} <= friction_types, errors, "Zhang friction sweeps need wall and particle rows")
 
 
 def validate_liu_diffusion_content(path: Path, errors: list[str]) -> None:

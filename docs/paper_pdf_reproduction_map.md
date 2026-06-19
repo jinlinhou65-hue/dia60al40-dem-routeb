@@ -40,8 +40,12 @@ PDF anchors:
 Reproduction method:
 
 - DEM backend: run staged compaction and export particle/contact state.
-- Metrics: pressure, density, mean coordination, Gini, participation, D1, D2.
-- Gate: pressure/density/participation increase while Gini/D1/D2 decrease.
+- Metrics: pressure, density, mean coordination, contact-force mean/std/Gini,
+  participation, strong-contact fraction, force-chain count/length/strength/D1,
+  measurement-circle local stress mean/std/D2, and wall/particle friction sweeps.
+- Gate: pressure/density/participation increase while Gini/D1/D2 decrease; wall
+  and particle friction increase inhomogeneity, with particle friction producing
+  the stronger micro contact and meso force-chain response.
 - Current limitation: contact forces are inferred from stage geometry where direct
   solver pair-force export is absent; direct force tensor export remains the next
   calibration step.

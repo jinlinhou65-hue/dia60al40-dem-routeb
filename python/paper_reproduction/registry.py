@@ -42,8 +42,10 @@ PAPER_TARGETS = [
         ],
         reproduced_algorithms=[
             "synthetic pressure-density trajectory",
-            "contact-force Gini and participation trend checks",
-            "D1 and D2 trend checks",
+            "contact-force mean, standard deviation, Gini, participation, and strong-contact threshold",
+            "force-chain count, mean length, mean strength, and strength inhomogeneity D1",
+            "measurement-circle local stress mean, standard deviation, and inhomogeneity D2",
+            "wall-friction and particle-friction sensitivity sweeps",
             "real DEM stage-series post-processing from handoff particle CSV files",
         ],
         calibration_targets=[
@@ -54,6 +56,7 @@ PAPER_TARGETS = [
         ],
         expected_outputs=[
             "zhang/zhang_multiscale_metrics.csv",
+            "zhang/zhang_friction_sensitivity.csv",
             "series_network_metrics.csv",
             "series_trend_checks.json",
         ],
@@ -64,11 +67,12 @@ PAPER_TARGETS = [
             "contact_participation increasing",
             "force_chain_strength_inhomogeneity_d1 decreasing",
             "local_stress_inhomogeneity_d2 decreasing",
+            "wall and particle friction increase inhomogeneity metrics",
         ],
         current_backend="proxy plus Route-B DEM stage-series post-processing",
         next_backend_steps=[
             "replace overlap-inferred contacts with solver contact-force export",
-            "add explicit mu_p and mu_w sweeps",
+            "calibrate mu_p and mu_w sweeps against full DEM contact-force exports",
             "compare pressure-density curve against the reported 572-638 MPa endpoint",
         ],
     ),
