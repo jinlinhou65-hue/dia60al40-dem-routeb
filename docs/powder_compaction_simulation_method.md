@@ -196,10 +196,16 @@ successful 2x pilot should be followed by a 4x/8x run or WSL2/local Linux
 deployment before attempting the paper-scale 3000-particle case.
 
 The first 2x GitHub pilot provided a useful split result rather than a final
-answer: C and E completed successfully, while D failed during the real staged
-DEM compaction step. Keep that failure as a calibration signal. D is the
-single-large-diamond case; at `particle_count_scale=2` it contains 70 Al
-particles plus 22 large diamond particles. The quick feasibility diagnostic is:
+answer: C and E completed successfully, while D reached the final stage and
+then failed the composition verifier. The failure was not a LIGGGHTS crash:
+the old verifier used `radius > 24 um` to distinguish DL from DS. At
+`particle_count_scale=2`, the D large-diamond DEM radius is only `21.213 um`,
+so those DL particles were misclassified as DS. The verifier now accepts the
+rendered DS/DL radii from `model_parameters.csv`.
+
+D is still the single-large-diamond case; at `particle_count_scale=2` it
+contains 70 Al particles plus 22 large diamond particles. The quick feasibility
+diagnostic is:
 
 ```powershell
 py scripts\diagnose_particle_scale_feasibility.py `
@@ -210,10 +216,9 @@ py scripts\diagnose_particle_scale_feasibility.py `
 
 The diagnostic reports D pscale=2 with final DEM disk packing fraction near
 `1.013`, insert-region disk packing near `0.474`, and largest-diameter/final
-height ratio near `0.346`. That points toward high-density large-particle
-force-chain jamming or numerical instability, so the next D-only run should
-inspect the workflow's `DEM/failure_diagnostics.txt`/GitHub annotation before
-changing physics parameters.
+height ratio near `0.346`. Those are still useful risk indicators for later
+4x/8x scaling, but the immediate 2x blocker was verifier classification and
+must be cleared before changing physics parameters.
 
 ### 3c. Import the Zhang sweep artifact into versioned evidence
 

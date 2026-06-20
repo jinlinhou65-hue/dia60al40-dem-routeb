@@ -13,7 +13,7 @@
 - Zhang 尺寸分组调度器：[zhang-size-specific-sweep run 27874057448](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874057448)，状态 `success`
 - Zhang 尺寸分组 DEM sweep：C [run 27874059503](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874059503)、D [run 27874061902](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874061902)、E [run 27874064063](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874064063)，均为 `success`，合计 36 个轻量 DEM job
 - Zhang 尺寸分组证据导入：[zhang-size-specific-artifact-report run 27874391838](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874391838)，状态 `success`，自动提交 `a8d4319`
-- Zhang 粒子数升级路径：已新增 `particle_count_scale` 渲染参数和 `zhang-scale-pilot.yml`。首次 2x GitHub pilot 中 C/E 跑通，D 在真实 DEM compaction 阶段失败；这不是完成态，而是下一轮 D 单粒径大颗粒力链/高密度卡滞诊断的入口。
+- Zhang 粒子数升级路径：已新增 `particle_count_scale` 渲染参数和 `zhang-scale-pilot.yml`。首次 2x GitHub pilot 中 C/E 跑通，D 的 DEM 本体也跑到 stage5，但旧 verifier 用 `radius>24 um` 区分 DL，导致 pscale=2 的 D 大颗粒半径 `21.213 um` 被误判为 DS；已改为按渲染半径分类并等待重跑验证。
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
@@ -67,8 +67,8 @@
 | Zhang size-specific artifact import | report run `27874391838` completed `success` and auto-committed `a8d4319` with C/D/E run directories plus `docs/zhang_sweep_evidence/size_specific_27874059503_27874061902_27874064063/summary.json` |
 | Zhang sweep imported evidence | `docs/zhang_sweep_evidence/run_27867380830/README.md` summarizes the 9-job ensemble; P95 range is `510.770-787.592 MPa`, mean `669.490 MPa`; 5/9 candidates pass Zhang force-chain trend gates |
 | Zhang size-specific aggregator | The combined 36-row summary shows 15 trend-pass rows, 15 pressure-window rows, and 5 rows that satisfy both. Best current candidates are C `44.772/0.654/seed2/P95=634.203 MPa`, D `37.517/0.77/seed2/P95=620.578 MPa`, and E `37.517/0.693/seed2/P95=604.217 MPa`. |
-| Zhang particle-count scale pilot | `zhang-scale-pilot.yml` run `27874833629` dispatched exactly three 2x C/D/E candidates. C run `27874835952` and E run `27874838766` completed `success`; D run `27874837259` failed during `Run staged DEM compaction` and uploaded only a partial 207 KB artifact. |
-| Zhang particle-scale feasibility diagnostic | `scripts/diagnose_particle_scale_feasibility.py` writes `outputs/zhang_particle_scale_feasibility.csv`. It shows D pscale=2 has 70 Al + 22 large-diamond particles, final DEM disk packing fraction `1.013`, insert-region disk packing `0.474`, and largest-diameter/final-height ratio `0.346`; the current working hypothesis is high-density large-particle force-chain jamming or numerical instability, not missing post-processing. |
+| Zhang particle-count scale pilot | `zhang-scale-pilot.yml` run `27874833629` dispatched exactly three 2x C/D/E candidates. C run `27874835952` and E run `27874838766` completed `success`; D run `27875747241` exposed the real gate failure as a verifier classification bug: `[VERIFY] particles=92 Al=70 DS=22 DL=0`, expected `DS=0 DL=22`, because refined DL radius was below the old 24 um split threshold. |
+| Zhang particle-scale feasibility diagnostic | `scripts/diagnose_particle_scale_feasibility.py` writes `outputs/zhang_particle_scale_feasibility.csv`. It shows D pscale=2 has 70 Al + 22 large-diamond particles, final DEM disk packing fraction `1.013`, insert-region disk packing `0.474`, and largest-diameter/final-height ratio `0.346`; these remain useful risk indicators for later 4x/8x scaling, but the current 2x D failure was verifier misclassification rather than proven force-chain jamming. |
 
 Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 找到了 `Emax=41.686`、`mu=0.77` 这一可行候选；随后 9-job 稳健性 sweep 证明 workflow 可稳定运行，但一个全局 mu/E 参数不能同时覆盖 C/D/E 粒径 case 和三个随机 seed。最新 36-job 尺寸分组 sweep 进一步证明 C/D/E 需要不同的 endpoint modulus/friction bracket，并给出了下一轮高保真 Zhang DEM 的三个起始参数。
 
@@ -76,7 +76,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 下一步从尺寸分组候选升级到更高保真校准：以 C `44.772/0.654`、D `37.517/0.77`、E `37.517/0.693` 为起点，C/E 的 `particle_count_scale=2` GitHub demo 已证明路径可跑；D 的 `particle_count_scale=2` 需要先看 `DEM/failure_diagnostics.txt`/GitHub annotation，再做 D-only seed、加载速度、最终密度或接触刚度诊断。继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
+3. Zhang 下一步从尺寸分组候选升级到更高保真校准：以 C `44.772/0.654`、D `37.517/0.77`、E `37.517/0.693` 为起点，C/E 的 `particle_count_scale=2` GitHub demo 已证明路径可跑；D 的 `particle_count_scale=2` 需先重跑半径感知 verifier 版本，确认 composition gate 通过后再判断是否存在真实高密度/力链卡滞。继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。

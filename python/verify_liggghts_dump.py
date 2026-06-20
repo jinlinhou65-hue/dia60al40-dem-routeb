@@ -7,6 +7,29 @@ import math
 UM_PER_CM = 10000.0
 
 
+def classify_diamond_radius(
+    radius_um: float,
+    *,
+    expect_ds: int,
+    expect_dl: int,
+    ds_radius_um: float,
+    dl_radius_um: float,
+) -> str:
+    ds_radius = ds_radius_um if ds_radius_um > 0.0 and expect_ds > 0 else None
+    dl_radius = dl_radius_um if dl_radius_um > 0.0 and expect_dl > 0 else None
+    if ds_radius is not None and dl_radius is not None:
+        return "DS" if abs(radius_um - ds_radius) <= abs(radius_um - dl_radius) else "DL"
+    if ds_radius is not None:
+        return "DS"
+    if dl_radius is not None:
+        return "DL"
+    if expect_ds == 0 and expect_dl > 0:
+        return "DL"
+    if expect_dl == 0 and expect_ds > 0:
+        return "DS"
+    return "DL" if radius_um > 24.0 else "DS"
+
+
 def read_liggghts_dump(path: str | Path):
     lines = Path(path).read_text(encoding="utf-8", errors="replace").splitlines()
     try:
@@ -31,6 +54,8 @@ def main():
     ap.add_argument("--expect-al", type=int, default=34)
     ap.add_argument("--expect-ds", type=int, default=8)
     ap.add_argument("--expect-dl", type=int, default=8)
+    ap.add_argument("--ds-radius-um", type=float, default=0.0)
+    ap.add_argument("--dl-radius-um", type=float, default=0.0)
     ap.add_argument("--z-tol-um", type=float, default=0.05)
     ap.add_argument("--overlap-tol-um", type=float, default=1.0)
     ap.add_argument("--clearance-um", type=float, default=0.02)
@@ -51,10 +76,16 @@ def main():
         rad_um = float(row["radius"]) * UM_PER_CM
         if typ == 1:
             counts["Al"] += 1
-        elif typ == 2 and rad_um > 24.0:
-            counts["DL"] += 1
         elif typ == 2:
-            counts["DS"] += 1
+            counts[
+                classify_diamond_radius(
+                    rad_um,
+                    expect_ds=args.expect_ds,
+                    expect_dl=args.expect_dl,
+                    ds_radius_um=args.ds_radius_um,
+                    dl_radius_um=args.dl_radius_um,
+                )
+            ] += 1
         else:
             counts[f"type{typ}"] += 1
 

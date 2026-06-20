@@ -319,9 +319,12 @@ jobs:
           EXPECT_AL=$(awk -F, '$1=="Al_count"{print int($2)}' DEM/model_parameters.csv)
           EXPECT_DS=$(awk -F, '$1=="diamond_count_DS"{print int($2)}' DEM/model_parameters.csv)
           EXPECT_DL=$(awk -F, '$1=="diamond_count_DL"{print int($2)}' DEM/model_parameters.csv)
-          echo "[VERIFY] expected composition from model_parameters.csv: Al=$EXPECT_AL DS=$EXPECT_DS DL=$EXPECT_DL"
+          EXPECT_DS_RADIUS=$(awk -F, '$1=="diamond_dem_radius_DS_um"{print $2+0}' DEM/model_parameters.csv)
+          EXPECT_DL_RADIUS=$(awk -F, '$1=="diamond_dem_radius_DL_um"{print $2+0}' DEM/model_parameters.csv)
+          echo "[VERIFY] expected composition from model_parameters.csv: Al=$EXPECT_AL DS=$EXPECT_DS DL=$EXPECT_DL DS_radius_um=$EXPECT_DS_RADIUS DL_radius_um=$EXPECT_DL_RADIUS"
           python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" \
             --expect-al "$EXPECT_AL" --expect-ds "$EXPECT_DS" --expect-dl "$EXPECT_DL" \
+            --ds-radius-um "$EXPECT_DS_RADIUS" --dl-radius-um "$EXPECT_DL_RADIUS" \
             2>&1 | tee DEM/final_dump_verify.log
 
           # Gate 4: verify every stage against expected density windows and 2D
@@ -329,7 +332,8 @@ jobs:
           # is contact deformation in DEM. z drift and composition still fail.
           cd ..
           python3 python/verify_dem_stages.py --root liggghts/DEM \
-            --expect-al "$EXPECT_AL" --expect-ds "$EXPECT_DS" --expect-dl "$EXPECT_DL"
+            --expect-al "$EXPECT_AL" --expect-ds "$EXPECT_DS" --expect-dl "$EXPECT_DL" \
+            --ds-radius-um "$EXPECT_DS_RADIUS" --dl-radius-um "$EXPECT_DL_RADIUS"
           test -s liggghts/DEM/pressure_density_curve_raw.csv
 
           # Export every stage into a raw DEM-FEM handoff table. We no longer

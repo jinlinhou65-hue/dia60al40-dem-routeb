@@ -8,17 +8,46 @@ from pathlib import Path
 from dem_stage_metadata import UM_PER_CM, W_UM, read_liggghts_dump, stages_from_model_parameters, total_particle_area_um2
 
 
-def classify_counts(rows: list[dict[str, str]]) -> Counter[str]:
+def classify_diamond_radius(
+    radius_um: float,
+    *,
+    expect_ds: int,
+    expect_dl: int,
+    ds_radius_um: float,
+    dl_radius_um: float,
+) -> str:
+    ds_radius = ds_radius_um if ds_radius_um > 0.0 and expect_ds > 0 else None
+    dl_radius = dl_radius_um if dl_radius_um > 0.0 and expect_dl > 0 else None
+    if ds_radius is not None and dl_radius is not None:
+        return "DS" if abs(radius_um - ds_radius) <= abs(radius_um - dl_radius) else "DL"
+    if ds_radius is not None:
+        return "DS"
+    if dl_radius is not None:
+        return "DL"
+    if expect_ds == 0 and expect_dl > 0:
+        return "DL"
+    if expect_dl == 0 and expect_ds > 0:
+        return "DS"
+    return "DL" if radius_um > 24.0 else "DS"
+
+
+def classify_counts(rows: list[dict[str, str]], args) -> Counter[str]:
     counts: Counter[str] = Counter()
     for row in rows:
         typ = int(float(row["type"]))
         radius_um = float(row["radius"]) * UM_PER_CM
         if typ == 1:
             counts["Al"] += 1
-        elif typ == 2 and radius_um > 24.0:
-            counts["DL"] += 1
         elif typ == 2:
-            counts["DS"] += 1
+            counts[
+                classify_diamond_radius(
+                    radius_um,
+                    expect_ds=args.expect_ds,
+                    expect_dl=args.expect_dl,
+                    ds_radius_um=args.ds_radius_um,
+                    dl_radius_um=args.dl_radius_um,
+                )
+            ] += 1
         else:
             counts[f"type{typ}"] += 1
     return counts
@@ -70,7 +99,7 @@ def verify_stage(root: Path, stage: str, target_rho: float, height_um: float, rh
     dump = matches[-1]
     print(f"[STAGE] {stage} dump={dump}")
     rows = read_liggghts_dump(dump)
-    counts = classify_counts(rows)
+    counts = classify_counts(rows, args)
     print(f"[VERIFY] particles={len(rows)} Al={counts['Al']} DS={counts['DS']} DL={counts['DL']}")
     if counts["Al"] != args.expect_al or counts["DS"] != args.expect_ds or counts["DL"] != args.expect_dl:
         raise SystemExit(
@@ -91,6 +120,8 @@ def main() -> None:
     parser.add_argument("--expect-al", type=int, default=34)
     parser.add_argument("--expect-ds", type=int, default=8)
     parser.add_argument("--expect-dl", type=int, default=8)
+    parser.add_argument("--ds-radius-um", type=float, default=0.0)
+    parser.add_argument("--dl-radius-um", type=float, default=0.0)
     parser.add_argument("--z-tol-um", type=float, default=0.05)
     parser.add_argument("--overlap-tol-um", type=float, default=1.0)
     parser.add_argument("--clearance-um", type=float, default=0.02)
