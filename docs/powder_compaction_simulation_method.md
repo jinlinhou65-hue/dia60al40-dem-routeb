@@ -117,6 +117,23 @@ This path was verified by `zhang-recommended-sweep` run `27859253983`, which
 dispatched `dia60al40-dem` run `27859255390`; all 6 DEM jobs and the aggregate
 ensemble job completed successfully.
 
+### 3b. Import the Zhang sweep artifact into versioned evidence
+
+After a recommended sweep finishes, import its `dia60al40-dem-ensemble-summary`
+artifact into `docs/zhang_sweep_evidence/run_<run_id>/`:
+
+```powershell
+gh workflow run zhang-sweep-artifact-report.yml `
+  -f dem_run_id=27859255390
+```
+
+If `dem_run_id` is omitted, the workflow selects the latest successful
+`workflow_dispatch` run of `dia60al40-dem.yml` on the same branch. It downloads
+the ensemble summary artifact using `GITHUB_TOKEN`, runs
+`scripts/import_zhang_sweep_artifact.py`, and commits a compact Markdown/CSV/JSON
+evidence bundle back to the branch. This closes the loop from "workflow ran" to
+"sweep result is readable in the repository."
+
 ### 4. Convert each DEM stage into paper metrics
 
 The workflow runs this automatically, but the command is:

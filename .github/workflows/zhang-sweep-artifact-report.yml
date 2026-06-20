@@ -1,0 +1,144 @@
+name: zhang-sweep-artifact-report
+
+on:
+  workflow_dispatch:
+    inputs:
+      dem_run_id:
+        description: 'dia60al40-dem run id to import; empty uses latest successful workflow_dispatch run on this branch'
+        required: false
+        default: ''
+  push:
+    paths:
+      - '.github/workflows/zhang-sweep-artifact-report.yml'
+      - 'scripts/import_zhang_sweep_artifact.py'
+      - 'tests/test_zhang_sweep_artifact_import.py'
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: zhang-sweep-artifact-report-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  import-artifact-report:
+    name: import Zhang sweep artifact report
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select DEM workflow run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_DEM_RUN_ID: ${{ github.event.inputs.dem_run_id || '' }}
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY' > /tmp/selected_dem_run.env
+          import json
+          import os
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          requested = os.environ.get("INPUT_DEM_RUN_ID", "").strip()
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "User-Agent": "zhang-sweep-artifact-report",
+              "X-GitHub-Api-Version": "2022-11-28",
+          }
+
+          def api_json(url):
+              request = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(request) as response:
+                  return json.loads(response.read().decode("utf-8"))
+
+          if requested:
+              run = api_json(f"https://api.github.com/repos/{repo}/actions/runs/{requested}")
+          else:
+              branch = os.environ["GITHUB_REF_NAME"]
+              url = (
+                  f"https://api.github.com/repos/{repo}/actions/workflows/"
+                  f"dia60al40-dem.yml/runs?branch={branch}&event=workflow_dispatch&status=success&per_page=10"
+              )
+              runs = api_json(url).get("workflow_runs", [])
+              if not runs:
+                  raise SystemExit(f"No successful workflow_dispatch dia60al40-dem runs found on {branch}")
+              run = runs[0]
+          if run.get("conclusion") != "success":
+              raise SystemExit(f"selected run is not successful: {run.get('id')} {run.get('conclusion')}")
+          print(f"DEM_RUN_ID={run['id']}")
+          print(f"DEM_RUN_URL={run['html_url']}")
+          PY
+          cat /tmp/selected_dem_run.env
+          cat /tmp/selected_dem_run.env >> "$GITHUB_ENV"
+
+      - name: Download ensemble summary artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+          import zipfile
+          from pathlib import Path
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          run_id = os.environ["DEM_RUN_ID"]
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "User-Agent": "zhang-sweep-artifact-report",
+              "X-GitHub-Api-Version": "2022-11-28",
+          }
+
+          def request(url):
+              return urllib.request.Request(url, headers=headers)
+
+          artifacts_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/artifacts"
+          with urllib.request.urlopen(request(artifacts_url)) as response:
+              artifacts = json.loads(response.read().decode("utf-8")).get("artifacts", [])
+          matches = [artifact for artifact in artifacts if artifact.get("name") == "dia60al40-dem-ensemble-summary"]
+          if not matches:
+              raise SystemExit("dia60al40-dem-ensemble-summary artifact not found")
+          artifact = matches[0]
+          zip_path = Path("zhang_sweep_ensemble_summary.zip")
+          with urllib.request.urlopen(request(artifact["archive_download_url"])) as response:
+              zip_path.write_bytes(response.read())
+          outdir = Path("zhang_sweep_ensemble_summary")
+          if outdir.exists():
+              import shutil
+              shutil.rmtree(outdir)
+          outdir.mkdir()
+          with zipfile.ZipFile(zip_path) as archive:
+              archive.extractall(outdir)
+          print(f"Downloaded artifact {artifact['id']} for run {run_id} into {outdir}")
+          PY
+          find zhang_sweep_ensemble_summary -maxdepth 2 -type f | sort
+
+      - name: Import report into docs
+        run: |
+          set -euxo pipefail
+          python3 scripts/import_zhang_sweep_artifact.py \
+            --artifact-dir zhang_sweep_ensemble_summary \
+            --run-id "$DEM_RUN_ID" \
+            --workflow-url "$DEM_RUN_URL" \
+            --outdir "docs/zhang_sweep_evidence/run_${DEM_RUN_ID}"
+          find "docs/zhang_sweep_evidence/run_${DEM_RUN_ID}" -maxdepth 1 -type f | sort
+
+      - name: Commit imported report
+        run: |
+          set -euxo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/zhang_sweep_evidence
+          if git diff --cached --quiet; then
+            echo "No imported Zhang sweep evidence changes to commit."
+          else
+            git commit -m "docs(zhang): import sweep artifact ${DEM_RUN_ID}"
+            git push
+          fi
