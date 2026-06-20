@@ -136,9 +136,11 @@ the ensemble summary artifact using `GITHUB_TOKEN`, runs
 `scripts/import_zhang_sweep_artifact.py`, and commits a compact Markdown/CSV/JSON
 evidence bundle back to the branch. This closes the loop from "workflow ran" to
 "sweep result is readable in the repository."
-The same importer also runs automatically when `dia60al40-dem.yml` completes
-successfully, so recommended sweeps now flow into versioned evidence without a
-manual artifact download.
+On feature branches, run this importer manually or by pushing its workflow file;
+after the workflow lands on the repository default branch, the `workflow_run`
+trigger imports successful `dia60al40-dem.yml` runs automatically. Either path
+keeps the evidence in the repository instead of leaving it only as a downloadable
+artifact.
 The imported evidence for run `27859255390` is stored in
 `docs/zhang_sweep_evidence/run_27859255390/`.
 

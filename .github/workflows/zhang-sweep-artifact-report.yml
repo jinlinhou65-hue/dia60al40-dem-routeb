@@ -1,6 +1,9 @@
 name: zhang-sweep-artifact-report
 
 on:
+  # On feature branches, use workflow_dispatch or a push to this workflow file.
+  # GitHub only guarantees workflow_run triggers for workflows present on the
+  # default branch; after landing, this imports successful DEM runs automatically.
   workflow_run:
     workflows:
       - dia60al40-dem
