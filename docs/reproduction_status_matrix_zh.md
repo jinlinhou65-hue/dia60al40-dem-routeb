@@ -10,6 +10,8 @@
 - Zhang 推荐 sweep 调度器：[zhang-recommended-sweep run 27866837375](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866837375)，状态 `success`
 - Zhang 推荐 6-job DEM sweep：[dia60al40-dem run 27866838829](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866838829)，状态 `success`
 - Zhang 9-job 稳健性 DEM sweep：[dia60al40-dem run 27867380830](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27867380830)，状态 `success`
+- Zhang 尺寸分组调度器：[zhang-size-specific-sweep run 27874057448](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874057448)，状态 `success`
+- Zhang 尺寸分组 DEM sweep：C [run 27874059503](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874059503)、D [run 27874061902](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874061902)、E [run 27874064063](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874064063)，均为 `success`，合计 36 个轻量 DEM job
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
@@ -58,6 +60,7 @@
 | Zhang force-chain calibration | 27 threshold/chain-length candidates scanned; best `threshold_factor=0.05`, `min_chain_length=2`, `chain_coverage=1.0`, D1 decreases but strong-force participation decreases, so status remains `review` |
 | Zhang recommended sweep | dispatcher run `27866837375` triggered DEM run `27866838829`; all 6 matrix jobs plus aggregate ensemble job completed `success` |
 | Zhang robustness sweep | dispatcher run `27867379295` triggered DEM run `27867380830`; all 9 matrix jobs plus aggregate ensemble job completed `success` |
+| Zhang size-specific sweep | dispatcher run `27874057448` triggered C/D/E DEM runs `27874059503`, `27874061902`, and `27874064063`; all three 12-job matrices and their aggregate ensemble jobs completed `success` |
 | Zhang sweep imported evidence | `docs/zhang_sweep_evidence/run_27867380830/README.md` summarizes the 9-job ensemble; P95 range is `510.770-787.592 MPa`, mean `669.490 MPa`; 5/9 candidates pass Zhang force-chain trend gates |
 | Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` show `Emax=41.686`, `mu=0.77` is executable but not globally robust: only C seed 0 and E seed 2 both pass and sit in the 572-638 MPa window; the current `zhang_next_sweep_recommendation.json` now emits a three-part size-specific plan: C raises endpoint modulus, D lowers endpoint modulus and friction, and E lowers endpoint modulus with a narrow friction bracket; `zhang-size-specific-sweep.yml` can dispatch the three runs without cancellation |
 

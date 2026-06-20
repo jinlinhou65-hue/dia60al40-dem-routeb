@@ -147,6 +147,13 @@ modulus with a narrow friction bracket. The DEM workflow keeps push demo runs
 cancelable, but manual dispatch runs use a per-run concurrency group so the
 three size-specific sweeps do not cancel each other.
 
+This was verified on GitHub Actions by `zhang-size-specific-sweep` run
+`27874057448`, which dispatched three successful DEM sweeps:
+
+- C: `dia60al40-dem` run `27874059503`, 12 jobs completed.
+- D: `dia60al40-dem` run `27874061902`, 12 jobs completed.
+- E: `dia60al40-dem` run `27874064063`, 12 jobs completed.
+
 ### 3b. Import the Zhang sweep artifact into versioned evidence
 
 After a recommended sweep finishes, import its `dia60al40-dem-ensemble-summary`
