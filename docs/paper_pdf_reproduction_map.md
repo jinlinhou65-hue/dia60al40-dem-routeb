@@ -150,12 +150,12 @@ Reproduction method:
 The current GitHub demo runs prove both layers can rerun data and produce the
 expected evidence bundles:
 
-- Workflow: `paper-algorithm-reproduction`, run `27835484159`, commit `40758fd`
+- Workflow: `paper-algorithm-reproduction`, run `27858874564`, commit `234e94d`
 - Content gate: acceptance summary, manifest, report PDF evidence anchors,
   generated plots, trend checks, Zhang multiscale fields, Liu diffusion-neck
   fields, Li core-shell/convergence fields, and DEM backend-selection outputs
   all validated
-- Workflow: `dia60al40-dem`, run `27835484161`, commit `40758fd`
+- Workflow: `dia60al40-dem`, run `27858874562`, commit `234e94d`
 - Artifact: `dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - Evidence summary: 87 checks, 87 pass, 0 missing, 0 mismatch
 - Final density: rho_total = 0.95
@@ -171,7 +171,9 @@ expected evidence bundles:
   recommendation. When the reduced run remains below the Zhang endpoint
   pressure and force-chain participation still trends the wrong way, the next
   light GitHub Actions sweep is defined over Al endpoint modulus and friction
-  scale rather than only over post-processing thresholds.
+  scale rather than only over post-processing thresholds. The current 6-job
+  recommendation is `e_al_emax_sweep_json=["18","24.174"]` and
+  `mu_scale_json=["0.7","1","1.3"]` for seed 0 and size case C.
 
 This does not yet mean the full thesis/article figures are calibrated one-to-one.
 It means the reproduction route is executable, source-backed by the PDFs, and
