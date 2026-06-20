@@ -1,5 +1,12 @@
 # Zhang Sweep Artifact Report
 
+Post-import interpretation: this run proves the 9-job robustness workflow is
+operational, but the global `Emax=41.686`/`mu_scale=0.77` pair is not robust
+across seeds and size cases. Only C seed 0 and E seed 2 both pass Zhang
+force-chain gates and fall inside the 572-638 MPa pressure window. Treat the
+generated "Next Recommendation" below as the artifact-time output; the updated
+recommender now classifies this evidence as `size_specific_calibration`.
+
 - DEM workflow run: [27867380830](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27867380830)
 - Source artifact: `dia60al40-dem-ensemble-summary`
 - DEM runs summarized: `9`

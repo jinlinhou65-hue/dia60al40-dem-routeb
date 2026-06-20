@@ -126,6 +126,12 @@ The earlier two 6-job calibration sweeps were verified by
 result shows `Emax=41.686` GPa, `mu_scale=0.77`, P95 `632.842 MPa`, and Zhang
 trend `pass`. That is why the current default matrix has moved from calibration
 to robustness validation.
+That robustness validation was run as `dia60al40-dem` run `27867380830`: the
+workflow completed successfully with 9 DEM jobs and the aggregate artifact, but
+the global `Emax=41.686`/`mu_scale=0.77` pair is not scientifically robust.
+Only 5/9 rows pass the Zhang trend gate, and only 2/9 both pass and fall inside
+the 572-638 MPa endpoint window. The next calibration step should therefore be
+size-specific rather than another global seed/size matrix.
 
 ### 3b. Import the Zhang sweep artifact into versioned evidence
 
@@ -150,7 +156,8 @@ keeps the evidence in the repository instead of leaving it only as a downloadabl
 artifact.
 The imported evidence for the two calibration runs is stored in
 `docs/zhang_sweep_evidence/run_27859255390/` and
-`docs/zhang_sweep_evidence/run_27866838829/`.
+`docs/zhang_sweep_evidence/run_27866838829/`. The imported robustness evidence
+is stored in `docs/zhang_sweep_evidence/run_27867380830/`.
 
 ### 4. Convert each DEM stage into paper metrics
 

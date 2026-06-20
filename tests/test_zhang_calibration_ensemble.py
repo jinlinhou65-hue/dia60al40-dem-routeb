@@ -149,6 +149,43 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             self.assertEqual(json.loads(inputs["diamond_size_case_json"]), ["C", "D", "E"])
             self.assertEqual(inputs["allow_evidence_mismatch"], "true")
 
+    def test_diagnoses_nonrobust_seed_size_matrix(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "ensemble_inputs"
+            outdir = Path(tmp) / "summary"
+            cases = [
+                ("C", 0, 632.841664, "pass", 0.144433, -1.32046),
+                ("C", 1, 532.332, "review", -0.0298141, -1.04237),
+                ("C", 2, 510.770425, "review", 0.954169, 0.623926),
+                ("D", 0, 787.591725, "review", -0.0708973, -0.964074),
+                ("D", 1, 756.278, "review", -0.127762, -0.646442),
+                ("D", 2, 748.197991, "pass", 0.0903001, -0.627505),
+                ("E", 0, 754.247161, "pass", 0.0988269, -0.318278),
+                ("E", 1, 727.172, "pass", 0.037351, -0.955001),
+                ("E", 2, 575.976781, "pass", 0.0187333, -0.962857),
+            ]
+            for size, seed, pressure, status, participation_delta, d1_delta in cases:
+                write_artifact(
+                    root / f"artifact-size{size}-seed{seed}",
+                    mu_scale=0.77,
+                    emax=41.686,
+                    status=status,
+                    participation_delta=participation_delta,
+                    d1_delta=d1_delta,
+                    p95_mpa=pressure,
+                    diamond_size_case=size,
+                    seed_index=seed,
+                )
+
+            aggregate_zhang_calibration(root, outdir)
+
+            recommendation = json.loads((outdir / "zhang_next_sweep_recommendation.json").read_text())
+            self.assertEqual(recommendation["status"], "needs_calibration")
+            self.assertEqual(recommendation["next_sweep_mode"], "size_specific_calibration")
+            self.assertEqual(recommendation["estimated_run_count"], 0)
+            self.assertEqual(recommendation["workflow_dispatch_inputs"], {})
+            self.assertEqual(len(recommendation["size_case_summary"]), 3)
+
 
 def write_artifact(
     artifact_dir: Path,
@@ -159,14 +196,16 @@ def write_artifact(
     participation_delta: float = -0.25,
     d1_delta: float = -0.30,
     p95_mpa: float = 297.8374,
+    diamond_size_case: str = "C",
+    seed_index: int = 0,
 ) -> None:
     dem_dir = artifact_dir / "DEM"
     calibration = dem_dir / "paper_reproduction" / "zhang_force_chain_calibration"
     calibration.mkdir(parents=True)
     (dem_dir / "model_parameters.csv").write_text(
         "parameter,value\n"
-        "diamond_size_case,C\n"
-        "DEM_seed_index,0\n"
+        f"diamond_size_case,{diamond_size_case}\n"
+        f"DEM_seed_index,{seed_index}\n"
         f"E_Al_smoothstep_Emax,{emax}\n"
         f"mu_scale,{mu_scale}\n",
         encoding="utf-8",

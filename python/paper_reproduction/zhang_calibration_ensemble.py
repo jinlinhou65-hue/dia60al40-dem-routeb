@@ -128,6 +128,39 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
     pressure = optional_float(selected.get("p95_mpa"))
     trend_pass = selected.get("status") == "pass"
     if trend_pass and pressure_in_endpoint_window(pressure):
+        robustness_rows = matching_pair_robustness_rows(best_rows, selected)
+        if robustness_rows is not None:
+            robustness = summarize_robustness_rows(robustness_rows)
+            if not robustness["robust"]:
+                return {
+                    "status": "needs_calibration",
+                    "next_sweep_mode": "size_specific_calibration",
+                    "selected_artifact": selected.get("artifact"),
+                    "selected_status": selected.get("status"),
+                    "diagnosis": selected.get("calibration_diagnosis"),
+                    "selected_threshold_factor": selected.get("threshold_factor"),
+                    "selected_min_chain_length": selected.get("min_chain_length"),
+                    "selected_mu_scale": selected.get("mu_scale"),
+                    "selected_e_al_emax_gpa": selected.get("e_al_emax_gpa"),
+                    "selected_p95_mpa": selected.get("p95_mpa"),
+                    "zhang_pressure_target_mpa": ZHANG_ENDPOINT_TARGET_MPA,
+                    "zhang_pressure_window_mpa": list(ZHANG_ENDPOINT_WINDOW_MPA),
+                    "reason": (
+                        f"only {robustness['passing_window_count']}/{robustness['run_count']} "
+                        "seed/size rows both pass Zhang trend gates and fall inside the "
+                        "572-638 MPa endpoint window, so one global mu/E pair is not robust"
+                    ),
+                    "workflow_dispatch_inputs": {},
+                    "size_case_summary": robustness["size_case_summary"],
+                    "estimated_run_count": 0,
+                    "followup_after_light_sweep": (
+                        "Run separate size-case calibration sweeps instead of repeating the "
+                        "same global seed/size matrix: C needs higher-pressure stabilization, "
+                        "while D/E need lower-pressure brackets or a particle-size dependent "
+                        "contact-law fit."
+                    ),
+                }
+
         mu_values = [optional_float(selected.get("mu_scale")) or 1.0]
         e_values = [optional_float(selected.get("e_al_emax_gpa")) or 12.0]
         seed_values = [0, 1, 2]
@@ -285,6 +318,68 @@ def pressure_in_endpoint_window(pressure: float | None) -> bool:
         return False
     low, high = ZHANG_ENDPOINT_WINDOW_MPA
     return low <= pressure <= high
+
+
+def matching_pair_robustness_rows(
+    best_rows: list[dict[str, object]],
+    selected: dict[str, object],
+) -> list[dict[str, object]] | None:
+    selected_emax = optional_float(selected.get("e_al_emax_gpa"))
+    selected_mu = optional_float(selected.get("mu_scale"))
+    if selected_emax is None or selected_mu is None:
+        return None
+    rows = [
+        row
+        for row in best_rows
+        if close_float(optional_float(row.get("e_al_emax_gpa")), selected_emax)
+        and close_float(optional_float(row.get("mu_scale")), selected_mu)
+    ]
+    seeds = {str(row.get("seed_index")) for row in rows}
+    sizes = {str(row.get("diamond_size_case")) for row in rows}
+    if len(rows) >= 4 and (len(seeds) > 1 or len(sizes) > 1):
+        return rows
+    return None
+
+
+def summarize_robustness_rows(rows: list[dict[str, object]]) -> dict[str, object]:
+    passing_window_count = sum(
+        1
+        for row in rows
+        if row.get("status") == "pass"
+        and pressure_in_endpoint_window(optional_float(row.get("p95_mpa")))
+    )
+    grouped: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        grouped.setdefault(str(row.get("diamond_size_case")), []).append(row)
+    size_case_summary = []
+    for size, group in sorted(grouped.items()):
+        pressures = finite_values(group, "p95_mpa")
+        inside_count = sum(
+            1
+            for row in group
+            if pressure_in_endpoint_window(optional_float(row.get("p95_mpa")))
+        )
+        size_case_summary.append(
+            {
+                "diamond_size_case": size,
+                "run_count": len(group),
+                "pass_run_count": sum(1 for row in group if row.get("status") == "pass"),
+                "pressure_window_count": inside_count,
+                "p95_mean_mpa": mean(pressures),
+                "p95_min_mpa": min(pressures) if pressures else None,
+                "p95_max_mpa": max(pressures) if pressures else None,
+            }
+        )
+    return {
+        "run_count": len(rows),
+        "passing_window_count": passing_window_count,
+        "robust": passing_window_count == len(rows),
+        "size_case_summary": size_case_summary,
+    }
+
+
+def close_float(value: float | None, target: float, tolerance: float = 1.0e-9) -> bool:
+    return value is not None and abs(value - target) <= tolerance
 
 
 def render_recommendation(recommendation: dict[str, object]) -> str:

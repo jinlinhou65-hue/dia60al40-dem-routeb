@@ -173,8 +173,13 @@ expected evidence bundles:
   trend gates, and the second (`zhang-recommended-sweep` run `27866837375`,
   `dia60al40-dem` run `27866838829`) found `Emax=41.686` GPa and
   `mu_scale=0.77` with P95 `632.842 MPa`, inside the Zhang 572-638 MPa endpoint
-  window. The current dispatcher therefore fixes that mu/E pair and moves to a
-  9-job robustness matrix over seeds `0,1,2` and size cases `C,D,E`.
+  window. The current dispatcher fixed that mu/E pair and ran a 9-job robustness
+  matrix over seeds `0,1,2` and size cases `C,D,E` in `dia60al40-dem` run
+  `27867380830`. The workflow completed successfully and imported evidence into
+  `docs/zhang_sweep_evidence/run_27867380830/`, but the global pair is not
+  robust: 5/9 rows pass Zhang trend gates, and only 2/9 both pass and sit inside
+  the pressure endpoint window. The next Zhang step is size-specific contact-law
+  calibration rather than repeating the same global matrix.
 
 This does not yet mean the full thesis/article figures are calibrated one-to-one.
 It means the reproduction route is executable, source-backed by the PDFs, and

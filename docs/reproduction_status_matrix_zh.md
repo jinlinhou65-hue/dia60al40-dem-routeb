@@ -9,11 +9,13 @@
 - 论文算法 workflow：[paper-algorithm-reproduction run 27866974626](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866974626)，状态 `success`
 - Zhang 推荐 sweep 调度器：[zhang-recommended-sweep run 27866837375](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866837375)，状态 `success`
 - Zhang 推荐 6-job DEM sweep：[dia60al40-dem run 27866838829](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866838829)，状态 `success`
+- Zhang 9-job 稳健性 DEM sweep：[dia60al40-dem run 27867380830](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27867380830)，状态 `success`
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
 - Zhang 力链校准扫描：27 组强接触阈值/最小链长组合均为 `review`；最佳组 `threshold_factor=0.05`、`min_chain_length=2`，D1 下降但 strong-force participation 下降
 - Zhang ensemble 校准诊断：第二轮推荐矩阵 `Emax=[36.261,41.686]`、`mu=[0.63,0.7,0.77]` 已在 GitHub Actions 以 6 个 DEM job 跑通并导入到 `docs/zhang_sweep_evidence/run_27866838829/`；其中 `Emax=41.686`、`mu=0.77` 的 P95 为 `632.842 MPa`，进入 Zhang 572-638 MPa 端点窗口且力链趋势为 `pass`
+- Zhang 稳健性诊断：`Emax=41.686`、`mu=0.77` 的 seeds `0,1,2` 和 size cases `C,D,E` 已在 GitHub Actions 以 9 个 DEM job 跑通并导入到 `docs/zhang_sweep_evidence/run_27867380830/`；workflow 可行，但全局参数不稳健：5/9 为 Zhang trend `pass`，只有 2/9 同时 `pass` 且落入 572-638 MPa 窗口
 - 运行环境策略：现阶段优先 GitHub Actions/Ubuntu；WSL2 在 workflow 稳定后用于本地长时间调参，而不是当前必要前置条件。
 
 ## 用户目标拆解
@@ -55,17 +57,17 @@
 | paper acceptance on real DEM | Li pass, Liu pass, Yuan pass, Zhang review with 0 mismatch |
 | Zhang force-chain calibration | 27 threshold/chain-length candidates scanned; best `threshold_factor=0.05`, `min_chain_length=2`, `chain_coverage=1.0`, D1 decreases but strong-force participation decreases, so status remains `review` |
 | Zhang recommended sweep | dispatcher run `27866837375` triggered DEM run `27866838829`; all 6 matrix jobs plus aggregate ensemble job completed `success` |
-| Zhang sweep imported evidence | `docs/zhang_sweep_evidence/run_27866838829/README.md` summarizes the 6-job ensemble; P95 range is `481.608-632.842 MPa`, mean `546.429 MPa`; 4/6 candidates pass Zhang force-chain trend gates |
-| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` rank future mu/E/seed/size sweeps; the physically preferred candidate is `Emax=41.686`, `mu=0.77`, `threshold_factor=0.1`, `min_chain_length=2`, status `pass`, P95 `632.842 MPa`; the next workflow default is a 9-job robustness matrix over seeds `0,1,2` and size cases `C,D,E` |
+| Zhang robustness sweep | dispatcher run `27867379295` triggered DEM run `27867380830`; all 9 matrix jobs plus aggregate ensemble job completed `success` |
+| Zhang sweep imported evidence | `docs/zhang_sweep_evidence/run_27867380830/README.md` summarizes the 9-job ensemble; P95 range is `510.770-787.592 MPa`, mean `669.490 MPa`; 5/9 candidates pass Zhang force-chain trend gates |
+| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` show `Emax=41.686`, `mu=0.77` is executable but not globally robust: only C seed 0 and E seed 2 both pass and sit in the 572-638 MPa window; size C trends low, D trends high, and E passes force-chain gates but is often over-pressure |
 
-Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 的物理判断已经前进了一步：`Emax=41.686`、`mu=0.77` 同时满足 Zhang 力链趋势 gate 和 572-638 MPa 压力端点窗口。因此下一步不再继续粗扫 E/mu，而是固定该参数对，优先做 seed/尺寸 case 稳健性验证。
+Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 找到了 `Emax=41.686`、`mu=0.77` 这一可行候选；随后 9-job 稳健性 sweep 证明 workflow 可稳定运行，但一个全局 mu/E 参数不能同时覆盖 C/D/E 粒径 case 和三个随机 seed。因此下一步应做按尺寸分组的参数校准，而不是继续重复同一全局矩阵。
 
 ## 下一阶段制作方法
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 优先做稳健性验证：下一轮跑 `Emax=[41.686]`、`mu=[0.77]`、seeds `0,1,2`、size cases `C,D,E`，目标是确认 P95 仍落在 572-638 MPa 区间并保持力链 `pass`。
-   该稳健性 workflow 使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本；缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
+3. Zhang 优先做尺寸分组校准：C case 需要提高或稳定压力，D/E case 需要降低压力窗口或引入粒径相关接触律；继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。
@@ -74,7 +76,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 ## 当前未宣称完成的内容
 
 - 还没有一比一复现四篇论文的全部图表和实验数值。
-- 还没有 Zhang 论文级 3000 粒子 DEM；轻量 demo 已找到一个 572-638 MPa endpoint 候选，但仍需 seed/尺寸稳健性验证。
+- 还没有 Zhang 论文级 3000 粒子 DEM；轻量 demo 已找到 572-638 MPa endpoint 候选并完成 seed/尺寸稳健性验证，但结果显示需要尺寸分组校准。
 - 还没有 Yuan 的真实非球形/MPFEM 颗粒形状模型。
 - 还没有 Liu 的全热传导温度场和材料扩散参数标定。
 - 还没有 Li 的真实 Cu@Fe core-shell MPFEM 变形模型。
