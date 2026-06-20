@@ -15,6 +15,8 @@
 | C/D/E 各自候选参数 | 已得到 |
 | `particle_count_scale=2` C/D/E demo | 已成功 |
 | D 组 verifier 半径误判 | 已修复 |
+| 2x C/D/E ensemble artifacts | 已导入 |
+| 1x vs 2x 判读报告 | 已生成，结论为 `review` |
 
 ## 当前候选参数
 
@@ -34,42 +36,53 @@
 
 调度 run：`zhang-scale-pilot.yml` run `27875947935`。
 
-## 当前未完成
+## 当前判读
 
-2x workflow 已成功，但 artifacts 还需要导入本阶段目录并形成判读报告。网页成功
-只能证明运行完成，不能替代仓库内的可检阅数据。
+2x workflow 和 verifier 路径已经证明可用，但 2x 结果没有保持 1x 的压力标定：
 
-## 下一步动作
+| Size | 1x P95 MPa | 2x P95 MPa | 变化 | 2x trend |
+|---|---:|---:|---:|---|
+| C | 634.203 | 411.866 | -35.06% | pass |
+| D | 620.578 | 413.405 | -33.38% | review |
+| E | 604.217 | 371.868 | -38.45% | review |
 
-1. 下载或通过 workflow 导入三个 2x DEM ensemble artifacts。
-2. 在本阶段目录建立：
+因此本阶段结论是：**不要直接进入 4x/8x；先在 `particle_count_scale=2`
+重新标定 endpoint modulus、加载路径或接触参数。**
+
+## 已归档产物
 
 ```text
 03_zhang_particle_scale/
   data/
-    2x_ensemble_runs.csv
-    2x_pressure_summary.csv
+    combined_2x_27875950305_27875951506_27875952754/
     1x_vs_2x_comparison.csv
-  figures/
-    pressure_density_1x_vs_2x.png
-    zhang_force_chain_metrics_1x_vs_2x.png
+    zhang_particle_scale_acceptance.csv
+    summary.json
   evidence/
     github_runs.md
+    run_27875950305/
+    run_27875951506/
+    run_27875952754/
+  figures/
+    p95_1x_vs_2x.png
+    p95_delta_percent.png
   report.md
 ```
 
-3. 判读 2x 是否保持：
-   - 572-638 MPa endpoint pressure window。
-   - Zhang trend gate。
-   - D1/D2 随压实下降或合理收敛。
-   - 接触数量和强接触比例不出现非物理突变。
+## 下一步动作
+
+1. 不启动 4x/8x。
+2. 在 pscale=2 上做窄范围再标定：
+   - 提高 endpoint modulus 或调整加载路径，使 P95 回到 572-638 MPa。
+   - D/E 同时校准 participation trend。
+   - 保留 `allow_evidence_mismatch=true`，缺文件仍失败，趋势不通过进入 review。
+3. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
 
 ## 验收门槛
 
 | 验收项 | 判定 |
 |---|---|
-| 三个 2x run artifact 已导入 | 待完成 |
-| 1x vs 2x 对比表已生成 | 待完成 |
-| P95 和 trend 结论明确 | 待完成 |
-| 是否继续 4x/8x 或 WSL2 有明确建议 | 待完成 |
-
+| 三个 2x run artifact 已导入 | 通过 |
+| 1x vs 2x 对比表已生成 | 通过 |
+| P95 和 trend 结论明确 | 通过：2x 压力显著偏低，D/E trend review |
+| 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，先 pscale=2 重标定 |

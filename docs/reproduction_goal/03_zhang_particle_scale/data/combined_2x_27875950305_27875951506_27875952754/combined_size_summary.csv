@@ -1,0 +1,4 @@
+best_artifact,best_e_al_emax_gpa,best_mu_scale,best_p95_mpa,best_source_run_id,best_status,diamond_size_case,p95_max_mpa,p95_mean_mpa,p95_min_mpa,pass_run_count,passing_window_count,pressure_window_count,run_count
+dia60al40-dem-artifacts-sizeC-pscale2-Emax44.772-mu0.654-seed2,44.772,0.654,411.86608,27875950305,pass,C,411.86608,411.86608,411.86608,1,0,0,1
+dia60al40-dem-artifacts-sizeD-pscale2-Emax37.517-mu0.77-seed2,37.517,0.77,413.405454,27875951506,review,D,413.405454,413.405454,413.405454,0,0,0,1
+dia60al40-dem-artifacts-sizeE-pscale2-Emax37.517-mu0.693-seed2,37.517,0.693,371.868112,27875952754,review,E,371.868112,371.868112,371.868112,0,0,0,1

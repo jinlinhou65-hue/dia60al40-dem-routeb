@@ -1,0 +1,17 @@
+{
+  "acceptance_csv": "docs/reproduction_goal/03_zhang_particle_scale/data/zhang_particle_scale_acceptance.csv",
+  "all_2x_pressure_in_window": false,
+  "all_2x_runs_completed": true,
+  "all_2x_trend_pass": false,
+  "comparison_csv": "docs/reproduction_goal/03_zhang_particle_scale/data/1x_vs_2x_comparison.csv",
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "Do not launch 4x yet. The 2x DEM runs are complete, but P95 pressures fall below the 572-638 MPa Zhang endpoint window; recalibrate endpoint modulus/loading/contact parameters at pscale=2 first.",
+  "sizes": [
+    "C",
+    "D",
+    "E"
+  ]
+}

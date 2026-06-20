@@ -1,0 +1,4 @@
+diamond_size_case,artifact_imported,workflow_completed,pressure_window_gate,trend_gate,overall_status,decision
+C,True,True,review,pass,review,rerun_with_higher_endpoint_pressure
+D,True,True,review,review,review,recalibrate_before_4x
+E,True,True,review,review,review,recalibrate_before_4x

@@ -42,7 +42,7 @@ flowchart TD
 | 00 | [00_project_control](00_project_control/README.md) | 进行中 | 总目标、边界、归档规则和验收纪律 |
 | 01 | [01_pdf_algorithm_layer](01_pdf_algorithm_layer/README.md) | 已完成基础层 | PDF 机制映射和四篇论文算法层复现 |
 | 02 | [02_dem_backend_light_demo](02_dem_backend_light_demo/README.md) | 已完成轻量层 | 开源 DEM 后端选择和 LIGGGHTS workflow demo |
-| 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | 进行中 | Zhang C/D/E 参数校准和 2x 粒子数升级 |
+| 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | review | Zhang C/D/E 参数校准和 2x 粒子数升级 |
 | 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 待启动 | COMSOL 电流场、温度场、Joule heat 主线 |
 | 05 | [05_yuan_shape_arch_bridge](05_yuan_shape_arch_bridge/README.md) | 待启动 | Yuan 非球形颗粒、拱桥结构和 MPFEM 路线 |
 | 06 | [06_liu_sintering_coupling](06_liu_sintering_coupling/README.md) | 待启动 | Liu 压制-热场-烧结耦合 |
@@ -61,7 +61,7 @@ flowchart TD
 | 真实 DEM workflow | `dia60al40-dem.yml` 已能在 GitHub Actions 跑通 |
 | DEM evidence gate | 已有 `87 pass / 0 missing / 0 mismatch` 轻量证据 |
 | Zhang 尺寸分组 sweep | C/D/E 三段 size-specific sweep 均成功 |
-| Zhang 2x 粒子数 demo | C `27875950305`、D `27875951506`、E `27875952754` 均成功 |
+| Zhang 2x 粒子数 demo | C `27875950305`、D `27875951506`、E `27875952754` 均成功并已导入阶段目录 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 
 ## 仍未完成的边界
@@ -98,7 +98,6 @@ stage_folder/
 
 ## 当前下一步
 
-下一步只做一件事：导入并判读 Zhang `particle_count_scale=2` 的 C/D/E 三条
-成功 DEM artifacts，形成 `03_zhang_particle_scale` 阶段报告。完成后再决定
-继续 4x/8x workflow，还是转入 WSL2 本地长时间运行。
-
+下一步只做一件事：在 `particle_count_scale=2` 上重新标定 Zhang C/D/E 参数。
+三条 2x DEM artifacts 已导入并判读，结论是 workflow 可运行，但 P95 压力
+整体低于 572-638 MPa endpoint window，因此不能直接进入 4x/8x。

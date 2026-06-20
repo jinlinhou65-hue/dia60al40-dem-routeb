@@ -1,0 +1,5 @@
+best_trend_score,d1_delta_mean,group_by,group_value,participation_delta_mean,pass_run_count,review_run_count,run_count
+1,-0.7659437877469726,diamond_size_case,D,-0.2366927658970115,0,1,1
+1,-0.7659437877469726,particle_count_scale,2,-0.2366927658970115,0,1,1
+1,-0.7659437877469726,mu_scale,0.77,-0.2366927658970115,0,1,1
+1,-0.7659437877469726,e_al_emax_gpa,37.517,-0.2366927658970115,0,1,1

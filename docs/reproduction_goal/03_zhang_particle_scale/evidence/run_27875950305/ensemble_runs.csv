@@ -1,0 +1,2 @@
+artifact,diamond_size_case,particle_count_scale,particle_count_total,seed_index,e_al_emax_gpa,mu_scale,al_radius_um,diamond_ds_radius_um,diamond_dl_radius_um,diamond_count_ds,diamond_count_dl,al_area_fraction,diamond_area_fraction,p95_mpa
+dia60al40-dem-artifacts-sizeC-pscale2-Emax44.772-mu0.654-seed2,C,2,151,2,44.772,0.654,9.19238816,16.9706,27.5772,16,16,0.399674767,0.600325233,411.86608

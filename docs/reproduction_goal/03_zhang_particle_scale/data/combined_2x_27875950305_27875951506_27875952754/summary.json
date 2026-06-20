@@ -1,0 +1,85 @@
+{
+  "imported_runs": [
+    {
+      "row_count": 1,
+      "run_dir": "docs/reproduction_goal/03_zhang_particle_scale/evidence/run_27875950305",
+      "run_id": "27875950305",
+      "workflow_url": "https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27875950305"
+    },
+    {
+      "row_count": 1,
+      "run_dir": "docs/reproduction_goal/03_zhang_particle_scale/evidence/run_27875951506",
+      "run_id": "27875951506",
+      "workflow_url": "https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27875951506"
+    },
+    {
+      "row_count": 1,
+      "run_dir": "docs/reproduction_goal/03_zhang_particle_scale/evidence/run_27875952754",
+      "run_id": "27875952754",
+      "workflow_url": "https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27875952754"
+    }
+  ],
+  "passing_window_count": 0,
+  "pressure_window_count": 0,
+  "row_count": 3,
+  "run_ids": [
+    "27875950305",
+    "27875951506",
+    "27875952754"
+  ],
+  "size_summary": [
+    {
+      "best_artifact": "dia60al40-dem-artifacts-sizeC-pscale2-Emax44.772-mu0.654-seed2",
+      "best_e_al_emax_gpa": 44.772,
+      "best_mu_scale": 0.654,
+      "best_p95_mpa": 411.86608,
+      "best_source_run_id": "27875950305",
+      "best_status": "pass",
+      "diamond_size_case": "C",
+      "p95_max_mpa": 411.86608,
+      "p95_mean_mpa": 411.86608,
+      "p95_min_mpa": 411.86608,
+      "pass_run_count": 1,
+      "passing_window_count": 0,
+      "pressure_window_count": 0,
+      "run_count": 1
+    },
+    {
+      "best_artifact": "dia60al40-dem-artifacts-sizeD-pscale2-Emax37.517-mu0.77-seed2",
+      "best_e_al_emax_gpa": 37.517,
+      "best_mu_scale": 0.77,
+      "best_p95_mpa": 413.405454,
+      "best_source_run_id": "27875951506",
+      "best_status": "review",
+      "diamond_size_case": "D",
+      "p95_max_mpa": 413.405454,
+      "p95_mean_mpa": 413.405454,
+      "p95_min_mpa": 413.405454,
+      "pass_run_count": 0,
+      "passing_window_count": 0,
+      "pressure_window_count": 0,
+      "run_count": 1
+    },
+    {
+      "best_artifact": "dia60al40-dem-artifacts-sizeE-pscale2-Emax37.517-mu0.693-seed2",
+      "best_e_al_emax_gpa": 37.517,
+      "best_mu_scale": 0.693,
+      "best_p95_mpa": 371.868112,
+      "best_source_run_id": "27875952754",
+      "best_status": "review",
+      "diamond_size_case": "E",
+      "p95_max_mpa": 371.868112,
+      "p95_mean_mpa": 371.868112,
+      "p95_min_mpa": 371.868112,
+      "pass_run_count": 0,
+      "passing_window_count": 0,
+      "pressure_window_count": 0,
+      "run_count": 1
+    }
+  ],
+  "status_pass_count": 1,
+  "zhang_pressure_window_mpa": [
+    572.0,
+    638.0
+  ]
+}
