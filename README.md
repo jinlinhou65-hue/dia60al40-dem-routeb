@@ -1,5 +1,13 @@
 # Dia60Al40 DEM Pressure-Density Pipeline
 
+## Reproduction Goal Map
+
+The staged goal plan for reproducing the four powder-compaction theses is in
+`docs/reproduction_goal/README.md`. It organizes the work into phase folders for
+PDF/algorithm reproduction, DEM validation, Zhang particle-scale calibration,
+COMSOL electrothermal fields, Yuan arch-shape modeling, Liu sintering coupling,
+Li core-shell FEM, and final visualization/reporting.
+
 ## Recommended Execution Path
 
 Run the DEM solve in GitHub Actions on Linux, not directly on Windows. The
