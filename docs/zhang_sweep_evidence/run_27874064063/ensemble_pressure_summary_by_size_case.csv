@@ -1,0 +1,2 @@
+diamond_size_case,n_runs,p95_mean_mpa,p95_stdev_mpa,p95_min_mpa,p95_max_mpa,al_radius_um,diamond_ds_radius_um,diamond_dl_radius_um,diamond_count_ds,diamond_count_dl,al_area_fraction,diamond_area_fraction
+E,12,600.833527,51.4811383,498.32732,655.388854,13.0,18.0,0.0,30,0,0.403311736,0.596688264
