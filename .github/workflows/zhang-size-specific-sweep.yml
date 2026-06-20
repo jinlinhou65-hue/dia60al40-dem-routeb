@@ -1,0 +1,69 @@
+name: zhang-size-specific-sweep
+
+on:
+  workflow_dispatch:
+    inputs:
+      recommendation_path:
+        description: 'Path to Zhang size-specific recommendation JSON'
+        required: false
+        default: 'docs/zhang_sweep_evidence/run_27867380830/zhang_next_sweep_recommendation.json'
+      max_total_runs:
+        description: 'Safety cap for expanded DEM matrix jobs'
+        required: false
+        default: '36'
+  push:
+    paths:
+      - '.github/workflows/zhang-size-specific-sweep.yml'
+      - 'scripts/dispatch_zhang_size_specific_sweeps.py'
+      - 'tests/test_zhang_size_specific_sweep_workflow.py'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: zhang-size-specific-sweep-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch-size-specific-dem:
+    name: dispatch Zhang size-specific DEM sweeps
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate size-specific dispatch plan
+        env:
+          RECOMMENDATION_PATH: ${{ github.event.inputs.recommendation_path || 'docs/zhang_sweep_evidence/run_27867380830/zhang_next_sweep_recommendation.json' }}
+          MAX_TOTAL_RUNS: ${{ github.event.inputs.max_total_runs || '36' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_size_specific_sweeps.py \
+            --recommendation "$RECOMMENDATION_PATH" \
+            --ref "$GITHUB_REF_NAME" \
+            --max-total-runs "$MAX_TOTAL_RUNS" \
+            > /tmp/zhang_size_specific_dispatch_plan.json
+          cat /tmp/zhang_size_specific_dispatch_plan.json
+          python3 - <<'PY'
+          import json
+          payload = json.load(open("/tmp/zhang_size_specific_dispatch_plan.json", encoding="utf-8"))
+          if payload["payload_count"] != 3:
+              raise SystemExit(f"expected 3 size-specific dispatch payloads, got {payload['payload_count']}")
+          if payload["total_estimated_run_count"] != 36:
+              raise SystemExit(f"expected 36 estimated DEM jobs, got {payload['total_estimated_run_count']}")
+          PY
+
+      - name: Dispatch size-specific dia60al40 DEM workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RECOMMENDATION_PATH: ${{ github.event.inputs.recommendation_path || 'docs/zhang_sweep_evidence/run_27867380830/zhang_next_sweep_recommendation.json' }}
+          MAX_TOTAL_RUNS: ${{ github.event.inputs.max_total_runs || '36' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_size_specific_sweeps.py \
+            --recommendation "$RECOMMENDATION_PATH" \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$GITHUB_REF_NAME" \
+            --max-total-runs "$MAX_TOTAL_RUNS" \
+            --sleep-seconds 5 \
+            --dispatch

@@ -82,8 +82,8 @@ on:
       - 'scripts/**'
 
 concurrency:
-  group: dia60al40-dem-${{ github.ref }}
-  cancel-in-progress: true
+  group: dia60al40-dem-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'push' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   dem:

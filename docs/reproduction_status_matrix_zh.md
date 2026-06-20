@@ -15,7 +15,7 @@
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
 - Zhang 力链校准扫描：27 组强接触阈值/最小链长组合均为 `review`；最佳组 `threshold_factor=0.05`、`min_chain_length=2`，D1 下降但 strong-force participation 下降
 - Zhang ensemble 校准诊断：第二轮推荐矩阵 `Emax=[36.261,41.686]`、`mu=[0.63,0.7,0.77]` 已在 GitHub Actions 以 6 个 DEM job 跑通并导入到 `docs/zhang_sweep_evidence/run_27866838829/`；其中 `Emax=41.686`、`mu=0.77` 的 P95 为 `632.842 MPa`，进入 Zhang 572-638 MPa 端点窗口且力链趋势为 `pass`
-- Zhang 稳健性诊断：`Emax=41.686`、`mu=0.77` 的 seeds `0,1,2` 和 size cases `C,D,E` 已在 GitHub Actions 以 9 个 DEM job 跑通并导入到 `docs/zhang_sweep_evidence/run_27867380830/`；workflow 可行，但全局参数不稳健：5/9 为 Zhang trend `pass`，只有 2/9 同时 `pass` 且落入 572-638 MPa 窗口；当前推荐器已生成 C/D/E 三段 size-specific dispatch plan，总计 36 个轻量 DEM run
+- Zhang 稳健性诊断：`Emax=41.686`、`mu=0.77` 的 seeds `0,1,2` 和 size cases `C,D,E` 已在 GitHub Actions 以 9 个 DEM job 跑通并导入到 `docs/zhang_sweep_evidence/run_27867380830/`；workflow 可行，但全局参数不稳健：5/9 为 Zhang trend `pass`，只有 2/9 同时 `pass` 且落入 572-638 MPa 窗口；当前推荐器已生成 C/D/E 三段 size-specific dispatch plan，总计 36 个轻量 DEM run，并由 `zhang-size-specific-sweep.yml` 调度
 - 运行环境策略：现阶段优先 GitHub Actions/Ubuntu；WSL2 在 workflow 稳定后用于本地长时间调参，而不是当前必要前置条件。
 
 ## 用户目标拆解
@@ -59,7 +59,7 @@
 | Zhang recommended sweep | dispatcher run `27866837375` triggered DEM run `27866838829`; all 6 matrix jobs plus aggregate ensemble job completed `success` |
 | Zhang robustness sweep | dispatcher run `27867379295` triggered DEM run `27867380830`; all 9 matrix jobs plus aggregate ensemble job completed `success` |
 | Zhang sweep imported evidence | `docs/zhang_sweep_evidence/run_27867380830/README.md` summarizes the 9-job ensemble; P95 range is `510.770-787.592 MPa`, mean `669.490 MPa`; 5/9 candidates pass Zhang force-chain trend gates |
-| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` show `Emax=41.686`, `mu=0.77` is executable but not globally robust: only C seed 0 and E seed 2 both pass and sit in the 572-638 MPa window; the current `zhang_next_sweep_recommendation.json` now emits a three-part size-specific plan: C raises endpoint modulus, D lowers endpoint modulus and friction, and E lowers endpoint modulus with a narrow friction bracket |
+| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` show `Emax=41.686`, `mu=0.77` is executable but not globally robust: only C seed 0 and E seed 2 both pass and sit in the 572-638 MPa window; the current `zhang_next_sweep_recommendation.json` now emits a three-part size-specific plan: C raises endpoint modulus, D lowers endpoint modulus and friction, and E lowers endpoint modulus with a narrow friction bracket; `zhang-size-specific-sweep.yml` can dispatch the three runs without cancellation |
 
 Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 找到了 `Emax=41.686`、`mu=0.77` 这一可行候选；随后 9-job 稳健性 sweep 证明 workflow 可稳定运行，但一个全局 mu/E 参数不能同时覆盖 C/D/E 粒径 case 和三个随机 seed。因此下一步应做按尺寸分组的参数校准，而不是继续重复同一全局矩阵。
 
@@ -67,7 +67,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 优先做尺寸分组校准：C case 需要提高或稳定压力，D/E case 需要降低压力窗口或引入粒径相关接触律；当前已形成 36-run size-specific dispatch plan，继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
+3. Zhang 优先做尺寸分组校准：C case 需要提高或稳定压力，D/E case 需要降低压力窗口或引入粒径相关接触律；当前已形成 36-run size-specific dispatch plan，并提供 `zhang-size-specific-sweep.yml` 自动调度；继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。

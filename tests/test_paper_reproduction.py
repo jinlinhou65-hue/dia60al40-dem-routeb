@@ -472,7 +472,8 @@ class PaperReproductionTest(unittest.TestCase):
         cloud_script = (REPO_ROOT / "scripts" / "cloud_run_liggghts_routeb.sh").read_text(
             encoding="utf-8"
         )
-        self.assertIn("cancel-in-progress: true", workflow)
+        self.assertIn("github.event_name == 'workflow_dispatch' && github.run_id || 'push'", workflow)
+        self.assertIn("cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}", workflow)
         self.assertIn("runtime_profile", workflow)
         self.assertIn("allow_evidence_mismatch", workflow)
         self.assertIn("--allow-mismatch", workflow)

@@ -131,7 +131,21 @@ workflow completed successfully with 9 DEM jobs and the aggregate artifact, but
 the global `Emax=41.686`/`mu_scale=0.77` pair is not scientifically robust.
 Only 5/9 rows pass the Zhang trend gate, and only 2/9 both pass and fall inside
 the 572-638 MPa endpoint window. The next calibration step should therefore be
-size-specific rather than another global seed/size matrix.
+size-specific rather than another global seed/size matrix. The imported
+recommendation now expands into three independent dispatch payloads:
+
+```powershell
+gh workflow run zhang-size-specific-sweep.yml
+```
+
+That workflow reads
+`docs/zhang_sweep_evidence/run_27867380830/zhang_next_sweep_recommendation.json`,
+dry-runs the plan, verifies that it expands to 3 payloads and 36 total light DEM
+jobs, then dispatches `dia60al40-dem.yml` once per size case. C raises the
+endpoint modulus, D lowers endpoint modulus and friction, and E lowers endpoint
+modulus with a narrow friction bracket. The DEM workflow keeps push demo runs
+cancelable, but manual dispatch runs use a per-run concurrency group so the
+three size-specific sweeps do not cancel each other.
 
 ### 3b. Import the Zhang sweep artifact into versioned evidence
 
