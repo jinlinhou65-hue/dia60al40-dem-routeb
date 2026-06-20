@@ -1,0 +1,90 @@
+name: zhang-size-specific-artifact-report
+
+on:
+  workflow_dispatch:
+    inputs:
+      dem_run_ids_json:
+        description: 'JSON list of successful C/D/E dia60al40-dem run ids'
+        required: false
+        default: '["27874059503","27874061902","27874064063"]'
+  push:
+    paths:
+      - '.github/workflows/zhang-size-specific-artifact-report.yml'
+      - 'scripts/import_zhang_sweep_artifact.py'
+      - 'scripts/summarize_zhang_size_specific_imports.py'
+      - 'tests/test_zhang_size_specific_artifact_import.py'
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: zhang-size-specific-artifact-report-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  import-size-specific-artifacts:
+    name: import Zhang size-specific artifacts
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate requested DEM runs
+        env:
+          DEM_RUN_IDS_JSON: ${{ github.event.inputs.dem_run_ids_json || '["27874059503","27874061902","27874064063"]' }}
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY' > /tmp/zhang_size_specific_run_ids.txt
+          import json
+          import os
+          ids = json.loads(os.environ["DEM_RUN_IDS_JSON"])
+          if not isinstance(ids, list) or len(ids) != 3:
+              raise SystemExit(f"expected exactly 3 DEM run ids, got {ids}")
+          for run_id in ids:
+              print(str(run_id))
+          PY
+          cat /tmp/zhang_size_specific_run_ids.txt
+
+      - name: Download and import ensemble artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEM_RUN_IDS_JSON: ${{ github.event.inputs.dem_run_ids_json || '["27874059503","27874061902","27874064063"]' }}
+        run: |
+          set -euxo pipefail
+          gh --version
+          while IFS= read -r run_id; do
+            test -n "$run_id"
+            outdir="zhang_size_specific_downloads/run_${run_id}"
+            gh run download "$run_id" \
+              --repo "$GITHUB_REPOSITORY" \
+              --name dia60al40-dem-ensemble-summary \
+              --dir "$outdir"
+            find "$outdir" -maxdepth 2 -type f | sort
+            python3 scripts/import_zhang_sweep_artifact.py \
+              --artifact-dir "$outdir" \
+              --run-id "$run_id" \
+              --workflow-url "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" \
+              --outdir "docs/zhang_sweep_evidence/run_${run_id}"
+          done < /tmp/zhang_size_specific_run_ids.txt
+          slug="$(python3 - <<'PY'
+          import json
+          import os
+          print("size_specific_" + "_".join(json.loads(os.environ["DEM_RUN_IDS_JSON"])))
+          PY
+          )"
+          python3 scripts/summarize_zhang_size_specific_imports.py \
+            --run-ids-json "$DEM_RUN_IDS_JSON" \
+            --outdir "docs/zhang_sweep_evidence/${slug}"
+
+      - name: Commit imported size-specific evidence
+        run: |
+          set -euxo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/zhang_sweep_evidence
+          if git diff --cached --quiet; then
+            echo "No imported Zhang size-specific evidence changes to commit."
+          else
+            git commit -m "docs(zhang): import size-specific sweep artifacts"
+            git push
+          fi
