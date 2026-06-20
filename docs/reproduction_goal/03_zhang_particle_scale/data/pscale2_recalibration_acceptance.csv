@@ -1,0 +1,4 @@
+diamond_size_case,artifact_imported,workflow_completed,pressure_window_gate,trend_gate,overall_status,decision
+C,True,True,review,pass,review,extend_endpoint_modulus_or_loading_path
+D,True,True,pass,review,review,hold_pressure_candidate_and_tune_participation
+E,True,True,review,review,review,extend_endpoint_modulus_or_loading_path

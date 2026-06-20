@@ -98,7 +98,7 @@ stage_folder/
 
 ## 当前下一步
 
-下一步只做一件事：运行 `zhang-pscale2-recalibration.yml` 的 9-job 小矩阵。
-三条 2x DEM artifacts 已导入并判读，结论是 workflow 可运行，但 P95 压力
-整体低于 572-638 MPa endpoint window，因此不能直接进入 4x/8x。该小矩阵
-只提高 endpoint modulus，先验证 pscale=2 能否回到 Zhang 压力窗口。
+下一步只做一件事：继续 `particle_count_scale=2` 的分 size 校准。9-job
+`zhang-pscale2-recalibration.yml` 已成功运行并导入：C 接近压力窗口但略低，
+D 有压力窗口候选但 force-chain participation 仍需调，E 仍明显偏低。因此
+不能直接进入 4x/8x。
