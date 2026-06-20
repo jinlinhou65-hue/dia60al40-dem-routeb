@@ -113,6 +113,9 @@ That dispatcher validates the JSON lists, confirms the run count is 6, and then
 dispatches `dia60al40-dem.yml` on the same branch. The resulting DEM workflow
 still builds LIGGGHTS-PUBLIC, runs the staged compaction cases, aggregates the
 ensemble, and uploads the normal `dia60al40-dem-ensemble-summary` artifact.
+This path was verified by `zhang-recommended-sweep` run `27859253983`, which
+dispatched `dia60al40-dem` run `27859255390`; all 6 DEM jobs and the aggregate
+ensemble job completed successfully.
 
 ### 4. Convert each DEM stage into paper metrics
 

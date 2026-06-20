@@ -5,14 +5,15 @@
 ## 当前判定
 
 - 当前阶段结论：四篇论文的算法层已经可重复生成，真实 LIGGGHTS DEM 轻量 demo 已在 GitHub Actions 跑通。
-- 最新验证代码 commit：`234e94ddb60cff528a54bacc8bab81b052e45310`
-- 论文算法 workflow：[paper-algorithm-reproduction run 27858874564](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27858874564)，状态 `success`
-- 真实 DEM workflow：[dia60al40-dem run 27858874562](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27858874562)，状态 `success`
+- 最新验证代码 commit：`385993f64ee0c187d1760033db21efdfa7361a19`
+- 论文算法 workflow：[paper-algorithm-reproduction run 27859253974](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27859253974)，状态 `success`
+- Zhang 推荐 sweep 调度器：[zhang-recommended-sweep run 27859253983](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27859253983)，状态 `success`
+- Zhang 推荐 6-job DEM sweep：[dia60al40-dem run 27859255390](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27859255390)，状态 `success`
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
 - Zhang 力链校准扫描：27 组强接触阈值/最小链长组合均为 `review`；最佳组 `threshold_factor=0.05`、`min_chain_length=2`，D1 下降但 strong-force participation 下降
-- Zhang ensemble 校准诊断：跨 artifact 汇总器会输出最佳候选、分组统计和下一轮轻量 sweep 建议；按接近目标趋势排序，当前 artifact 最佳为 `threshold_factor=1.25`、`min_chain_length=2`，诊断 `needs_participation_increase`；下一轮建议为 `e_al_emax_sweep_json=["18","24.174"]`、`mu_scale_json=["0.7","1","1.3"]`
+- Zhang ensemble 校准诊断：跨 artifact 汇总器会输出最佳候选、分组统计和下一轮轻量 sweep 建议；推荐矩阵 `e_al_emax_sweep_json=["18","24.174"]`、`mu_scale_json=["0.7","1","1.3"]` 已在 GitHub Actions 以 6 个 DEM job 跑通并生成 `dia60al40-dem-ensemble-summary`
 - 运行环境策略：现阶段优先 GitHub Actions/Ubuntu；WSL2 在 workflow 稳定后用于本地长时间调参，而不是当前必要前置条件。
 
 ## 用户目标拆解
@@ -41,8 +42,8 @@
 
 | 证据项 | 当前值 |
 |---|---|
-| workflow | `dia60al40-dem` run `27858874562` |
-| verified code commit | `234e94ddb60cff528a54bacc8bab81b052e45310` |
+| workflow | `dia60al40-dem` run `27859255390` |
+| verified code commit | `385993f64ee0c187d1760033db21efdfa7361a19` |
 | DEM backend | LIGGGHTS-PUBLIC serial build on `ubuntu-22.04` |
 | stage count | 6 stages: preload, rho065, rho072, rho080, rho088, rho095 |
 | particle count gate | 76 particles in each handoff stage |
@@ -53,7 +54,8 @@
 | DEM evidence | `87 pass / 0 missing / 0 mismatch` |
 | paper acceptance on real DEM | Li pass, Liu pass, Yuan pass, Zhang review with 0 mismatch |
 | Zhang force-chain calibration | 27 threshold/chain-length candidates scanned; best `threshold_factor=0.05`, `min_chain_length=2`, `chain_coverage=1.0`, D1 decreases but strong-force participation decreases, so status remains `review` |
-| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` rank future mu/E/seed/size sweeps; `zhang_next_sweep_recommendation.json` turns the current diagnosis into a 6-job light workflow matrix: `Emax=[18,24.174]`, `mu=[0.7,1,1.3]`, seed `0`, size `C`; current target-oriented best is `threshold_factor=1.25`, `min_chain_length=2`, `needs_participation_increase` |
+| Zhang recommended sweep | dispatcher run `27859253983` triggered DEM run `27859255390`; all 6 matrix jobs plus aggregate ensemble job completed `success` |
+| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` rank future mu/E/seed/size sweeps; `zhang_next_sweep_recommendation.json` turned the diagnosis into a 6-job light workflow matrix: `Emax=[18,24.174]`, `mu=[0.7,1,1.3]`, seed `0`, size `C`; run `27859255390` uploaded `dia60al40-dem-ensemble-summary` artifact `7761793914` |
 
 Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的 force-chain participation 和 D1 还没有按 Zhang 原文的粒子数量、材料参数、压力终点和图像阈值校准。`scripts/calibrate_zhang_force_chain.py` 已把“只调强接触阈值和最小链长是否足够”变成可重复扫描；`scripts/aggregate_zhang_calibration.py` 进一步把多参数 DEM artifact 汇总成按摩擦、Al 模量、seed 和尺寸 case 分组的校准表，并输出下一轮 GitHub Actions 轻量 sweep 建议。当前真实 artifact 的答案是否定的，因此下一步应转向接触律、摩擦、加载路径和粒子规模校准。
 
