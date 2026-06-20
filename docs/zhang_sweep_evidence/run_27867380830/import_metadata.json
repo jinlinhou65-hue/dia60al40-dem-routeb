@@ -1,0 +1,19 @@
+{
+  "best_row_count": 9,
+  "copied_files": [
+    "ensemble_runs.csv",
+    "ensemble_pressure_summary.csv",
+    "ensemble_pressure_summary_by_size_case.csv",
+    "zhang_calibration_candidates.csv",
+    "zhang_calibration_best_by_run.csv",
+    "zhang_calibration_group_summary.csv",
+    "zhang_calibration_ensemble_report.md",
+    "zhang_next_sweep_recommendation.json",
+    "zhang_next_sweep_recommendation.md"
+  ],
+  "group_row_count": 5,
+  "readme": "docs/zhang_sweep_evidence/run_27867380830/README.md",
+  "run_id": "27867380830",
+  "source_artifact": "dia60al40-dem-ensemble-summary",
+  "workflow_url": "https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27867380830"
+}
