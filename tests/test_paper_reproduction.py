@@ -474,6 +474,8 @@ class PaperReproductionTest(unittest.TestCase):
         )
         self.assertIn("cancel-in-progress: true", workflow)
         self.assertIn("runtime_profile", workflow)
+        self.assertIn("allow_evidence_mismatch", workflow)
+        self.assertIn("--allow-mismatch", workflow)
         self.assertIn("--top-vel-cm-s 50", workflow)
         self.assertIn("dem_seed: ${{ fromJSON(inputs.dem_seed_json || '[\"0\"]') }}", workflow)
         self.assertIn(

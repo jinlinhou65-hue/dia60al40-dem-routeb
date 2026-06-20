@@ -66,6 +66,45 @@ class DemEvidenceTest(unittest.TestCase):
             self.assertEqual(summary[0]["status"], "pass")
             self.assertEqual(zhang_status_check["status"], "pass")
 
+    def test_cli_can_collect_complete_mismatch_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dem_dir = root / "DEM"
+            outdir = dem_dir / "paper_reproduction"
+            create_complete_artifact(root, dem_dir, outdir, zhang_status="mismatch")
+
+            strict = subprocess.run(
+                [
+                    sys.executable,
+                    str(REPO_ROOT / "scripts" / "validate_dem_evidence.py"),
+                    "--dem-dir",
+                    str(dem_dir),
+                    "--outdir",
+                    str(root / "strict"),
+                ],
+                cwd=REPO_ROOT,
+                text=True,
+                capture_output=True,
+            )
+            collect = subprocess.run(
+                [
+                    sys.executable,
+                    str(REPO_ROOT / "scripts" / "validate_dem_evidence.py"),
+                    "--dem-dir",
+                    str(dem_dir),
+                    "--outdir",
+                    str(root / "collect"),
+                    "--allow-mismatch",
+                ],
+                cwd=REPO_ROOT,
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertEqual(strict.returncode, 2)
+            self.assertEqual(collect.returncode, 0)
+            self.assertTrue((root / "collect" / "dem_evidence_summary.csv").exists())
+
 
 def create_complete_artifact(
     root: Path,

@@ -110,6 +110,7 @@ jobs:
                   "dem_seed_json": os.environ["DEM_SEED_JSON"],
                   "diamond_size_case_json": os.environ["DIAMOND_SIZE_CASE_JSON"],
                   "runtime_profile": os.environ["RUNTIME_PROFILE"],
+                  "allow_evidence_mismatch": "true",
               },
           }
           print(json.dumps(payload, indent=2, sort_keys=True))

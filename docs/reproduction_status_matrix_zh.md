@@ -65,6 +65,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
 3. Zhang 优先做稳健性验证：下一轮跑 `Emax=[41.686]`、`mu=[0.77]`、seeds `0,1,2`、size cases `C,D,E`，目标是确认 P95 仍落在 572-638 MPa 区间并保持力链 `pass`。
+   该稳健性 workflow 使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本；缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。

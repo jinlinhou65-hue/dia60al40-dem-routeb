@@ -22,6 +22,11 @@ def main() -> None:
     parser.add_argument("--dem-dir", required=True)
     parser.add_argument("--outdir", default=None)
     parser.add_argument("--allow-review", action="store_true")
+    parser.add_argument(
+        "--allow-mismatch",
+        action="store_true",
+        help="Allow complete artifacts whose paper-trend gates mismatch; missing evidence still fails.",
+    )
     args = parser.parse_args()
 
     outputs = write_dem_evidence_outputs(
@@ -32,7 +37,12 @@ def main() -> None:
     status = str(summary_rows[0]["status"]) if summary_rows else "missing"
     print(json.dumps({key: str(value) for key, value in outputs.items()}, indent=2, sort_keys=True))
     print(f"[DEM EVIDENCE] status={status}")
-    if status != "pass" and not (args.allow_review and status == "review"):
+    allowed = (
+        status == "pass"
+        or (args.allow_review and status == "review")
+        or (args.allow_mismatch and status == "mismatch")
+    )
+    if not allowed:
         raise SystemExit(2)
 
 

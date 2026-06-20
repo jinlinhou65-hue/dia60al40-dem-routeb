@@ -147,6 +147,7 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             self.assertEqual(json.loads(inputs["mu_scale_json"]), ["0.77"])
             self.assertEqual(json.loads(inputs["dem_seed_json"]), ["0", "1", "2"])
             self.assertEqual(json.loads(inputs["diamond_size_case_json"]), ["C", "D", "E"])
+            self.assertEqual(inputs["allow_evidence_mismatch"], "true")
 
 
 def write_artifact(

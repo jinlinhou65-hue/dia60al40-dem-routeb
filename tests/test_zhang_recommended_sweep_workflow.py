@@ -17,6 +17,7 @@ class ZhangRecommendedSweepWorkflowTest(unittest.TestCase):
         self.assertIn("actions: write", text)
         self.assertIn("dia60al40-dem.yml/dispatches", text)
         self.assertIn("runtime_profile", text)
+        self.assertIn('"allow_evidence_mismatch": "true"', text)
         self.assertIn("expected the recommended robustness sweep to dispatch 9 DEM runs", text)
 
     def test_default_matrix_matches_current_recommendation(self):

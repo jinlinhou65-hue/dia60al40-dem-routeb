@@ -70,6 +70,10 @@ on:
         description: 'DEM runtime profile: full for calibrated runs, demo for fast feasibility reruns'
         required: false
         default: 'full'
+      allow_evidence_mismatch:
+        description: 'Allow complete DEM artifacts with paper-trend mismatches so robustness sweeps can aggregate non-passing samples'
+        required: false
+        default: 'false'
   push:
     paths:
       - 'python/**'
@@ -361,9 +365,14 @@ jobs:
 
           # Evidence gate: prove this run contains a complete real DEM stage
           # series plus paper-reproduction metrics, not only generated stubs.
+          validate_args=()
+          if [ "${{ inputs.allow_evidence_mismatch || 'false' }}" = "true" ]; then
+            validate_args+=(--allow-mismatch)
+          fi
           python3 scripts/validate_dem_evidence.py \
             --dem-dir liggghts/DEM \
-            --outdir liggghts/DEM/paper_reproduction
+            --outdir liggghts/DEM/paper_reproduction \
+            "${validate_args[@]}"
           echo '[DEM EVIDENCE VALIDATION]'
           cat liggghts/DEM/paper_reproduction/dem_evidence_summary.csv
           echo '[DEM EVIDENCE REPORT HEAD]'

@@ -116,6 +116,10 @@ That dispatcher validates the JSON lists, confirms the run count is 9, and then
 dispatches `dia60al40-dem.yml` on the same branch. The resulting DEM workflow
 still builds LIGGGHTS-PUBLIC, runs the staged compaction cases, aggregates the
 ensemble, and uploads the normal `dia60al40-dem-ensemble-summary` artifact.
+For this robustness sweep the dispatcher sets `allow_evidence_mismatch=true`:
+complete samples that miss a paper-trend gate are still uploaded and aggregated,
+while missing evidence remains a hard failure. This keeps the workflow useful as
+a robustness map instead of hiding non-passing seed/size cases.
 The earlier two 6-job calibration sweeps were verified by
 `zhang-recommended-sweep` runs `27859253983` and `27866837375`, which dispatched
 `dia60al40-dem` runs `27859255390` and `27866838829`; the second imported

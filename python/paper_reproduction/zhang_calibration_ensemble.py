@@ -134,6 +134,7 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
         size_values = ["C", "D", "E"]
         inputs = {
             "runtime_profile": "demo",
+            "allow_evidence_mismatch": "true",
             "mu_scale_json": json.dumps(format_value_list(mu_values)),
             "e_al_emax_sweep_json": json.dumps(format_value_list(e_values)),
             "dem_seed_json": json.dumps([str(value) for value in seed_values]),
