@@ -1,0 +1,138 @@
+﻿{
+  "comparison": "docs\\reproduction_goal\\03_zhang_particle_scale\\data\\1x_vs_2x_comparison.csv",
+  "dispatch": false,
+  "mode": "zhang_pscale2_pressure_recalibration",
+  "payload_count": 3,
+  "payloads": [
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"2\"]",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"61.962\", \"65.223\", \"68.484\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.654\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "diamond_size_case": "C",
+        "e_al_emax_candidates": [
+          "61.962",
+          "65.223",
+          "68.484"
+        ],
+        "estimated_run_count": 3,
+        "particle_count_scale": 2,
+        "purpose": "pressure_first_pscale2_recalibration",
+        "source_artifact": "dia60al40-dem-artifacts-sizeC-pscale2-Emax44.772-mu0.654-seed2",
+        "source_e_al_emax_gpa": 44.772,
+        "source_mu_scale": 0.654,
+        "source_p95_mpa": 411.86608,
+        "source_run_id": "27875950305",
+        "target_e_al_emax_gpa": 65.223142,
+        "target_pressure_mpa": 600.0
+      },
+      "ref": "codex/paper-reproduction-demo"
+    },
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"2\"]",
+        "diamond_size_case_json": "[\"D\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"51.728\", \"54.451\", \"57.173\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.77\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "diamond_size_case": "D",
+        "e_al_emax_candidates": [
+          "51.728",
+          "54.451",
+          "57.173"
+        ],
+        "estimated_run_count": 3,
+        "particle_count_scale": 2,
+        "purpose": "pressure_first_pscale2_recalibration",
+        "source_artifact": "dia60al40-dem-artifacts-sizeD-pscale2-Emax37.517-mu0.77-seed2",
+        "source_e_al_emax_gpa": 37.517,
+        "source_mu_scale": 0.77,
+        "source_p95_mpa": 413.405454,
+        "source_run_id": "27875951506",
+        "target_e_al_emax_gpa": 54.45066,
+        "target_pressure_mpa": 600.0
+      },
+      "ref": "codex/paper-reproduction-demo"
+    },
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"2\"]",
+        "diamond_size_case_json": "[\"E\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"57.506\", \"60.533\", \"63.559\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.693\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "diamond_size_case": "E",
+        "e_al_emax_candidates": [
+          "57.506",
+          "60.533",
+          "63.559"
+        ],
+        "estimated_run_count": 3,
+        "particle_count_scale": 2,
+        "purpose": "pressure_first_pscale2_recalibration",
+        "source_artifact": "dia60al40-dem-artifacts-sizeE-pscale2-Emax37.517-mu0.693-seed2",
+        "source_e_al_emax_gpa": 37.517,
+        "source_mu_scale": 0.693,
+        "source_p95_mpa": 371.868112,
+        "source_run_id": "27875952754",
+        "target_e_al_emax_gpa": 60.532751,
+        "target_pressure_mpa": 600.0
+      },
+      "ref": "codex/paper-reproduction-demo"
+    }
+  ],
+  "ref": "codex/paper-reproduction-demo",
+  "target_pressure_mpa": 600.0,
+  "total_estimated_run_count": 9,
+  "workflow": "dia60al40-dem.yml"
+}

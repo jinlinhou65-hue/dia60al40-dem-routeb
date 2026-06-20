@@ -72,11 +72,17 @@
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. 在 pscale=2 上做窄范围再标定：
-   - 提高 endpoint modulus 或调整加载路径，使 P95 回到 572-638 MPa。
-   - D/E 同时校准 participation trend。
-   - 保留 `allow_evidence_mismatch=true`，缺文件仍失败，趋势不通过进入 review。
-3. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
+2. 先运行 `zhang-pscale2-recalibration.yml` 的 9-job pressure-first 小矩阵：
+   - C: `Emax=[61.962,65.223,68.484]`, `mu=0.654`
+   - D: `Emax=[51.728,54.451,57.173]`, `mu=0.77`
+   - E: `Emax=[57.506,60.533,63.559]`, `mu=0.693`
+3. 该矩阵只测试一个问题：在 `particle_count_scale=2` 下，提高 endpoint
+   modulus 是否能把 P95 拉回 Zhang `572-638 MPa` 窗口。
+4. D/E 同时观察 participation trend；如果压力回窗但 trend 仍 review，再做
+   mu/contact-law 小矩阵。
+5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
+
+计划文件：`data/pscale2_recalibration_plan.json`。
 
 ## 验收门槛
 
