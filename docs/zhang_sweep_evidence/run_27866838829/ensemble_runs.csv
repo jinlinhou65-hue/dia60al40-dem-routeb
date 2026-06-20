@@ -1,0 +1,7 @@
+artifact,diamond_size_case,seed_index,e_al_emax_gpa,mu_scale,al_radius_um,diamond_ds_radius_um,diamond_dl_radius_um,diamond_count_ds,diamond_count_dl,al_area_fraction,diamond_area_fraction,p95_mpa
+dia60al40-dem-artifacts-sizeC-Emax36.261-mu0.63-seed0,C,0,36.261,0.63,13.0,24.0,39.0,8,8,0.401684277,0.598315723,502.223932
+dia60al40-dem-artifacts-sizeC-Emax36.261-mu0.7-seed0,C,0,36.261,0.7,13.0,24.0,39.0,8,8,0.401684277,0.598315723,481.607832
+dia60al40-dem-artifacts-sizeC-Emax36.261-mu0.77-seed0,C,0,36.261,0.77,13.0,24.0,39.0,8,8,0.401684277,0.598315723,556.268701
+dia60al40-dem-artifacts-sizeC-Emax41.686-mu0.63-seed0,C,0,41.686,0.63,13.0,24.0,39.0,8,8,0.401684277,0.598315723,534.726678
+dia60al40-dem-artifacts-sizeC-Emax41.686-mu0.7-seed0,C,0,41.686,0.7,13.0,24.0,39.0,8,8,0.401684277,0.598315723,570.904427
+dia60al40-dem-artifacts-sizeC-Emax41.686-mu0.77-seed0,C,0,41.686,0.77,13.0,24.0,39.0,8,8,0.401684277,0.598315723,632.841664

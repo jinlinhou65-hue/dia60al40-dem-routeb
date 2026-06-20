@@ -1,0 +1,26 @@
+{
+  "diagnosis": "candidate_pass",
+  "estimated_run_count": 6,
+  "followup_after_light_sweep": "If any candidate reaches Zhang pass trends, rerun the best mu/E pair with dem_seed_json=[\"0\",\"1\",\"2\"] and diamond_size_case_json=[\"C\",\"D\",\"E\"].",
+  "reason": "p95=556 MPa is below Zhang's 572-638 MPa endpoint window, so sweep higher Al endpoint modulus; a Zhang trend candidate exists, so keep a narrow friction bracket",
+  "selected_artifact": "dia60al40-dem-artifacts-sizeC-Emax36.261-mu0.77-seed0",
+  "selected_e_al_emax_gpa": 36.261,
+  "selected_min_chain_length": 2,
+  "selected_mu_scale": 0.77,
+  "selected_p95_mpa": 556.268701,
+  "selected_status": "pass",
+  "selected_threshold_factor": 0.1,
+  "status": "ready",
+  "workflow_dispatch_inputs": {
+    "dem_seed_json": "[\"0\"]",
+    "diamond_size_case_json": "[\"C\"]",
+    "e_al_emax_sweep_json": "[\"54.392\", \"45.326\"]",
+    "mu_scale_json": "[\"0.693\", \"0.77\", \"0.847\"]",
+    "runtime_profile": "demo"
+  },
+  "zhang_pressure_target_mpa": 600.0,
+  "zhang_pressure_window_mpa": [
+    572.0,
+    638.0
+  ]
+}
