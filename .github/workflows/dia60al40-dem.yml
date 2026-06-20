@@ -250,6 +250,12 @@ jobs:
                 dia60al40_liggghts_staged.run.log || true)"
             fi
             if [ -z "$summary" ]; then
+              if [ -f DEM/final_dump_verify.log ]; then
+                summary="$(grep -E '^\[VERIFY\] particles=|^\[FAIL\]' DEM/final_dump_verify.log \
+                  | tr '\n' ' ' | sed 's/[[:space:]][[:space:]]*/ /g' | cut -c1-600 || true)"
+              fi
+            fi
+            if [ -z "$summary" ]; then
               summary="exit $status at line $failed_line while running: $failed_command"
             fi
             summary="${summary//'%'/'%25'}"
@@ -315,7 +321,8 @@ jobs:
           EXPECT_DL=$(awk -F, '$1=="diamond_count_DL"{print int($2)}' DEM/model_parameters.csv)
           echo "[VERIFY] expected composition from model_parameters.csv: Al=$EXPECT_AL DS=$EXPECT_DS DL=$EXPECT_DL"
           python3 ../python/verify_liggghts_dump.py --input "$LAST_DUMP" \
-            --expect-al "$EXPECT_AL" --expect-ds "$EXPECT_DS" --expect-dl "$EXPECT_DL"
+            --expect-al "$EXPECT_AL" --expect-ds "$EXPECT_DS" --expect-dl "$EXPECT_DL" \
+            2>&1 | tee DEM/final_dump_verify.log
 
           # Gate 4: verify every stage against expected density windows and 2D
           # COMSOL handoff constraints. Overlap is reported, not failed, because it

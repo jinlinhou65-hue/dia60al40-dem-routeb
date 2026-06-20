@@ -497,6 +497,7 @@ class PaperReproductionTest(unittest.TestCase):
         self.assertIn("--particle-count-scale", workflow)
         self.assertIn("pscale${{ matrix.particle_count_scale }}", workflow)
         self.assertIn("failure_diagnostics.txt", workflow)
+        self.assertIn("final_dump_verify.log", workflow)
         self.assertIn("failed_command", workflow)
         self.assertIn("::error title=DEM compaction failure::", workflow)
         self.assertIn("--allow-mismatch", workflow)
