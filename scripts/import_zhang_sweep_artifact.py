@@ -6,7 +6,19 @@ import argparse
 import csv
 import json
 import shutil
+import sys
 from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PYTHON_DIR = REPO_ROOT / "python"
+if str(PYTHON_DIR) not in sys.path:
+    sys.path.insert(0, str(PYTHON_DIR))
+
+from paper_reproduction.zhang_calibration_ensemble import (  # noqa: E402
+    recommend_next_sweep,
+    render_recommendation,
+)
 
 
 SELECTED_FILES = [
@@ -34,7 +46,6 @@ def import_zhang_sweep_artifact(
     best_rows = read_csv(artifact_dir / "zhang_calibration_best_by_run.csv")
     group_rows = read_csv(artifact_dir / "zhang_calibration_group_summary.csv")
     pressure_rows = read_csv(artifact_dir / "ensemble_pressure_summary.csv")
-    recommendation = read_json(artifact_dir / "zhang_next_sweep_recommendation.json")
     if not best_rows:
         raise SystemExit("[FAIL] artifact is missing Zhang best-by-run rows")
 
@@ -44,6 +55,25 @@ def import_zhang_sweep_artifact(
         source = artifact_dir / name
         if source.exists():
             shutil.copy2(source, outdir / name)
+            copied.append(name)
+
+    recommendation = recommend_next_sweep(best_rows)
+    recommendation_json = outdir / "zhang_next_sweep_recommendation.json"
+    recommendation_json.write_text(
+        json.dumps(recommendation, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    recommendation_md = outdir / "zhang_next_sweep_recommendation.md"
+    recommendation_md.write_text(
+        render_recommendation(recommendation),
+        encoding="utf-8",
+        newline="\n",
+    )
+    for name in (
+        "zhang_next_sweep_recommendation.json",
+        "zhang_next_sweep_recommendation.md",
+    ):
+        if name not in copied:
             copied.append(name)
 
     summary = render_summary(
@@ -64,7 +94,7 @@ def import_zhang_sweep_artifact(
         "best_row_count": len(best_rows),
         "group_row_count": len(group_rows),
         "copied_files": copied,
-        "readme": str(readme),
+        "readme": readme.as_posix(),
     }
     (outdir / "import_metadata.json").write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
@@ -160,11 +190,13 @@ def render_summary(
 
     if recommendation:
         inputs = recommendation.get("workflow_dispatch_inputs", {})
+        dispatch_plan = list(recommendation.get("workflow_dispatch_plan") or [])
         lines.extend(
             [
                 "## Next Recommendation",
                 "",
                 f"- Diagnosis: `{recommendation.get('diagnosis', 'missing')}`",
+                f"- Mode: `{recommendation.get('next_sweep_mode', 'missing')}`",
                 f"- Estimated run count: `{recommendation.get('estimated_run_count', 'missing')}`",
                 f"- Reason: {recommendation.get('reason', 'missing')}",
                 "",
@@ -174,6 +206,30 @@ def render_summary(
                 "",
             ]
         )
+        if dispatch_plan:
+            lines.extend(
+                [
+                    "### Size-specific dispatch plan",
+                    "",
+                    "| Size | Estimated Runs | Pressure Action | Trend Action | Inputs |",
+                    "|---|---:|---|---|---|",
+                ]
+            )
+            for item in dispatch_plan:
+                lines.append(
+                    "| {size} | {runs} | {pressure} | {trend} | `{inputs}` |".format(
+                        size=item.get("diamond_size_case", "missing"),
+                        runs=item.get("estimated_run_count", "missing"),
+                        pressure=item.get("pressure_action", "missing"),
+                        trend=item.get("trend_action", "missing"),
+                        inputs=json.dumps(
+                            item.get("workflow_dispatch_inputs", {}),
+                            ensure_ascii=False,
+                            sort_keys=True,
+                        ),
+                    )
+                )
+            lines.append("")
 
     lines.extend(
         [
@@ -199,12 +255,6 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return []
     with path.open(newline="", encoding="utf-8-sig") as handle:
         return list(csv.DictReader(handle))
-
-
-def read_json(path: Path) -> dict[str, object]:
-    if not path.exists():
-        return {}
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def optional_float(value: object) -> float | None:

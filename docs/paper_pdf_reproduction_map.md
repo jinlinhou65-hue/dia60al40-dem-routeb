@@ -178,8 +178,11 @@ expected evidence bundles:
   `27867380830`. The workflow completed successfully and imported evidence into
   `docs/zhang_sweep_evidence/run_27867380830/`, but the global pair is not
   robust: 5/9 rows pass Zhang trend gates, and only 2/9 both pass and sit inside
-  the pressure endpoint window. The next Zhang step is size-specific contact-law
-  calibration rather than repeating the same global matrix.
+  the pressure endpoint window. The current machine-readable recommendation now
+  emits a three-part size-specific calibration plan: C raises endpoint modulus,
+  D lowers endpoint modulus and friction, and E lowers endpoint modulus with a
+  narrow friction bracket. The next Zhang step is running those size-specific
+  sweeps rather than repeating the same global matrix.
 
 This does not yet mean the full thesis/article figures are calibrated one-to-one.
 It means the reproduction route is executable, source-backed by the PDFs, and

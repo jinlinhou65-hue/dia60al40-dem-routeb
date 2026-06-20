@@ -48,6 +48,14 @@ class ZhangSweepArtifactImportTest(unittest.TestCase):
             self.assertIn("Zhang Sweep Artifact Report", readme)
             self.assertIn("artifact-E18-mu07", readme)
             self.assertIn("Pressure Ensemble", readme)
+            recommendation = json.loads(
+                (outdir / "zhang_next_sweep_recommendation.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(recommendation["selected_artifact"], "artifact-E24-mu13")
+            self.assertNotIn("synthetic next sweep", recommendation["reason"])
+            self.assertIn("runtime_profile", recommendation["workflow_dispatch_inputs"])
 
     def test_workflow_can_download_and_commit_report(self):
         text = WORKFLOW.read_text(encoding="utf-8")

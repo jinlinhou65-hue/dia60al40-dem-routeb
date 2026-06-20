@@ -132,6 +132,10 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
         if robustness_rows is not None:
             robustness = summarize_robustness_rows(robustness_rows)
             if not robustness["robust"]:
+                dispatch_plan = build_size_specific_dispatch_plan(
+                    robustness_rows,
+                    selected,
+                )
                 return {
                     "status": "needs_calibration",
                     "next_sweep_mode": "size_specific_calibration",
@@ -151,8 +155,12 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
                         "572-638 MPa endpoint window, so one global mu/E pair is not robust"
                     ),
                     "workflow_dispatch_inputs": {},
+                    "workflow_dispatch_plan": dispatch_plan,
                     "size_case_summary": robustness["size_case_summary"],
-                    "estimated_run_count": 0,
+                    "estimated_run_count": sum(
+                        int(item.get("estimated_run_count") or 0)
+                        for item in dispatch_plan
+                    ),
                     "followup_after_light_sweep": (
                         "Run separate size-case calibration sweeps instead of repeating the "
                         "same global seed/size matrix: C needs higher-pressure stabilization, "
@@ -378,6 +386,128 @@ def summarize_robustness_rows(rows: list[dict[str, object]]) -> dict[str, object
     }
 
 
+def build_size_specific_dispatch_plan(
+    rows: list[dict[str, object]],
+    selected: dict[str, object],
+) -> list[dict[str, object]]:
+    selected_emax = optional_float(selected.get("e_al_emax_gpa")) or 12.0
+    selected_mu = optional_float(selected.get("mu_scale")) or 1.0
+    grouped: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        grouped.setdefault(str(row.get("diamond_size_case")), []).append(row)
+
+    plan: list[dict[str, object]] = []
+    for size, group in sorted(grouped.items()):
+        pressures = finite_values(group, "p95_mpa")
+        pressure_mean = mean(pressures)
+        participation_mean = mean(finite_values(group, "participation_delta"))
+        d1_mean = mean(finite_values(group, "d1_delta"))
+        pass_count = sum(1 for row in group if row.get("status") == "pass")
+        pressure_window_count = sum(
+            1
+            for row in group
+            if pressure_in_endpoint_window(optional_float(row.get("p95_mpa")))
+        )
+        e_values, pressure_action = recommend_size_specific_emax_values(
+            selected_emax,
+            pressure_mean,
+        )
+        mu_values, trend_action = recommend_size_specific_mu_values(
+            selected_mu,
+            participation_mean,
+            d1_mean,
+            pass_count,
+            len(group),
+        )
+        seed_values = sorted(
+            {
+                seed
+                for seed in (optional_int(row.get("seed_index")) for row in group)
+                if seed is not None
+            }
+        ) or [0, 1, 2]
+        inputs = {
+            "runtime_profile": "demo",
+            "allow_evidence_mismatch": "true",
+            "mu_scale_json": json.dumps(format_value_list(mu_values)),
+            "e_al_emax_sweep_json": json.dumps(format_value_list(e_values)),
+            "dem_seed_json": json.dumps([str(value) for value in seed_values]),
+            "diamond_size_case_json": json.dumps([size]),
+        }
+        plan.append(
+            {
+                "diamond_size_case": size,
+                "run_count": len(group),
+                "pass_run_count": pass_count,
+                "pressure_window_count": pressure_window_count,
+                "p95_mean_mpa": pressure_mean,
+                "p95_min_mpa": min(pressures) if pressures else None,
+                "p95_max_mpa": max(pressures) if pressures else None,
+                "participation_delta_mean": participation_mean,
+                "d1_delta_mean": d1_mean,
+                "pressure_action": pressure_action,
+                "trend_action": trend_action,
+                "workflow_dispatch_inputs": inputs,
+                "estimated_run_count": (
+                    len(e_values) * len(mu_values) * len(seed_values)
+                ),
+            }
+        )
+    return plan
+
+
+def recommend_size_specific_emax_values(
+    current_emax: float,
+    pressure_mean: float | None,
+) -> tuple[list[float], str]:
+    low, high = ZHANG_ENDPOINT_WINDOW_MPA
+    if pressure_mean is None or pressure_mean <= 0.0:
+        return unique_floats([current_emax * 0.85, current_emax * 1.15]), (
+            "pressure mean unavailable; bracket endpoint modulus around current value"
+        )
+    if pressure_mean < low:
+        scale = clamp(ZHANG_ENDPOINT_TARGET_MPA / pressure_mean, 1.05, 1.30)
+        return unique_floats([current_emax, current_emax * scale]), (
+            "mean endpoint pressure is below Zhang window; raise size-specific endpoint modulus"
+        )
+    if pressure_mean > high:
+        scale = clamp(ZHANG_ENDPOINT_TARGET_MPA / pressure_mean, 0.70, 0.95)
+        return unique_floats([current_emax * scale, current_emax * 0.90]), (
+            "mean endpoint pressure is above Zhang window; lower size-specific endpoint modulus"
+        )
+    return unique_floats([current_emax * 0.95, current_emax * 1.05]), (
+        "mean endpoint pressure is inside Zhang window; keep a narrow endpoint modulus bracket"
+    )
+
+
+def recommend_size_specific_mu_values(
+    current_mu: float,
+    participation_mean: float | None,
+    d1_mean: float | None,
+    pass_count: int,
+    run_count: int,
+) -> tuple[list[float], str]:
+    if participation_mean is not None and participation_mean <= 0.0:
+        return unique_floats([current_mu * 0.70, current_mu]), (
+            "mean strong-force participation does not increase; test lower friction scale"
+        )
+    if d1_mean is not None and d1_mean >= 0.0:
+        return unique_floats([current_mu, current_mu * 1.25]), (
+            "mean D1 does not decrease; test higher friction-driven rearrangement"
+        )
+    if run_count > 0 and pass_count == run_count:
+        return unique_floats([current_mu * 0.90, current_mu]), (
+            "all seeds pass Zhang trend gates; keep a narrow friction bracket"
+        )
+    return unique_floats([current_mu * 0.85, current_mu * 1.15]), (
+        "size case has mixed trend gates; bracket friction around the current value"
+    )
+
+
+def clamp(value: float, low: float, high: float) -> float:
+    return min(high, max(low, value))
+
+
 def close_float(value: float | None, target: float, tolerance: float = 1.0e-9) -> bool:
     return value is not None and abs(value - target) <= tolerance
 
@@ -402,11 +532,38 @@ def render_recommendation(recommendation: dict[str, object]) -> str:
         json.dumps(recommendation.get("workflow_dispatch_inputs", {}), ensure_ascii=False, indent=2, sort_keys=True),
         "```",
         "",
-        "## Follow-up",
-        "",
-        str(recommendation.get("followup_after_light_sweep") or "Review the next ensemble summary before broadening the sweep."),
-        "",
     ]
+    dispatch_plan = list(recommendation.get("workflow_dispatch_plan") or [])
+    if dispatch_plan:
+        lines.extend(["## Workflow Dispatch Plan", ""])
+        for item in dispatch_plan:
+            lines.extend(
+                [
+                    f"### Size `{item.get('diamond_size_case')}`",
+                    "",
+                    f"- Estimated runs: `{item.get('estimated_run_count')}`",
+                    f"- Pressure action: {item.get('pressure_action')}",
+                    f"- Trend action: {item.get('trend_action')}",
+                    "",
+                    "```json",
+                    json.dumps(
+                        item.get("workflow_dispatch_inputs", {}),
+                        ensure_ascii=False,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                    "```",
+                    "",
+                ]
+            )
+    lines.extend(
+        [
+            "## Follow-up",
+            "",
+            str(recommendation.get("followup_after_light_sweep") or "Review the next ensemble summary before broadening the sweep."),
+            "",
+        ]
+    )
     return "\n".join(lines)
 
 

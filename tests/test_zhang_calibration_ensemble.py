@@ -182,9 +182,39 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             recommendation = json.loads((outdir / "zhang_next_sweep_recommendation.json").read_text())
             self.assertEqual(recommendation["status"], "needs_calibration")
             self.assertEqual(recommendation["next_sweep_mode"], "size_specific_calibration")
-            self.assertEqual(recommendation["estimated_run_count"], 0)
+            self.assertEqual(recommendation["estimated_run_count"], 36)
             self.assertEqual(recommendation["workflow_dispatch_inputs"], {})
             self.assertEqual(len(recommendation["size_case_summary"]), 3)
+            dispatch_plan = recommendation["workflow_dispatch_plan"]
+            self.assertEqual([item["diamond_size_case"] for item in dispatch_plan], ["C", "D", "E"])
+            self.assertTrue(all(item["estimated_run_count"] == 12 for item in dispatch_plan))
+            plan_by_size = {item["diamond_size_case"]: item for item in dispatch_plan}
+            c_emax = [
+                float(value)
+                for value in json.loads(
+                    plan_by_size["C"]["workflow_dispatch_inputs"]["e_al_emax_sweep_json"]
+                )
+            ]
+            d_emax = [
+                float(value)
+                for value in json.loads(
+                    plan_by_size["D"]["workflow_dispatch_inputs"]["e_al_emax_sweep_json"]
+                )
+            ]
+            e_emax = [
+                float(value)
+                for value in json.loads(
+                    plan_by_size["E"]["workflow_dispatch_inputs"]["e_al_emax_sweep_json"]
+                )
+            ]
+            self.assertTrue(max(c_emax) > 41.686)
+            self.assertTrue(min(d_emax) < 41.686)
+            self.assertTrue(min(e_emax) < 41.686)
+            for size, item in plan_by_size.items():
+                inputs = item["workflow_dispatch_inputs"]
+                self.assertEqual(inputs["allow_evidence_mismatch"], "true")
+                self.assertEqual(json.loads(inputs["diamond_size_case_json"]), [size])
+                self.assertEqual(json.loads(inputs["dem_seed_json"]), ["0", "1", "2"])
 
 
 def write_artifact(

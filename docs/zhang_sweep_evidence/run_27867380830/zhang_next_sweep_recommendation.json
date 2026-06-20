@@ -1,25 +1,115 @@
 {
   "diagnosis": "candidate_pass",
-  "estimated_run_count": 9,
-  "followup_after_light_sweep": "If the seed/size matrix remains inside the pressure window with Zhang pass trends, promote the parameter pair to the next fidelity upgrade instead of broadening the light calibration sweep.",
-  "next_sweep_mode": "seed_size_robustness",
-  "reason": "p95=576 MPa is inside Zhang's 572-638 MPa endpoint window and the force-chain trend candidate passes, so hold the best mu/E pair fixed and validate robustness across seeds and diamond size cases",
+  "estimated_run_count": 36,
+  "followup_after_light_sweep": "Run separate size-case calibration sweeps instead of repeating the same global seed/size matrix: C needs higher-pressure stabilization, while D/E need lower-pressure brackets or a particle-size dependent contact-law fit.",
+  "next_sweep_mode": "size_specific_calibration",
+  "reason": "only 2/9 seed/size rows both pass Zhang trend gates and fall inside the 572-638 MPa endpoint window, so one global mu/E pair is not robust",
   "selected_artifact": "dia60al40-dem-artifacts-sizeE-Emax41.686-mu0.77-seed2",
-  "selected_e_al_emax_gpa": 41.686,
-  "selected_min_chain_length": 2,
-  "selected_mu_scale": 0.77,
-  "selected_p95_mpa": 575.976781,
+  "selected_e_al_emax_gpa": "41.686",
+  "selected_min_chain_length": "2",
+  "selected_mu_scale": "0.77",
+  "selected_p95_mpa": "575.976781",
   "selected_status": "pass",
-  "selected_threshold_factor": 0.1,
-  "status": "ready",
-  "workflow_dispatch_inputs": {
-    "allow_evidence_mismatch": "true",
-    "dem_seed_json": "[\"0\", \"1\", \"2\"]",
-    "diamond_size_case_json": "[\"C\", \"D\", \"E\"]",
-    "e_al_emax_sweep_json": "[\"41.686\"]",
-    "mu_scale_json": "[\"0.77\"]",
-    "runtime_profile": "demo"
-  },
+  "selected_threshold_factor": "0.1",
+  "size_case_summary": [
+    {
+      "diamond_size_case": "C",
+      "p95_max_mpa": 632.841664,
+      "p95_mean_mpa": 558.648155,
+      "p95_min_mpa": 510.770425,
+      "pass_run_count": 1,
+      "pressure_window_count": 1,
+      "run_count": 3
+    },
+    {
+      "diamond_size_case": "D",
+      "p95_max_mpa": 787.591725,
+      "p95_mean_mpa": 764.0225796666667,
+      "p95_min_mpa": 748.197991,
+      "pass_run_count": 1,
+      "pressure_window_count": 0,
+      "run_count": 3
+    },
+    {
+      "diamond_size_case": "E",
+      "p95_max_mpa": 754.247161,
+      "p95_mean_mpa": 685.798541,
+      "p95_min_mpa": 575.976781,
+      "pass_run_count": 3,
+      "pressure_window_count": 1,
+      "run_count": 3
+    }
+  ],
+  "status": "needs_calibration",
+  "workflow_dispatch_inputs": {},
+  "workflow_dispatch_plan": [
+    {
+      "d1_delta_mean": -0.5796341093514844,
+      "diamond_size_case": "C",
+      "estimated_run_count": 12,
+      "p95_max_mpa": 632.841664,
+      "p95_mean_mpa": 558.648155,
+      "p95_min_mpa": 510.770425,
+      "participation_delta_mean": 0.35626281789409947,
+      "pass_run_count": 1,
+      "pressure_action": "mean endpoint pressure is below Zhang window; raise size-specific endpoint modulus",
+      "pressure_window_count": 1,
+      "run_count": 3,
+      "trend_action": "size case has mixed trend gates; bracket friction around the current value",
+      "workflow_dispatch_inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\"]",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_emax_sweep_json": "[\"41.686\", \"44.772\"]",
+        "mu_scale_json": "[\"0.654\", \"0.885\"]",
+        "runtime_profile": "demo"
+      }
+    },
+    {
+      "d1_delta_mean": -0.7460072279506204,
+      "diamond_size_case": "D",
+      "estimated_run_count": 12,
+      "p95_max_mpa": 787.591725,
+      "p95_mean_mpa": 764.0225796666667,
+      "p95_min_mpa": 748.197991,
+      "participation_delta_mean": -0.03611969341658137,
+      "pass_run_count": 1,
+      "pressure_action": "mean endpoint pressure is above Zhang window; lower size-specific endpoint modulus",
+      "pressure_window_count": 0,
+      "run_count": 3,
+      "trend_action": "mean strong-force participation does not increase; test lower friction scale",
+      "workflow_dispatch_inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\"]",
+        "diamond_size_case_json": "[\"D\"]",
+        "e_al_emax_sweep_json": "[\"32.737\", \"37.517\"]",
+        "mu_scale_json": "[\"0.539\", \"0.77\"]",
+        "runtime_profile": "demo"
+      }
+    },
+    {
+      "d1_delta_mean": -0.7453787395929821,
+      "diamond_size_case": "E",
+      "estimated_run_count": 12,
+      "p95_max_mpa": 754.247161,
+      "p95_mean_mpa": 685.798541,
+      "p95_min_mpa": 575.976781,
+      "participation_delta_mean": 0.051637082590622364,
+      "pass_run_count": 3,
+      "pressure_action": "mean endpoint pressure is above Zhang window; lower size-specific endpoint modulus",
+      "pressure_window_count": 1,
+      "run_count": 3,
+      "trend_action": "all seeds pass Zhang trend gates; keep a narrow friction bracket",
+      "workflow_dispatch_inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\"]",
+        "diamond_size_case_json": "[\"E\"]",
+        "e_al_emax_sweep_json": "[\"36.471\", \"37.517\"]",
+        "mu_scale_json": "[\"0.693\", \"0.77\"]",
+        "runtime_profile": "demo"
+      }
+    }
+  ],
   "zhang_pressure_target_mpa": 600.0,
   "zhang_pressure_window_mpa": [
     572.0,

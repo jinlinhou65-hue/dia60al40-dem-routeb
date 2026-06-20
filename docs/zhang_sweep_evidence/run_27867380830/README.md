@@ -1,12 +1,5 @@
 # Zhang Sweep Artifact Report
 
-Post-import interpretation: this run proves the 9-job robustness workflow is
-operational, but the global `Emax=41.686`/`mu_scale=0.77` pair is not robust
-across seeds and size cases. Only C seed 0 and E seed 2 both pass Zhang
-force-chain gates and fall inside the 572-638 MPa pressure window. Treat the
-generated "Next Recommendation" below as the artifact-time output; the updated
-recommender now classifies this evidence as `size_specific_calibration`.
-
 - DEM workflow run: [27867380830](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27867380830)
 - Source artifact: `dia60al40-dem-ensemble-summary`
 - DEM runs summarized: `9`
@@ -44,19 +37,21 @@ recommender now classifies this evidence as `size_specific_calibration`.
 ## Next Recommendation
 
 - Diagnosis: `candidate_pass`
-- Estimated run count: `9`
-- Reason: p95=576 MPa is inside Zhang's 572-638 MPa endpoint window and the force-chain trend candidate passes, so hold the best mu/E pair fixed and validate robustness across seeds and diamond size cases
+- Mode: `size_specific_calibration`
+- Estimated run count: `36`
+- Reason: only 2/9 seed/size rows both pass Zhang trend gates and fall inside the 572-638 MPa endpoint window, so one global mu/E pair is not robust
 
 ```json
-{
-  "allow_evidence_mismatch": "true",
-  "dem_seed_json": "[\"0\", \"1\", \"2\"]",
-  "diamond_size_case_json": "[\"C\", \"D\", \"E\"]",
-  "e_al_emax_sweep_json": "[\"41.686\"]",
-  "mu_scale_json": "[\"0.77\"]",
-  "runtime_profile": "demo"
-}
+{}
 ```
+
+### Size-specific dispatch plan
+
+| Size | Estimated Runs | Pressure Action | Trend Action | Inputs |
+|---|---:|---|---|---|
+| C | 12 | mean endpoint pressure is below Zhang window; raise size-specific endpoint modulus | size case has mixed trend gates; bracket friction around the current value | `{"allow_evidence_mismatch": "true", "dem_seed_json": "[\"0\", \"1\", \"2\"]", "diamond_size_case_json": "[\"C\"]", "e_al_emax_sweep_json": "[\"41.686\", \"44.772\"]", "mu_scale_json": "[\"0.654\", \"0.885\"]", "runtime_profile": "demo"}` |
+| D | 12 | mean endpoint pressure is above Zhang window; lower size-specific endpoint modulus | mean strong-force participation does not increase; test lower friction scale | `{"allow_evidence_mismatch": "true", "dem_seed_json": "[\"0\", \"1\", \"2\"]", "diamond_size_case_json": "[\"D\"]", "e_al_emax_sweep_json": "[\"32.737\", \"37.517\"]", "mu_scale_json": "[\"0.539\", \"0.77\"]", "runtime_profile": "demo"}` |
+| E | 12 | mean endpoint pressure is above Zhang window; lower size-specific endpoint modulus | all seeds pass Zhang trend gates; keep a narrow friction bracket | `{"allow_evidence_mismatch": "true", "dem_seed_json": "[\"0\", \"1\", \"2\"]", "diamond_size_case_json": "[\"E\"]", "e_al_emax_sweep_json": "[\"36.471\", \"37.517\"]", "mu_scale_json": "[\"0.693\", \"0.77\"]", "runtime_profile": "demo"}` |
 
 ## Imported Files
 
