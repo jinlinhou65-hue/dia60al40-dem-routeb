@@ -18,6 +18,7 @@
 | 2x C/D/E ensemble artifacts | 已导入 |
 | 1x vs 2x 判读报告 | 已生成，结论为 `review` |
 | pscale=2 pressure-first 重标定 | 已运行并导入，结论为分 size 继续校准 |
+| pscale=2 size-specific follow-up plan | 已生成 10-job GitHub Actions 调度矩阵 |
 
 ## 当前候选参数
 
@@ -63,6 +64,19 @@ ensemble summary。结果显示：
 
 重标定报告：`pscale2_recalibration_report.md`。
 
+## 下一轮 follow-up 矩阵
+
+`zhang-pscale2-followup.yml` 将运行 3 个 dispatch payload，合计 10 个 demo
+DEM job。矩阵只围绕上轮结果的主要矛盾调整，不进入 4x/8x：
+
+| Size | 目的 | Emax candidates GPa | mu scale candidates | Jobs |
+|---|---|---|---|---:|
+| C | trend 已 pass，压力略低，围绕局部最优做窄扫 | `60.462, 61.462, 62.462, 63.462` | `0.654` | 4 |
+| D | 压力已回窗，固定 Emax，调高摩擦看 participation 是否转正 | `57.173` | `0.77, 0.847, 0.963` | 3 |
+| E | 压力远低，先按比例提高 endpoint modulus | `75.454, 79.426, 87.368` | `0.693` | 3 |
+
+计划文件：`data/pscale2_followup_plan.json`。
+
 ## 已归档产物
 
 ```text
@@ -74,6 +88,7 @@ ensemble summary。结果显示：
     pscale2_recalibration_candidates.csv
     pscale2_recalibration_size_summary.csv
     pscale2_recalibration_summary.json
+    pscale2_followup_plan.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -95,13 +110,12 @@ ensemble summary。结果显示：
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. 分 size 继续 pscale=2 校准：
-   - C：围绕 `Emax≈62 GPa` 与加载路径做窄扫，目标是从 `567 MPa` 推入窗口。
-   - D：以 `Emax=57.173 GPa`、`mu=0.77` 为压力候选，做 mu/contact-law 小矩阵，让 participation delta 转正。
-   - E：继续提高 endpoint modulus 或调整加载路径，先把 P95 从 `480 MPa` 拉向窗口。
-3. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
+2. 运行 `zhang-pscale2-followup.yml`，导入三条 ensemble summary。
+3. 判读 C 是否进入 `572-638 MPa` 且保持 trend pass，D 的 participation delta 是否转正，E 是否把 P95 拉向窗口。
+4. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
 
-计划文件：`data/pscale2_recalibration_plan.json`。
+上一轮计划文件：`data/pscale2_recalibration_plan.json`。
+下一轮计划文件：`data/pscale2_followup_plan.json`。
 
 ## 验收门槛
 
@@ -111,4 +125,5 @@ ensemble summary。结果显示：
 | 1x vs 2x 对比表已生成 | 通过 |
 | P95 和 trend 结论明确 | 通过：2x 压力显著偏低，D/E trend review |
 | pscale=2 重标定结果已导入 | 通过：C 接近窗口，D 压力回窗但 trend review，E 仍偏低 |
+| pscale=2 follow-up 矩阵已生成 | 通过：10 个 GitHub demo job，C/D/E 各自只改一个主要变量 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

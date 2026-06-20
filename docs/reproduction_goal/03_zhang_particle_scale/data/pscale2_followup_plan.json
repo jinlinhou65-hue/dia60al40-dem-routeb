@@ -1,0 +1,148 @@
+{
+  "dispatch": false,
+  "mode": "zhang_pscale2_size_specific_followup",
+  "payload_count": 3,
+  "payloads": [
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"2\"]",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"60.462\", \"61.462\", \"62.462\", \"63.462\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.654\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "diamond_size_case": "C",
+        "e_al_emax_candidates": [
+          "60.462",
+          "61.462",
+          "62.462",
+          "63.462"
+        ],
+        "estimated_run_count": 4,
+        "mu_scale_candidates": [
+          "0.654"
+        ],
+        "particle_count_scale": 2,
+        "purpose": "c_pressure_edge_narrow_emax",
+        "rationale": "C already passes the Zhang trend gate and is only slightly below the 572 MPa pressure lower bound; narrow around the observed local best because the prior wider Emax extension was non-monotonic.",
+        "source_best_e_al_emax_gpa": 61.962,
+        "source_best_mu_scale": 0.654,
+        "source_best_p95_mpa": 567.207203,
+        "source_decision": "extend_endpoint_modulus_or_loading_path",
+        "source_status": "pass",
+        "target_pressure_mpa": 600.0
+      },
+      "ref": "codex/paper-reproduction-demo"
+    },
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"2\"]",
+        "diamond_size_case_json": "[\"D\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"57.173\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.77\", \"0.847\", \"0.963\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "diamond_size_case": "D",
+        "e_al_emax_candidates": [
+          "57.173"
+        ],
+        "estimated_run_count": 3,
+        "mu_scale_candidates": [
+          "0.77",
+          "0.847",
+          "0.963"
+        ],
+        "particle_count_scale": 2,
+        "purpose": "d_hold_pressure_tune_friction_participation",
+        "rationale": "D has a pressure-window candidate but negative force-chain participation delta; hold Emax and sweep higher friction multipliers to test the participation gate without losing the pressure anchor.",
+        "source_best_e_al_emax_gpa": 57.173,
+        "source_best_mu_scale": 0.77,
+        "source_best_p95_mpa": 634.794852,
+        "source_decision": "hold_pressure_candidate_and_tune_participation",
+        "source_status": "review",
+        "target_pressure_mpa": 600.0
+      },
+      "ref": "codex/paper-reproduction-demo"
+    },
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"2\"]",
+        "diamond_size_case_json": "[\"E\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"75.454\", \"79.426\", \"87.368\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.693\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "diamond_size_case": "E",
+        "e_al_emax_candidates": [
+          "75.454",
+          "79.426",
+          "87.368"
+        ],
+        "estimated_run_count": 3,
+        "mu_scale_candidates": [
+          "0.693"
+        ],
+        "particle_count_scale": 2,
+        "purpose": "e_pressure_extension_emax",
+        "rationale": "E remains far below the pressure window; extend endpoint modulus around the proportional pressure target before tuning participation.",
+        "source_best_e_al_emax_gpa": 63.559,
+        "source_best_mu_scale": 0.693,
+        "source_best_p95_mpa": 480.140041,
+        "source_decision": "extend_endpoint_modulus_or_loading_path",
+        "source_status": "review",
+        "target_pressure_mpa": 600.0
+      },
+      "ref": "codex/paper-reproduction-demo"
+    }
+  ],
+  "ref": "codex/paper-reproduction-demo",
+  "summary": "docs\\reproduction_goal\\03_zhang_particle_scale\\data\\pscale2_recalibration_size_summary.csv",
+  "target_pressure_mpa": 600.0,
+  "total_estimated_run_count": 10,
+  "workflow": "dia60al40-dem.yml"
+}

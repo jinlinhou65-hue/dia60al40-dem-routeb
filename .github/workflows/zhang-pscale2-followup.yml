@@ -1,0 +1,89 @@
+name: zhang-pscale2-followup
+on:
+  workflow_dispatch:
+    inputs:
+      target_pressure_mpa:
+        description: 'Target Zhang endpoint pressure for the pscale=2 follow-up'
+        required: false
+        default: '600'
+  push:
+    paths:
+      - '.github/workflows/zhang-pscale2-followup.yml'
+      - '.github/workflows/dia60al40-dem.yml'
+      - 'scripts/dispatch_zhang_pscale2_followup.py'
+      - 'scripts/dispatch_zhang_size_specific_sweeps.py'
+      - 'docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_recalibration_size_summary.csv'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-pscale2-followup:
+    name: dispatch Zhang pscale=2 size-specific follow-up
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Zhang pscale=2 follow-up plan
+        env:
+          TARGET_PRESSURE_MPA: ${{ github.event.inputs.target_pressure_mpa || '600' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_followup.py \
+            --ref "${GITHUB_REF_NAME}" \
+            --target-pressure-mpa "${TARGET_PRESSURE_MPA}" \
+            --max-total-runs 12 \
+            > /tmp/zhang_pscale2_followup_plan.json
+          cat /tmp/zhang_pscale2_followup_plan.json
+
+      - name: Validate Zhang pscale=2 follow-up plan
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          plan = json.load(open("/tmp/zhang_pscale2_followup_plan.json", encoding="utf-8"))
+          if plan["mode"] != "zhang_pscale2_size_specific_followup":
+              raise SystemExit(f"unexpected mode: {plan['mode']}")
+          if plan["payload_count"] != 3:
+              raise SystemExit(f"expected 3 pscale=2 payloads, got {plan['payload_count']}")
+          if plan["total_estimated_run_count"] != 10:
+              raise SystemExit(f"expected 10 DEM jobs, got {plan['total_estimated_run_count']}")
+          sizes = [item["metadata"]["diamond_size_case"] for item in plan["payloads"]]
+          if sizes != ["C", "D", "E"]:
+              raise SystemExit(f"expected C/D/E payloads, got {sizes}")
+          expected_purposes = {
+              "C": "c_pressure_edge_narrow_emax",
+              "D": "d_hold_pressure_tune_friction_participation",
+              "E": "e_pressure_extension_emax",
+          }
+          expected_counts = {"C": 4, "D": 3, "E": 3}
+          for item in plan["payloads"]:
+              size = item["metadata"]["diamond_size_case"]
+              inputs = item["inputs"]
+              if item["metadata"]["purpose"] != expected_purposes[size]:
+                  raise SystemExit(f"unexpected purpose for {size}: {item['metadata']['purpose']}")
+              if item["metadata"]["estimated_run_count"] != expected_counts[size]:
+                  raise SystemExit(f"unexpected run count for {size}: {item['metadata']['estimated_run_count']}")
+              if inputs["runtime_profile"] != "demo":
+                  raise SystemExit("follow-up must remain runtime_profile=demo")
+              if inputs["allow_evidence_mismatch"] != "true":
+                  raise SystemExit("follow-up must collect complete review evidence")
+              if json.loads(inputs["particle_count_scale_json"]) != ["2"]:
+                  raise SystemExit("follow-up must keep particle_count_scale_json=[\"2\"]")
+              if json.loads(inputs["dem_seed_json"]) != ["2"]:
+                  raise SystemExit("follow-up must keep the calibrated seed index")
+          PY
+
+      - name: Dispatch Zhang pscale=2 follow-up DEM runs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_PRESSURE_MPA: ${{ github.event.inputs.target_pressure_mpa || '600' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_followup.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF_NAME}" \
+            --target-pressure-mpa "${TARGET_PRESSURE_MPA}" \
+            --max-total-runs 12 \
+            --dispatch

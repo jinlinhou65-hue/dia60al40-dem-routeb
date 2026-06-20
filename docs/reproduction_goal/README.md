@@ -98,7 +98,8 @@ stage_folder/
 
 ## 当前下一步
 
-下一步只做一件事：继续 `particle_count_scale=2` 的分 size 校准。9-job
+下一步只做一件事：运行并导入 `zhang-pscale2-followup.yml`。9-job
 `zhang-pscale2-recalibration.yml` 已成功运行并导入：C 接近压力窗口但略低，
 D 有压力窗口候选但 force-chain participation 仍需调，E 仍明显偏低。因此
-不能直接进入 4x/8x。
+不能直接进入 4x/8x。下一轮 follow-up 是 10 个 demo job：C 做 Emax 窄扫，
+D 固定 Emax 调摩擦，E 延伸 endpoint modulus。
