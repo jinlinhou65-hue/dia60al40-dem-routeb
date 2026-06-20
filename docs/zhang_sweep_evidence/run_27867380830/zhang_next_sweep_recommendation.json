@@ -44,7 +44,7 @@
   "workflow_dispatch_inputs": {},
   "workflow_dispatch_plan": [
     {
-      "d1_delta_mean": -0.5796341093514844,
+      "d1_delta_mean": -0.5796341093514843,
       "diamond_size_case": "C",
       "estimated_run_count": 12,
       "p95_max_mpa": 632.841664,
