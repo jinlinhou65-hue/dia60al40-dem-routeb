@@ -16,6 +16,7 @@ on:
       - 'python/render_dem_deck.py'
       - 'scripts/run_paper_algorithm_reproduction.py'
       - 'scripts/calibrate_zhang_force_chain.py'
+      - 'scripts/aggregate_zhang_calibration.py'
       - 'scripts/generate_paper_reproduction_manifest.py'
       - 'scripts/process_particle_snapshot.py'
       - 'scripts/process_stage_series.py'
@@ -55,6 +56,7 @@ jobs:
             python/paper_reproduction/series.py \
             python/paper_reproduction/sintering.py \
             python/paper_reproduction/validation.py \
+            python/paper_reproduction/zhang_calibration_ensemble.py \
             python/paper_reproduction/zhang_force_chain_calibration.py \
             python/paper_reproduction/zhang_validation.py \
             python/paper_reproduction/yuan_validation.py \
@@ -65,6 +67,7 @@ jobs:
             scripts/validate_dem_evidence.py \
             scripts/run_paper_algorithm_reproduction.py \
             scripts/calibrate_zhang_force_chain.py \
+            scripts/aggregate_zhang_calibration.py \
             scripts/generate_paper_reproduction_manifest.py \
             scripts/generate_dem_backend_selection_doc.py \
             scripts/process_particle_snapshot.py \

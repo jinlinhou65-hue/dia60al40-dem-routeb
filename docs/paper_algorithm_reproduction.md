@@ -112,6 +112,22 @@ still decreases. That narrows the next Zhang work to contact-law, friction,
 loading-path, and particle-count calibration rather than post-processing
 threshold tuning alone.
 
+When the DEM workflow is run with multiple `mu_scale_json`,
+`e_al_emax_sweep_json`, seed, or diamond-size cases, the ensemble job runs:
+
+```bash
+python3 scripts/aggregate_zhang_calibration.py \
+  --root ensemble_inputs \
+  --outdir ensemble_summary
+```
+
+This writes `zhang_calibration_candidates.csv`,
+`zhang_calibration_best_by_run.csv`, `zhang_calibration_group_summary.csv`, and
+`zhang_calibration_ensemble_report.md`. These files rank the best Zhang
+force-chain candidate per DEM artifact and group the result by friction scale,
+Al modulus endpoint, and diamond size case, so parameter sweeps can be judged by
+their Zhang trend direction rather than only by pressure-density fit.
+
 The first-pass algorithm run also writes:
 
 - `dem_backend_selection.json`: machine-readable open-source DEM backend

@@ -41,6 +41,10 @@ from .zhang_force_chain_calibration import (
     connected_force_chains,
     force_chain_metrics,
 )
+from .zhang_calibration_ensemble import (
+    aggregate_zhang_calibration,
+    collect_zhang_calibration_rows,
+)
 from .sintering import (
     SINTERING_LAWS,
     SinteringLaw,
@@ -90,6 +94,8 @@ __all__ = [
     "BACKEND_CANDIDATES",
     "build_backend_selection_manifest",
     "calibrate_zhang_force_chains",
+    "aggregate_zhang_calibration",
+    "collect_zhang_calibration_rows",
     "connected_force_chains",
     "force_chain_metrics",
     "get_paper_targets",

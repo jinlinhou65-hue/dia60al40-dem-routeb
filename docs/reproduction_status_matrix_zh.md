@@ -12,6 +12,7 @@
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
 - Zhang 力链校准扫描：27 组强接触阈值/最小链长组合均为 `review`；最佳组 `threshold_factor=0.05`、`min_chain_length=2`，D1 下降但 strong-force participation 下降
+- Zhang ensemble 校准诊断：新增跨 artifact 汇总器；按接近目标趋势排序，当前 artifact 最佳为 `threshold_factor=1.25`、`min_chain_length=2`，诊断 `needs_participation_increase`
 - 运行环境策略：现阶段优先 GitHub Actions/Ubuntu；WSL2 在 workflow 稳定后用于本地长时间调参，而不是当前必要前置条件。
 
 ## 用户目标拆解
@@ -52,8 +53,9 @@
 | DEM evidence | `87 pass / 0 missing / 0 mismatch` |
 | paper acceptance on real DEM | Li pass, Liu pass, Yuan pass, Zhang review with 0 mismatch |
 | Zhang force-chain calibration | 27 threshold/chain-length candidates scanned; best `threshold_factor=0.05`, `min_chain_length=2`, `chain_coverage=1.0`, D1 decreases but strong-force participation decreases, so status remains `review` |
+| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` rank future mu/E/seed/size sweeps; current target-oriented best is `threshold_factor=1.25`, `min_chain_length=2`, `needs_participation_increase` |
 
-Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的 force-chain participation 和 D1 还没有按 Zhang 原文的粒子数量、材料参数、压力终点和图像阈值校准。新增的 `scripts/calibrate_zhang_force_chain.py` 已把“只调强接触阈值和最小链长是否足够”变成可重复扫描；当前真实 artifact 的答案是否定的，因此下一步应转向接触律、摩擦和粒子规模校准。
+Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的 force-chain participation 和 D1 还没有按 Zhang 原文的粒子数量、材料参数、压力终点和图像阈值校准。新增的 `scripts/calibrate_zhang_force_chain.py` 已把“只调强接触阈值和最小链长是否足够”变成可重复扫描；`scripts/aggregate_zhang_calibration.py` 进一步把多参数 DEM artifact 汇总成按摩擦、Al 模量、seed 和尺寸 case 分组的校准表。当前真实 artifact 的答案是否定的，因此下一步应转向接触律、摩擦、加载路径和粒子规模校准。
 
 ## 下一阶段制作方法
 
