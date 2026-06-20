@@ -54,6 +54,8 @@ class ZhangSweepArtifactImportTest(unittest.TestCase):
 
         self.assertIn("actions: read", text)
         self.assertIn("contents: write", text)
+        self.assertIn("workflow_run:", text)
+        self.assertIn("WORKFLOW_RUN_ID", text)
         self.assertIn("actions/download-artifact@v4", text)
         self.assertIn("dia60al40-dem-ensemble-summary", text)
         self.assertIn("scripts/import_zhang_sweep_artifact.py", text)

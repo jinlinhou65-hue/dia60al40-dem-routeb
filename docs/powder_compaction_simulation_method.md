@@ -91,12 +91,12 @@ Linux-style solver runs.
 
 ### 3a. Run the current Zhang recommended light sweep
 
-The Zhang calibration ensemble now writes a machine-readable next sweep. The
-current light matrix is:
+The Zhang calibration ensemble writes a machine-readable next sweep. After run
+`27859255390`, the current light matrix is:
 
 ```text
-e_al_emax_sweep_json=["18","24.174"]
-mu_scale_json=["0.7","1","1.3"]
+e_al_emax_sweep_json=["36.261","41.686"]
+mu_scale_json=["0.63","0.7","0.77"]
 dem_seed_json=["0"]
 diamond_size_case_json=["C"]
 runtime_profile=demo
@@ -117,16 +117,8 @@ This path was verified by `zhang-recommended-sweep` run `27859253983`, which
 dispatched `dia60al40-dem` run `27859255390`; all 6 DEM jobs and the aggregate
 ensemble job completed successfully.
 The imported result shows that `mu=0.7` preserves the Zhang force-chain trend
-gate, while the pressure endpoint remains too low. The next recommended light
-matrix is therefore:
-
-```text
-e_al_emax_sweep_json=["36.261","41.686"]
-mu_scale_json=["0.63","0.7","0.77"]
-dem_seed_json=["0"]
-diamond_size_case_json=["C"]
-runtime_profile=demo
-```
+gate, while the pressure endpoint remains too low. The current default matrix
+therefore keeps low friction and raises the Al endpoint modulus.
 
 ### 3b. Import the Zhang sweep artifact into versioned evidence
 
@@ -144,6 +136,9 @@ the ensemble summary artifact using `GITHUB_TOKEN`, runs
 `scripts/import_zhang_sweep_artifact.py`, and commits a compact Markdown/CSV/JSON
 evidence bundle back to the branch. This closes the loop from "workflow ran" to
 "sweep result is readable in the repository."
+The same importer also runs automatically when `dia60al40-dem.yml` completes
+successfully, so recommended sweeps now flow into versioned evidence without a
+manual artifact download.
 The imported evidence for run `27859255390` is stored in
 `docs/zhang_sweep_evidence/run_27859255390/`.
 

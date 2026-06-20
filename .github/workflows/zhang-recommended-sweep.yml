@@ -6,11 +6,11 @@ on:
       e_al_emax_sweep_json:
         description: 'Zhang light sweep Al endpoint modulus list, GPa'
         required: false
-        default: '["18","24.174"]'
+        default: '["36.261","41.686"]'
       mu_scale_json:
         description: 'Zhang light sweep friction scale list'
         required: false
-        default: '["0.7","1","1.3"]'
+        default: '["0.63","0.7","0.77"]'
       dem_seed_json:
         description: 'DEM seed index list'
         required: false
@@ -42,8 +42,8 @@ jobs:
     steps:
       - name: Validate recommendation inputs
         env:
-          E_AL_EMAX_SWEEP_JSON: ${{ github.event.inputs.e_al_emax_sweep_json || '["18","24.174"]' }}
-          MU_SCALE_JSON: ${{ github.event.inputs.mu_scale_json || '["0.7","1","1.3"]' }}
+          E_AL_EMAX_SWEEP_JSON: ${{ github.event.inputs.e_al_emax_sweep_json || '["36.261","41.686"]' }}
+          MU_SCALE_JSON: ${{ github.event.inputs.mu_scale_json || '["0.63","0.7","0.77"]' }}
           DEM_SEED_JSON: ${{ github.event.inputs.dem_seed_json || '["0"]' }}
           DIAMOND_SIZE_CASE_JSON: ${{ github.event.inputs.diamond_size_case_json || '["C"]' }}
           RUNTIME_PROFILE: ${{ github.event.inputs.runtime_profile || 'demo' }}
@@ -79,8 +79,8 @@ jobs:
       - name: Dispatch dia60al40 DEM workflow
         env:
           GH_TOKEN: ${{ github.token }}
-          E_AL_EMAX_SWEEP_JSON: ${{ github.event.inputs.e_al_emax_sweep_json || '["18","24.174"]' }}
-          MU_SCALE_JSON: ${{ github.event.inputs.mu_scale_json || '["0.7","1","1.3"]' }}
+          E_AL_EMAX_SWEEP_JSON: ${{ github.event.inputs.e_al_emax_sweep_json || '["36.261","41.686"]' }}
+          MU_SCALE_JSON: ${{ github.event.inputs.mu_scale_json || '["0.63","0.7","0.77"]' }}
           DEM_SEED_JSON: ${{ github.event.inputs.dem_seed_json || '["0"]' }}
           DIAMOND_SIZE_CASE_JSON: ${{ github.event.inputs.diamond_size_case_json || '["C"]' }}
           RUNTIME_PROFILE: ${{ github.event.inputs.runtime_profile || 'demo' }}

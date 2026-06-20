@@ -1,6 +1,11 @@
 name: zhang-sweep-artifact-report
 
 on:
+  workflow_run:
+    workflows:
+      - dia60al40-dem
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       dem_run_id:
@@ -24,14 +29,18 @@ concurrency:
 jobs:
   import-artifact-report:
     name: import Zhang sweep artifact report
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 
       - name: Select DEM workflow run
         env:
           GH_TOKEN: ${{ github.token }}
           INPUT_DEM_RUN_ID: ${{ github.event.inputs.dem_run_id || '' }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id || '' }}
         run: |
           set -euxo pipefail
           python3 - <<'PY' > /tmp/selected_dem_run.env
@@ -42,6 +51,7 @@ jobs:
           repo = os.environ["GITHUB_REPOSITORY"]
           token = os.environ["GH_TOKEN"]
           requested = os.environ.get("INPUT_DEM_RUN_ID", "").strip()
+          workflow_run_id = os.environ.get("WORKFLOW_RUN_ID", "").strip()
           headers = {
               "Accept": "application/vnd.github+json",
               "Authorization": f"Bearer {token}",
@@ -56,6 +66,8 @@ jobs:
 
           if requested:
               run = api_json(f"https://api.github.com/repos/{repo}/actions/runs/{requested}")
+          elif workflow_run_id:
+              run = api_json(f"https://api.github.com/repos/{repo}/actions/runs/{workflow_run_id}")
           else:
               branch = os.environ["GITHUB_REF_NAME"]
               url = (

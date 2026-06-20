@@ -28,8 +28,8 @@ class ZhangRecommendedSweepWorkflowTest(unittest.TestCase):
         sizes = extract_default(text, "diamond_size_case_json")
         runtime = extract_default(text, "runtime_profile")
 
-        self.assertEqual(emax, ["18", "24.174"])
-        self.assertEqual(mu, ["0.7", "1", "1.3"])
+        self.assertEqual(emax, ["36.261", "41.686"])
+        self.assertEqual(mu, ["0.63", "0.7", "0.77"])
         self.assertEqual(seeds, ["0"])
         self.assertEqual(sizes, ["C"])
         self.assertEqual(runtime, "demo")
