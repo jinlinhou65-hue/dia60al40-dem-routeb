@@ -89,6 +89,31 @@ This is the preferred first validation path on Windows machines; WSL2 becomes
 useful after the workflow is green and parameter iteration needs local
 Linux-style solver runs.
 
+### 3a. Run the current Zhang recommended light sweep
+
+The Zhang calibration ensemble now writes a machine-readable next sweep. The
+current light matrix is:
+
+```text
+e_al_emax_sweep_json=["18","24.174"]
+mu_scale_json=["0.7","1","1.3"]
+dem_seed_json=["0"]
+diamond_size_case_json=["C"]
+runtime_profile=demo
+```
+
+Use the small dispatcher workflow when you want GitHub Actions to launch that
+matrix without editing the DEM workflow:
+
+```powershell
+gh workflow run zhang-recommended-sweep.yml
+```
+
+That dispatcher validates the JSON lists, confirms the run count is 6, and then
+dispatches `dia60al40-dem.yml` on the same branch. The resulting DEM workflow
+still builds LIGGGHTS-PUBLIC, runs the staged compaction cases, aggregates the
+ensemble, and uploads the normal `dia60al40-dem-ensemble-summary` artifact.
+
 ### 4. Convert each DEM stage into paper metrics
 
 The workflow runs this automatically, but the command is:

@@ -1,0 +1,129 @@
+name: zhang-recommended-sweep
+
+on:
+  workflow_dispatch:
+    inputs:
+      e_al_emax_sweep_json:
+        description: 'Zhang light sweep Al endpoint modulus list, GPa'
+        required: false
+        default: '["18","24.174"]'
+      mu_scale_json:
+        description: 'Zhang light sweep friction scale list'
+        required: false
+        default: '["0.7","1","1.3"]'
+      dem_seed_json:
+        description: 'DEM seed index list'
+        required: false
+        default: '["0"]'
+      diamond_size_case_json:
+        description: 'Diamond size case list'
+        required: false
+        default: '["C"]'
+      runtime_profile:
+        description: 'Forwarded DEM runtime profile'
+        required: false
+        default: 'demo'
+  push:
+    paths:
+      - '.github/workflows/zhang-recommended-sweep.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: zhang-recommended-sweep-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch-dem-sweep:
+    name: dispatch recommended DEM sweep
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Validate recommendation inputs
+        env:
+          E_AL_EMAX_SWEEP_JSON: ${{ github.event.inputs.e_al_emax_sweep_json || '["18","24.174"]' }}
+          MU_SCALE_JSON: ${{ github.event.inputs.mu_scale_json || '["0.7","1","1.3"]' }}
+          DEM_SEED_JSON: ${{ github.event.inputs.dem_seed_json || '["0"]' }}
+          DIAMOND_SIZE_CASE_JSON: ${{ github.event.inputs.diamond_size_case_json || '["C"]' }}
+          RUNTIME_PROFILE: ${{ github.event.inputs.runtime_profile || 'demo' }}
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+
+          fields = [
+              "E_AL_EMAX_SWEEP_JSON",
+              "MU_SCALE_JSON",
+              "DEM_SEED_JSON",
+              "DIAMOND_SIZE_CASE_JSON",
+          ]
+          counts = []
+          for field in fields:
+              value = json.loads(os.environ[field])
+              if not isinstance(value, list) or not value:
+                  raise SystemExit(f"{field} must be a non-empty JSON list")
+              counts.append(len(value))
+              print(f"{field}={value}")
+          run_count = 1
+          for count in counts:
+              run_count *= count
+          if run_count != 6:
+              raise SystemExit(f"expected the recommended light sweep to dispatch 6 DEM runs, got {run_count}")
+          if os.environ["RUNTIME_PROFILE"] != "demo":
+              raise SystemExit("recommended sweep must use runtime_profile=demo")
+          print(f"recommended_run_count={run_count}")
+          PY
+
+      - name: Dispatch dia60al40 DEM workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          E_AL_EMAX_SWEEP_JSON: ${{ github.event.inputs.e_al_emax_sweep_json || '["18","24.174"]' }}
+          MU_SCALE_JSON: ${{ github.event.inputs.mu_scale_json || '["0.7","1","1.3"]' }}
+          DEM_SEED_JSON: ${{ github.event.inputs.dem_seed_json || '["0"]' }}
+          DIAMOND_SIZE_CASE_JSON: ${{ github.event.inputs.diamond_size_case_json || '["C"]' }}
+          RUNTIME_PROFILE: ${{ github.event.inputs.runtime_profile || 'demo' }}
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY' > /tmp/dem_dispatch_payload.json
+          import json
+          import os
+
+          payload = {
+              "ref": os.environ["GITHUB_REF_NAME"],
+              "inputs": {
+                  "e_al_e0_gpa": "5",
+                  "e_al_emax_gpa": "12",
+                  "e_al_emax_sweep_json": os.environ["E_AL_EMAX_SWEEP_JSON"],
+                  "e_diamond_gpa": "300",
+                  "e_tool_gpa": "600",
+                  "e_wall_gpa": "200",
+                  "mu_al_al": "0.30",
+                  "mu_al_diamond": "0.30",
+                  "mu_al_tool": "0.08",
+                  "mu_al_wall": "0.08",
+                  "mu_diamond_diamond": "0.10",
+                  "mu_diamond_tool": "0.08",
+                  "mu_diamond_wall": "0.08",
+                  "mu_scale_json": os.environ["MU_SCALE_JSON"],
+                  "dem_seed_json": os.environ["DEM_SEED_JSON"],
+                  "diamond_size_case_json": os.environ["DIAMOND_SIZE_CASE_JSON"],
+                  "runtime_profile": os.environ["RUNTIME_PROFILE"],
+              },
+          }
+          print(json.dumps(payload, indent=2, sort_keys=True))
+          PY
+          cat /tmp/dem_dispatch_payload.json
+          status=$(
+            curl -sS -L -o /tmp/dem_dispatch_response.json -w "%{http_code}" \
+              -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/dia60al40-dem.yml/dispatches" \
+              -d @/tmp/dem_dispatch_payload.json
+          )
+          cat /tmp/dem_dispatch_response.json || true
+          test "$status" = "204"
+          echo "Dispatched dia60al40-dem.yml on ${GITHUB_REF_NAME} with Zhang recommended 6-run light sweep."
