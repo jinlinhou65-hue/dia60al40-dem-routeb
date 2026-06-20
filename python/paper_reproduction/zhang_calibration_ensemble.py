@@ -58,6 +58,8 @@ def collect_zhang_calibration_rows(root: Path) -> list[dict[str, object]]:
                 {
                     "artifact": artifact,
                     "diamond_size_case": params.get("diamond_size_case", "?"),
+                    "particle_count_scale": optional_int(params.get("particle_count_scale")) or 1,
+                    "particle_count_total": optional_int(params.get("particle_count_total")),
                     "seed_index": optional_int(params.get("DEM_seed_index")),
                     "e_al_emax_gpa": optional_float(params.get("E_Al_smoothstep_Emax")),
                     "mu_scale": optional_float(params.get("mu_scale")),
@@ -91,7 +93,7 @@ def best_by_artifact(rows: list[dict[str, object]]) -> list[dict[str, object]]:
 
 def summarize_groups(best_rows: list[dict[str, object]]) -> list[dict[str, object]]:
     output: list[dict[str, object]] = []
-    for field in ("diamond_size_case", "mu_scale", "e_al_emax_gpa"):
+    for field in ("diamond_size_case", "particle_count_scale", "mu_scale", "e_al_emax_gpa"):
         groups: dict[str, list[dict[str, object]]] = {}
         for row in best_rows:
             groups.setdefault(str(row.get(field)), []).append(row)
@@ -577,14 +579,15 @@ def render_report(best_rows: list[dict[str, object]], group_rows: list[dict[str,
         "",
         "## Best Candidate By DEM Run",
         "",
-        "| Artifact | Size | Seed | Emax GPa | Mu Scale | Status | Threshold | Min Chain | Participation Delta | D1 Delta | Diagnosis |",
-        "|---|---|---:|---:|---:|---|---:|---:|---:|---:|---|",
+        "| Artifact | Size | PScale | Seed | Emax GPa | Mu Scale | Status | Threshold | Min Chain | Participation Delta | D1 Delta | Diagnosis |",
+        "|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|",
     ]
     for row in sorted(best_rows, key=candidate_sort_key):
         lines.append(
-            "| {artifact} | {size} | {seed} | {emax} | {mu} | {status} | {threshold} | {chain} | {participation} | {d1} | {diagnosis} |".format(
+            "| {artifact} | {size} | {pscale} | {seed} | {emax} | {mu} | {status} | {threshold} | {chain} | {participation} | {d1} | {diagnosis} |".format(
                 artifact=row.get("artifact"),
                 size=row.get("diamond_size_case"),
+                pscale=format_number(row.get("particle_count_scale")),
                 seed=format_number(row.get("seed_index")),
                 emax=format_number(row.get("e_al_emax_gpa")),
                 mu=format_number(row.get("mu_scale")),

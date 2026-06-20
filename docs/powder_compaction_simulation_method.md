@@ -166,7 +166,36 @@ starting points are:
 - D: `Emax=37.517` GPa, `mu_scale=0.77`, seed `2`, P95 `620.578 MPa`.
 - E: `Emax=37.517` GPa, `mu_scale=0.693`, seed `2`, P95 `604.217 MPa`.
 
-### 3b. Import the Zhang sweep artifact into versioned evidence
+### 3b. Run the Zhang particle-count scale pilot
+
+The next fidelity step is not another broad parameter sweep. It keeps the
+C/D/E size-specific candidates above and checks whether the result survives a
+small particle-count refinement. The renderer now accepts
+`particle_count_scale_json`; scale `2` doubles the particle templates and
+reduces DEM radii by `sqrt(2)` so the 2D solid area, density stages, and 60/40
+area fraction remain comparable.
+
+Use:
+
+```powershell
+gh workflow run zhang-scale-pilot.yml `
+  -f particle_count_scale=2
+```
+
+The workflow reads the imported combined summary, validates that exactly three
+C/D/E pass+pressure-window candidates exist, and dispatches three demo DEM runs:
+
+```text
+C: Emax=44.772, mu_scale=0.654, seed=2, particle_count_scale=2
+D: Emax=37.517, mu_scale=0.77,  seed=2, particle_count_scale=2
+E: Emax=37.517, mu_scale=0.693, seed=2, particle_count_scale=2
+```
+
+This is a particle-count sensitivity check, not a final Zhang reproduction. A
+successful 2x pilot should be followed by a 4x/8x run or WSL2/local Linux
+deployment before attempting the paper-scale 3000-particle case.
+
+### 3c. Import the Zhang sweep artifact into versioned evidence
 
 After a recommended sweep finishes, import its `dia60al40-dem-ensemble-summary`
 artifact into `docs/zhang_sweep_evidence/run_<run_id>/`:

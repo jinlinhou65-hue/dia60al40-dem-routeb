@@ -66,6 +66,10 @@ on:
         description: 'JSON list of diamond size cases: C=80/130um, D=100um, E=60um. Counts keep Diamond/Al area near 60/40.'
         required: false
         default: '["C","D","E"]'
+      particle_count_scale_json:
+        description: 'JSON list of DEM particle-count refinement scales. Scale >1 preserves 2D solid area by reducing DEM radii.'
+        required: false
+        default: '["1"]'
       runtime_profile:
         description: 'DEM runtime profile: full for calibrated runs, demo for fast feasibility reruns'
         required: false
@@ -87,7 +91,7 @@ concurrency:
 
 jobs:
   dem:
-    name: dem size=${{ matrix.diamond_size_case }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}
+    name: dem size=${{ matrix.diamond_size_case }} pscale=${{ matrix.particle_count_scale }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}
     strategy:
       fail-fast: false
       matrix:
@@ -97,6 +101,7 @@ jobs:
         # Manual workflow_dispatch keeps the broader default 3x3 ensemble above.
         dem_seed: ${{ fromJSON(inputs.dem_seed_json || '["0"]') }}
         diamond_size_case: ${{ fromJSON(inputs.diamond_size_case_json || '["C"]') }}
+        particle_count_scale: ${{ fromJSON(inputs.particle_count_scale_json || '["1"]') }}
     # Ubuntu apt repos do NOT ship a working `liggghts` package, so we
     # build LIGGGHTS-PUBLIC from source. Use 22.04 because its older
     # g++ 11 tolerates the LIGGGHTS-PUBLIC codebase without -Werror noise.
@@ -202,6 +207,7 @@ jobs:
             --mu-diamond-wall "${{ inputs.mu_diamond_wall || '0.08' }}" \
             --mu-scale "${{ matrix.mu_scale }}" \
             --seed-index "${{ matrix.dem_seed }}" \
+            --particle-count-scale "${{ matrix.particle_count_scale }}" \
             "${runtime_args[@]}"
           sed -n '1,180p' liggghts/in.dia60al40_dem_staged.rendered.liggghts
 
@@ -384,7 +390,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dia60al40-dem-artifacts-size${{ matrix.diamond_size_case }}-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}
+          name: dia60al40-dem-artifacts-size${{ matrix.diamond_size_case }}-pscale${{ matrix.particle_count_scale }}-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}
           path: |
             liggghts/DEM/**
             liggghts/*.log
@@ -438,8 +444,9 @@ jobs:
           for artifact_dir in ensemble_inputs/dia60al40-dem-artifacts-*; do
             test -d "$artifact_dir/DEM" || continue
             case_name="$(awk -F, '$1=="diamond_size_case"{print $2}' "$artifact_dir/DEM/model_parameters.csv")"
+            pscale_name="$(awk -F, '$1=="particle_count_scale"{print "pscale" int($2)}' "$artifact_dir/DEM/model_parameters.csv")"
             seed_name="$(awk -F, '$1=="DEM_seed_index"{print "seed" int($2)}' "$artifact_dir/DEM/model_parameters.csv")"
-            run_name="size${case_name}_${seed_name}"
+            run_name="size${case_name}_${pscale_name}_${seed_name}"
             mkdir -p "ensemble_seed_plots/$run_name"
             cp "$artifact_dir/DEM/pressure_density_curve.csv" "ensemble_seed_plots/$run_name/"
             cp "$artifact_dir/DEM/pressure_density_summary.csv" "ensemble_seed_plots/$run_name/"

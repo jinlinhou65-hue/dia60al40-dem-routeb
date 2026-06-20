@@ -4,7 +4,6 @@ import math
 
 try:
     from .dem_case_config import (
-        AL_RADIUS_UM,
         INSERT_RHO_TOTAL,
         RHO_STAGES,
         TARGET_AL_AREA_FRACTION,
@@ -14,7 +13,6 @@ try:
     )
 except ImportError:
     from dem_case_config import (
-        AL_RADIUS_UM,
         INSERT_RHO_TOTAL,
         RHO_STAGES,
         TARGET_AL_AREA_FRACTION,
@@ -38,11 +36,11 @@ def total_solid_area_um2(case: DiamondCase) -> float:
 
 def al_count(case: DiamondCase) -> int:
     target_al_area = diamond_area_um2(case) * TARGET_AL_AREA_FRACTION / TARGET_DIAMOND_AREA_FRACTION
-    return max(1, int(round(target_al_area / circle_area_um2(AL_RADIUS_UM))))
+    return max(1, int(round(target_al_area / circle_area_um2(case.al_dem_um))))
 
 
 def al_area_um2(case: DiamondCase) -> float:
-    return al_count(case) * circle_area_um2(AL_RADIUS_UM)
+    return al_count(case) * circle_area_um2(case.al_dem_um)
 
 
 def diamond_area_um2(case: DiamondCase) -> float:

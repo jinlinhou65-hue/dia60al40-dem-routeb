@@ -29,6 +29,8 @@ from paper_reproduction import (
     validate_algorithm_reproduction,
     validate_stage_series,
 )
+from dem_case_config import DIAMOND_CASES, refined_diamond_case
+from dem_case_geometry import al_count, total_solid_area_um2
 
 
 class PaperReproductionTest(unittest.TestCase):
@@ -204,6 +206,8 @@ class PaperReproductionTest(unittest.TestCase):
                     "C",
                     "--seed-index",
                     "0",
+                    "--particle-count-scale",
+                    "2",
                     "--top-vel-cm-s",
                     "50",
                     "--initial-settle-steps",
@@ -220,6 +224,8 @@ class PaperReproductionTest(unittest.TestCase):
             )
             text = rendered.read_text(encoding="utf-8")
             self.assertIn("variable        topVel equal 50", text)
+            self.assertIn("particle_count_scale,2,1", text)
+            self.assertIn("particle_count_total", text)
             self.assertIn("run             20", text)
             self.assertIn("run             30", text)
             self.assertIn("run             40", text)
@@ -233,6 +239,17 @@ class PaperReproductionTest(unittest.TestCase):
                 "stage5_rho095",
             ]:
                 self.assertIn(f"DEM/{stage}_contacts_*.local", text)
+
+            base = DIAMOND_CASES["C"]
+            refined = refined_diamond_case(base, 2)
+            self.assertEqual(refined.ds_count, base.ds_count * 2)
+            self.assertEqual(refined.dl_count, base.dl_count * 2)
+            self.assertGreater(al_count(refined), al_count(base))
+            self.assertAlmostEqual(
+                total_solid_area_um2(refined),
+                total_solid_area_um2(base),
+                delta=total_solid_area_um2(base) * 0.02,
+            )
 
     def test_particle_snapshot_network_pipeline(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -476,6 +493,9 @@ class PaperReproductionTest(unittest.TestCase):
         self.assertIn("cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}", workflow)
         self.assertIn("runtime_profile", workflow)
         self.assertIn("allow_evidence_mismatch", workflow)
+        self.assertIn("particle_count_scale_json", workflow)
+        self.assertIn("--particle-count-scale", workflow)
+        self.assertIn("pscale${{ matrix.particle_count_scale }}", workflow)
         self.assertIn("--allow-mismatch", workflow)
         self.assertIn("--top-vel-cm-s 50", workflow)
         self.assertIn("dem_seed: ${{ fromJSON(inputs.dem_seed_json || '[\"0\"]') }}", workflow)

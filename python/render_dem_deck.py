@@ -6,7 +6,6 @@ from pathlib import Path
 
 try:
     from .dem_case_config import (
-        AL_RADIUS_UM,
         DIAMOND_CASES,
         DT_SECONDS,
         FINAL_SETTLE_STEPS,
@@ -19,8 +18,8 @@ try:
         TARGET_AL_AREA_FRACTION,
         TARGET_DIAMOND_AREA_FRACTION,
         TOP_VEL_CM_S,
-        W_UM,
         DiamondCase,
+        refined_diamond_case,
     )
     from .dem_case_geometry import (
         al_area_um2,
@@ -34,7 +33,6 @@ try:
     )
 except ImportError:
     from dem_case_config import (
-        AL_RADIUS_UM,
         DIAMOND_CASES,
         DT_SECONDS,
         FINAL_SETTLE_STEPS,
@@ -47,8 +45,8 @@ except ImportError:
         TARGET_AL_AREA_FRACTION,
         TARGET_DIAMOND_AREA_FRACTION,
         TOP_VEL_CM_S,
-        W_UM,
         DiamondCase,
+        refined_diamond_case,
     )
     from dem_case_geometry import (
         al_area_um2,
@@ -132,7 +130,7 @@ def replace_friction(text: str, args: argparse.Namespace) -> str:
 
 def replace_diamond_templates(text: str, case: DiamondCase) -> str:
     h_cm = initial_die_height_um(case) * 1.0e-4
-    al_cm = AL_RADIUS_UM * 1.0e-4
+    al_cm = case.al_dem_um * 1.0e-4
     ds_cm = max(case.ds_dem_um, 1.0) * 1.0e-4
     dl_cm = max(case.dl_dem_um, 1.0) * 1.0e-4
     text = re.sub(
@@ -234,10 +232,12 @@ def model_parameter_block(
         [
             f'print           "diamond_size_case,{case.case_id},1" append DEM/model_parameters.csv screen no',
             f'print           "diamond_size_description,{safe_description},text" append DEM/model_parameters.csv screen no',
+            f'print           "particle_count_scale,{args.particle_count_scale},1" append DEM/model_parameters.csv screen no',
             f'print           "Al_count,{al_count(case)},1" append DEM/model_parameters.csv screen no',
             f'print           "diamond_count_DS,{case.ds_count},1" append DEM/model_parameters.csv screen no',
             f'print           "diamond_count_DL,{case.dl_count},1" append DEM/model_parameters.csv screen no',
-            f'print           "Al_dem_radius_um,{AL_RADIUS_UM:.9g},um" append DEM/model_parameters.csv screen no',
+            f'print           "particle_count_total,{al_count(case) + case.ds_count + case.dl_count},1" append DEM/model_parameters.csv screen no',
+            f'print           "Al_dem_radius_um,{case.al_dem_um:.9g},um" append DEM/model_parameters.csv screen no',
             f'print           "diamond_actual_radius_DS_um,{case.ds_actual_um:.6g},um" append DEM/model_parameters.csv screen no',
             f'print           "diamond_actual_radius_DL_um,{case.dl_actual_um:.6g},um" append DEM/model_parameters.csv screen no',
             f'print           "diamond_dem_radius_DS_um,{case.ds_dem_um:.6g},um" append DEM/model_parameters.csv screen no',
@@ -418,7 +418,10 @@ def replace_seeds(text: str, seed_index: int) -> str:
 def render(args: argparse.Namespace) -> None:
     source = Path(args.input)
     output = Path(args.output)
-    case = DIAMOND_CASES[args.diamond_size_case.upper()]
+    case = refined_diamond_case(
+        DIAMOND_CASES[args.diamond_size_case.upper()],
+        args.particle_count_scale,
+    )
     e_al_stages = stage_moduli(args.e_al_e0_gpa, args.e_al_emax_gpa)
     plan = stage_plan(
         case,
@@ -441,7 +444,11 @@ def render(args: argparse.Namespace) -> None:
     print(f"[OK] rendered {output}")
     print(f"[PARAM] diamond_size_case={case.case_id} {case.description}")
     print(f"[PARAM] initial_die_height_um={initial_die_height_um(case):.6g} stage0_height_um={stage0_height_um(case):.6g}")
-    print(f"[PARAM] counts Al={al_count(case)} DS={case.ds_count} DL={case.dl_count} Al_radius_um={AL_RADIUS_UM:.6g}")
+    print(
+        f"[PARAM] counts Al={al_count(case)} DS={case.ds_count} DL={case.dl_count} "
+        f"total={al_count(case) + case.ds_count + case.dl_count} "
+        f"Al_radius_um={case.al_dem_um:.6g} particle_count_scale={args.particle_count_scale}"
+    )
     print(
         "[PARAM] area_fraction Al="
         f"{al_area_um2(case) / total_solid_area_um2(case):.6g} Diamond="
@@ -479,12 +486,20 @@ def main() -> None:
     parser.add_argument("--mu-wall-wall", type=float, default=0.08)
     parser.add_argument("--mu-scale", type=float, default=1.0)
     parser.add_argument("--seed-index", type=int, default=0)
+    parser.add_argument("--particle-count-scale", type=positive_int, default=1)
     parser.add_argument("--top-vel-cm-s", type=float, default=TOP_VEL_CM_S)
     parser.add_argument("--dt-seconds", type=float, default=DT_SECONDS)
     parser.add_argument("--initial-settle-steps", type=int, default=INITIAL_SETTLE_STEPS)
     parser.add_argument("--stage-settle-steps", type=int, default=STAGE_SETTLE_STEPS)
     parser.add_argument("--final-settle-steps", type=int, default=FINAL_SETTLE_STEPS)
     render(parser.parse_args())
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be >= 1")
+    return parsed
 
 
 if __name__ == "__main__":

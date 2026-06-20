@@ -72,6 +72,8 @@ def collect_runs(root: Path) -> list[dict[str, object]]:
             {
                 "artifact": dem_dir.parent.name,
                 "diamond_size_case": params.get("diamond_size_case", "?"),
+                "particle_count_scale": int(float(params.get("particle_count_scale", "1"))),
+                "particle_count_total": int(float(params.get("particle_count_total", "0"))),
                 "al_radius_um": float(params.get("Al_dem_radius_um", "nan")),
                 "diamond_ds_radius_um": float(params.get("diamond_dem_radius_DS_um", "nan")),
                 "diamond_dl_radius_um": float(params.get("diamond_dem_radius_DL_um", "nan")),
@@ -118,11 +120,16 @@ def write_ensemble_csv(path: Path, runs: list[dict[str, object]]) -> None:
 
 
 def write_case_summary_csv(path: Path, runs: list[dict[str, object]]) -> None:
-    groups: dict[str, list[dict[str, object]]] = {}
+    groups: dict[tuple[str, int], list[dict[str, object]]] = {}
     for run in runs:
-        groups.setdefault(str(run["diamond_size_case"]), []).append(run)
+        groups.setdefault(
+            (str(run["diamond_size_case"]), int(run["particle_count_scale"])),
+            [],
+        ).append(run)
     fieldnames = [
         "diamond_size_case",
+        "particle_count_scale",
+        "particle_count_total",
         "n_runs",
         "p95_mean_mpa",
         "p95_stdev_mpa",
@@ -139,13 +146,15 @@ def write_case_summary_csv(path: Path, runs: list[dict[str, object]]) -> None:
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        for case_id in sorted(groups):
-            case_runs = groups[case_id]
+        for case_id, pscale in sorted(groups):
+            case_runs = groups[(case_id, pscale)]
             p95s = [float(run["p95_mpa"]) for run in case_runs if not math.isnan(float(run["p95_mpa"]))]
             first = case_runs[0]
             writer.writerow(
                 {
                     "diamond_size_case": case_id,
+                    "particle_count_scale": first["particle_count_scale"],
+                    "particle_count_total": first["particle_count_total"],
                     "n_runs": len(p95s),
                     "p95_mean_mpa": f"{mean(p95s):.9g}",
                     "p95_stdev_mpa": f"{stdev(p95s):.9g}",
@@ -166,6 +175,8 @@ def write_run_csv(path: Path, runs: list[dict[str, object]]) -> None:
     fieldnames = [
         "artifact",
         "diamond_size_case",
+        "particle_count_scale",
+        "particle_count_total",
         "seed_index",
         "e_al_emax_gpa",
         "mu_scale",
@@ -185,6 +196,7 @@ def write_run_csv(path: Path, runs: list[dict[str, object]]) -> None:
             runs,
             key=lambda r: (
                 str(r["diamond_size_case"]),
+                int(r["particle_count_scale"]),
                 float(r["e_al_emax_gpa"]),
                 float(r["mu_scale"]),
                 int(r["seed_index"]),

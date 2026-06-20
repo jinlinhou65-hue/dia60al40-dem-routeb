@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
 
 W_UM = 400.0
@@ -34,6 +35,7 @@ class DiamondCase:
     dl_dem_um: float
     ds_count: int
     dl_count: int
+    al_dem_um: float = AL_RADIUS_UM
 
 
 DIAMOND_CASES = {
@@ -43,6 +45,28 @@ DIAMOND_CASES = {
     "D": DiamondCase("D", "single diamond 100 um actual, scaled to 30 um DEM", 0.0, 100.0, 0.0, 30.0, 0, 11),
     "E": DiamondCase("E", "single diamond 60 um actual, scaled to 18 um DEM", 60.0, 0.0, 18.0, 0.0, 30, 0),
 }
+
+
+def refined_diamond_case(case: DiamondCase, particle_count_scale: int) -> DiamondCase:
+    if particle_count_scale < 1:
+        raise ValueError("particle_count_scale must be >= 1")
+    if particle_count_scale == 1:
+        return case
+    root = math.sqrt(float(particle_count_scale))
+    return DiamondCase(
+        case_id=case.case_id,
+        description=(
+            f"{case.description}; particle-count refinement scale "
+            f"{particle_count_scale}x with conserved 2D solid area"
+        ),
+        ds_actual_um=case.ds_actual_um,
+        dl_actual_um=case.dl_actual_um,
+        ds_dem_um=case.ds_dem_um / root if case.ds_dem_um else 0.0,
+        dl_dem_um=case.dl_dem_um / root if case.dl_dem_um else 0.0,
+        ds_count=case.ds_count * particle_count_scale,
+        dl_count=case.dl_count * particle_count_scale,
+        al_dem_um=AL_RADIUS_UM / root,
+    )
 
 SEED_KEYS = {
     "ptsAl": 15485863,

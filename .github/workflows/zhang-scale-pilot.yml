@@ -1,0 +1,77 @@
+name: zhang-scale-pilot
+on:
+  workflow_dispatch:
+    inputs:
+      particle_count_scale:
+        description: 'DEM particle-count refinement scale for the C/D/E pilot'
+        required: false
+        default: '2'
+  push:
+    paths:
+      - '.github/workflows/zhang-scale-pilot.yml'
+      - '.github/workflows/dia60al40-dem.yml'
+      - 'scripts/dispatch_zhang_scale_pilot.py'
+      - 'scripts/dispatch_zhang_size_specific_sweeps.py'
+      - 'python/render_dem_deck.py'
+      - 'python/dem_case_config.py'
+      - 'python/dem_case_geometry.py'
+      - 'docs/zhang_sweep_evidence/size_specific_27874059503_27874061902_27874064063/summary.json'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-scale-pilot:
+    name: dispatch Zhang particle-count scale pilot
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Zhang scale-pilot plan
+        env:
+          PARTICLE_COUNT_SCALE: ${{ github.event.inputs.particle_count_scale || '2' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_scale_pilot.py \
+            --ref "${GITHUB_REF_NAME}" \
+            --particle-count-scale "${PARTICLE_COUNT_SCALE}" \
+            --max-total-runs 3 \
+            > /tmp/zhang_scale_pilot_plan.json
+          cat /tmp/zhang_scale_pilot_plan.json
+
+      - name: Validate Zhang scale-pilot plan
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          plan = json.load(open("/tmp/zhang_scale_pilot_plan.json", encoding="utf-8"))
+          if plan["payload_count"] != 3:
+              raise SystemExit(f"expected 3 scale-pilot payloads, got {plan['payload_count']}")
+          if plan["total_estimated_run_count"] != 3:
+              raise SystemExit(f"expected 3 DEM jobs, got {plan['total_estimated_run_count']}")
+          if int(plan["particle_count_scale"]) < 2:
+              raise SystemExit("scale pilot must increase particle_count_scale")
+          sizes = [item["metadata"]["diamond_size_case"] for item in plan["payloads"]]
+          if sizes != ["C", "D", "E"]:
+              raise SystemExit(f"expected C/D/E payloads, got {sizes}")
+          for item in plan["payloads"]:
+              inputs = item["inputs"]
+              if inputs["runtime_profile"] != "demo":
+                  raise SystemExit("scale pilot must remain runtime_profile=demo")
+              if inputs["allow_evidence_mismatch"] != "true":
+                  raise SystemExit("scale pilot must collect complete review/mismatch evidence")
+          PY
+
+      - name: Dispatch Zhang scale-pilot DEM runs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PARTICLE_COUNT_SCALE: ${{ github.event.inputs.particle_count_scale || '2' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_scale_pilot.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF_NAME}" \
+            --particle-count-scale "${PARTICLE_COUNT_SCALE}" \
+            --max-total-runs 3 \
+            --dispatch

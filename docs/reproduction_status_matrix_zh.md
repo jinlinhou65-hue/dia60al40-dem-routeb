@@ -13,6 +13,7 @@
 - Zhang 尺寸分组调度器：[zhang-size-specific-sweep run 27874057448](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874057448)，状态 `success`
 - Zhang 尺寸分组 DEM sweep：C [run 27874059503](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874059503)、D [run 27874061902](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874061902)、E [run 27874064063](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874064063)，均为 `success`，合计 36 个轻量 DEM job
 - Zhang 尺寸分组证据导入：[zhang-size-specific-artifact-report run 27874391838](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874391838)，状态 `success`，自动提交 `a8d4319`
+- Zhang 粒子数升级路径：已新增 `particle_count_scale` 渲染参数和 `zhang-scale-pilot.yml`，可把 C/D/E 当前候选以 2x 粒子数进行三条 demo DEM 试跑。
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
@@ -66,6 +67,7 @@
 | Zhang size-specific artifact import | report run `27874391838` completed `success` and auto-committed `a8d4319` with C/D/E run directories plus `docs/zhang_sweep_evidence/size_specific_27874059503_27874061902_27874064063/summary.json` |
 | Zhang sweep imported evidence | `docs/zhang_sweep_evidence/run_27867380830/README.md` summarizes the 9-job ensemble; P95 range is `510.770-787.592 MPa`, mean `669.490 MPa`; 5/9 candidates pass Zhang force-chain trend gates |
 | Zhang size-specific aggregator | The combined 36-row summary shows 15 trend-pass rows, 15 pressure-window rows, and 5 rows that satisfy both. Best current candidates are C `44.772/0.654/seed2/P95=634.203 MPa`, D `37.517/0.77/seed2/P95=620.578 MPa`, and E `37.517/0.693/seed2/P95=604.217 MPa`. |
+| Zhang particle-count scale pilot | `particle_count_scale_json` is now supported by `dia60al40-dem.yml`; `zhang-scale-pilot.yml` reads the imported size-specific summary and dispatches exactly three 2x C/D/E candidate runs as the next sensitivity check before WSL2 or paper-scale deployment. |
 
 Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 找到了 `Emax=41.686`、`mu=0.77` 这一可行候选；随后 9-job 稳健性 sweep 证明 workflow 可稳定运行，但一个全局 mu/E 参数不能同时覆盖 C/D/E 粒径 case 和三个随机 seed。最新 36-job 尺寸分组 sweep 进一步证明 C/D/E 需要不同的 endpoint modulus/friction bracket，并给出了下一轮高保真 Zhang DEM 的三个起始参数。
 
@@ -73,7 +75,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 下一步从尺寸分组候选升级到更高保真校准：以 C `44.772/0.654`、D `37.517/0.77`、E `37.517/0.693` 为起点，增加粒子数、真实加载路径和接触律校准；继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
+3. Zhang 下一步从尺寸分组候选升级到更高保真校准：以 C `44.772/0.654`、D `37.517/0.77`、E `37.517/0.693` 为起点，先跑 `particle_count_scale=2` 的三条 GitHub demo pilot，再考虑 4x/8x 或 WSL2 本地长时间运行；继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。
