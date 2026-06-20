@@ -195,6 +195,26 @@ This is a particle-count sensitivity check, not a final Zhang reproduction. A
 successful 2x pilot should be followed by a 4x/8x run or WSL2/local Linux
 deployment before attempting the paper-scale 3000-particle case.
 
+The first 2x GitHub pilot provided a useful split result rather than a final
+answer: C and E completed successfully, while D failed during the real staged
+DEM compaction step. Keep that failure as a calibration signal. D is the
+single-large-diamond case; at `particle_count_scale=2` it contains 70 Al
+particles plus 22 large diamond particles. The quick feasibility diagnostic is:
+
+```powershell
+py scripts\diagnose_particle_scale_feasibility.py `
+  --cases C,D,E `
+  --particle-count-scales 1,2 `
+  --output outputs\zhang_particle_scale_feasibility.csv
+```
+
+The diagnostic reports D pscale=2 with final DEM disk packing fraction near
+`1.013`, insert-region disk packing near `0.474`, and largest-diameter/final
+height ratio near `0.346`. That points toward high-density large-particle
+force-chain jamming or numerical instability, so the next D-only run should
+inspect the workflow's `DEM/failure_diagnostics.txt`/GitHub annotation before
+changing physics parameters.
+
 ### 3c. Import the Zhang sweep artifact into versioned evidence
 
 After a recommended sweep finishes, import its `dia60al40-dem-ensemble-summary`
