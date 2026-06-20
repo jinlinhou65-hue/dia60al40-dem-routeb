@@ -175,7 +175,11 @@ expected evidence bundles:
   recommendation, `e_al_emax_sweep_json=["18","24.174"]` and
   `mu_scale_json=["0.7","1","1.3"]` for seed 0 and size case C, was dispatched
   by `zhang-recommended-sweep` run `27859253983` and completed successfully in
-  `dia60al40-dem` run `27859255390`.
+  `dia60al40-dem` run `27859255390`. Its ensemble artifact was imported into
+  `docs/zhang_sweep_evidence/run_27859255390/`: `mu=0.7` gives Zhang force-chain
+  trend passes, but P95 remains below the 572-638 MPa endpoint window, so the
+  next light sweep keeps low friction and raises the Al endpoint modulus to
+  `["36.261","41.686"]` GPa.
 
 This does not yet mean the full thesis/article figures are calibrated one-to-one.
 It means the reproduction route is executable, source-backed by the PDFs, and

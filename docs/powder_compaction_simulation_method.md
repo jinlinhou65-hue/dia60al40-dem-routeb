@@ -116,6 +116,17 @@ ensemble, and uploads the normal `dia60al40-dem-ensemble-summary` artifact.
 This path was verified by `zhang-recommended-sweep` run `27859253983`, which
 dispatched `dia60al40-dem` run `27859255390`; all 6 DEM jobs and the aggregate
 ensemble job completed successfully.
+The imported result shows that `mu=0.7` preserves the Zhang force-chain trend
+gate, while the pressure endpoint remains too low. The next recommended light
+matrix is therefore:
+
+```text
+e_al_emax_sweep_json=["36.261","41.686"]
+mu_scale_json=["0.63","0.7","0.77"]
+dem_seed_json=["0"]
+diamond_size_case_json=["C"]
+runtime_profile=demo
+```
 
 ### 3b. Import the Zhang sweep artifact into versioned evidence
 
@@ -133,6 +144,8 @@ the ensemble summary artifact using `GITHUB_TOKEN`, runs
 `scripts/import_zhang_sweep_artifact.py`, and commits a compact Markdown/CSV/JSON
 evidence bundle back to the branch. This closes the loop from "workflow ran" to
 "sweep result is readable in the repository."
+The imported evidence for run `27859255390` is stored in
+`docs/zhang_sweep_evidence/run_27859255390/`.
 
 ### 4. Convert each DEM stage into paper metrics
 

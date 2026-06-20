@@ -5,7 +5,7 @@
 ## 当前判定
 
 - 当前阶段结论：四篇论文的算法层已经可重复生成，真实 LIGGGHTS DEM 轻量 demo 已在 GitHub Actions 跑通。
-- 最新验证代码 commit：`385993f64ee0c187d1760033db21efdfa7361a19`
+- 最新验证代码 commit：`1eb942b`
 - 论文算法 workflow：[paper-algorithm-reproduction run 27859253974](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27859253974)，状态 `success`
 - Zhang 推荐 sweep 调度器：[zhang-recommended-sweep run 27859253983](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27859253983)，状态 `success`
 - Zhang 推荐 6-job DEM sweep：[dia60al40-dem run 27859255390](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27859255390)，状态 `success`
@@ -13,7 +13,7 @@
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
 - Zhang 力链校准扫描：27 组强接触阈值/最小链长组合均为 `review`；最佳组 `threshold_factor=0.05`、`min_chain_length=2`，D1 下降但 strong-force participation 下降
-- Zhang ensemble 校准诊断：跨 artifact 汇总器会输出最佳候选、分组统计和下一轮轻量 sweep 建议；推荐矩阵 `e_al_emax_sweep_json=["18","24.174"]`、`mu_scale_json=["0.7","1","1.3"]` 已在 GitHub Actions 以 6 个 DEM job 跑通并生成 `dia60al40-dem-ensemble-summary`
+- Zhang ensemble 校准诊断：推荐矩阵 `Emax=[18,24.174]`、`mu=[0.7,1,1.3]` 已在 GitHub Actions 以 6 个 DEM job 跑通并导入到 `docs/zhang_sweep_evidence/run_27859255390/`；其中 `mu=0.7` 两组 Zhang 力链趋势为 `pass`，但压力仍低于 572-638 MPa 端点窗口
 - 运行环境策略：现阶段优先 GitHub Actions/Ubuntu；WSL2 在 workflow 稳定后用于本地长时间调参，而不是当前必要前置条件。
 
 ## 用户目标拆解
@@ -55,15 +55,16 @@
 | paper acceptance on real DEM | Li pass, Liu pass, Yuan pass, Zhang review with 0 mismatch |
 | Zhang force-chain calibration | 27 threshold/chain-length candidates scanned; best `threshold_factor=0.05`, `min_chain_length=2`, `chain_coverage=1.0`, D1 decreases but strong-force participation decreases, so status remains `review` |
 | Zhang recommended sweep | dispatcher run `27859253983` triggered DEM run `27859255390`; all 6 matrix jobs plus aggregate ensemble job completed `success` |
-| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` rank future mu/E/seed/size sweeps; `zhang_next_sweep_recommendation.json` turned the diagnosis into a 6-job light workflow matrix: `Emax=[18,24.174]`, `mu=[0.7,1,1.3]`, seed `0`, size `C`; run `27859255390` uploaded `dia60al40-dem-ensemble-summary` artifact `7761793914` |
+| Zhang sweep imported evidence | `docs/zhang_sweep_evidence/run_27859255390/README.md` summarizes the 6-job ensemble; P95 range is `285.491-851.212 MPa`, mean `538.866 MPa`; 2/6 candidates pass Zhang force-chain trend gates |
+| Zhang ensemble aggregator | `zhang_calibration_best_by_run.csv` and `zhang_calibration_group_summary.csv` rank future mu/E/seed/size sweeps; imported recommendation selects `Emax=24.174`, `mu=0.7`, `threshold_factor=0.05`, `min_chain_length=2`, status `pass`, P95 `347.947 MPa`; next light matrix is `Emax=[36.261,41.686]`, `mu=[0.63,0.7,0.77]`, seed `0`, size `C` |
 
-Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的 force-chain participation 和 D1 还没有按 Zhang 原文的粒子数量、材料参数、压力终点和图像阈值校准。`scripts/calibrate_zhang_force_chain.py` 已把“只调强接触阈值和最小链长是否足够”变成可重复扫描；`scripts/aggregate_zhang_calibration.py` 进一步把多参数 DEM artifact 汇总成按摩擦、Al 模量、seed 和尺寸 case 分组的校准表，并输出下一轮 GitHub Actions 轻量 sweep 建议。当前真实 artifact 的答案是否定的，因此下一步应转向接触律、摩擦、加载路径和粒子规模校准。
+Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的 force-chain participation 和 D1 还没有同时达到 Zhang 原文的压力端点、粒子规模和力链图像校准要求。当前 6-job sweep 给出的物理判断是：低摩擦 `mu=0.7` 可以恢复 participation 增长和 D1 下降，但 P95 仍偏低；高摩擦能把压力推近或超过 600 MPa，却破坏 participation 趋势。因此下一步应保持低摩擦窄窗口，继续提高 Al 端点模量，并随后用 seed/尺寸 case 验证稳健性。
 
 ## 下一阶段制作方法
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 优先做力链校准：强接触阈值、链长下限、角度阈值、摩擦参数和压力终点。
+3. Zhang 优先做力链校准：下一轮先跑 `Emax=[36.261,41.686]`、`mu=[0.63,0.7,0.77]`、seed `0`、size `C`，目标是在保持力链 `pass` 的同时把 P95 推入 572-638 MPa 区间；若通过，再扩展到 seeds `0,1,2` 和 size cases `C,D,E`。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。
