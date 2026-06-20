@@ -218,8 +218,12 @@ jobs:
           mkdir -p DEM
           dem_failure_diagnostics() {
             status=$?
+            failed_command="${1:-unknown}"
+            failed_line="${2:-unknown}"
             {
               echo "[DEM FAILURE] exit_status=$status"
+              echo "[DEM FAILURE] failed_line=$failed_line"
+              echo "[DEM FAILURE] failed_command=$failed_command"
               echo "[DEM FAILURE] utc_time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
               echo "[DEM FAILURE] case=${{ matrix.diamond_size_case }} pscale=${{ matrix.particle_count_scale }} Emax=${{ matrix.e_al_emax }} mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}"
               if [ -f dia60al40_liggghts_staged.run.log ]; then
@@ -242,7 +246,7 @@ jobs:
             } | tee DEM/failure_diagnostics.txt
             summary="$(grep -m1 -Ei '(^ERROR|ERROR:|Lost atoms|non-numeric|nan|too many|out of range|failed|fatal)' DEM/failure_diagnostics.txt || true)"
             if [ -z "$summary" ]; then
-              summary="DEM compaction failed before a complete staged evidence bundle was produced"
+              summary="exit $status at line $failed_line while running: $failed_command"
             fi
             summary="${summary//'%'/'%25'}"
             summary="${summary//$'\r'/'%0D'}"
@@ -250,7 +254,7 @@ jobs:
             echo "::error title=DEM compaction failure::$summary"
             exit "$status"
           }
-          trap dem_failure_diagnostics ERR
+          trap 'dem_failure_diagnostics "$BASH_COMMAND" "$LINENO"' ERR
           echo '[PWD]' "$PWD"
           echo '[INPUT HEAD]'
           sed -n '1,180p' in.dia60al40_dem_staged.rendered.liggghts
