@@ -154,6 +154,18 @@ This was verified on GitHub Actions by `zhang-size-specific-sweep` run
 - D: `dia60al40-dem` run `27874061902`, 12 jobs completed.
 - E: `dia60al40-dem` run `27874064063`, 12 jobs completed.
 
+The three size-specific DEM artifacts were then imported by
+`zhang-size-specific-artifact-report` run `27874391838`, which completed
+successfully and auto-committed `a8d4319`. The combined evidence is stored in
+`docs/zhang_sweep_evidence/size_specific_27874059503_27874061902_27874064063/`.
+Across 36 best rows, 15 pass the Zhang force-chain trend gate, 15 fall inside
+the 572-638 MPa endpoint window, and 5 satisfy both. The current higher-fidelity
+starting points are:
+
+- C: `Emax=44.772` GPa, `mu_scale=0.654`, seed `2`, P95 `634.203 MPa`.
+- D: `Emax=37.517` GPa, `mu_scale=0.77`, seed `2`, P95 `620.578 MPa`.
+- E: `Emax=37.517` GPa, `mu_scale=0.693`, seed `2`, P95 `604.217 MPa`.
+
 ### 3b. Import the Zhang sweep artifact into versioned evidence
 
 After a recommended sweep finishes, import its `dia60al40-dem-ensemble-summary`
@@ -178,7 +190,11 @@ artifact.
 The imported evidence for the two calibration runs is stored in
 `docs/zhang_sweep_evidence/run_27859255390/` and
 `docs/zhang_sweep_evidence/run_27866838829/`. The imported robustness evidence
-is stored in `docs/zhang_sweep_evidence/run_27867380830/`.
+is stored in `docs/zhang_sweep_evidence/run_27867380830/`. The imported
+size-specific C/D/E evidence is stored in the three run directories
+`run_27874059503/`, `run_27874061902/`, `run_27874064063/`, plus the combined
+summary directory
+`size_specific_27874059503_27874061902_27874064063/`.
 
 ### 4. Convert each DEM stage into paper metrics
 
