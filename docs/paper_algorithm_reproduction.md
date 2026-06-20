@@ -123,10 +123,16 @@ python3 scripts/aggregate_zhang_calibration.py \
 
 This writes `zhang_calibration_candidates.csv`,
 `zhang_calibration_best_by_run.csv`, `zhang_calibration_group_summary.csv`, and
-`zhang_calibration_ensemble_report.md`. These files rank the best Zhang
-force-chain candidate per DEM artifact and group the result by friction scale,
-Al modulus endpoint, and diamond size case, so parameter sweeps can be judged by
-their Zhang trend direction rather than only by pressure-density fit.
+`zhang_calibration_ensemble_report.md`. It also writes
+`zhang_next_sweep_recommendation.json` and
+`zhang_next_sweep_recommendation.md`, which translate the current best
+diagnosis into a small next `workflow_dispatch` matrix. For example, when the
+DEM endpoint pressure is still far below Zhang's 572-638 MPa range and
+strong-force participation decreases, the recommendation brackets higher Al
+endpoint modulus values and nearby friction scales. These files rank the best
+Zhang force-chain candidate per DEM artifact and group the result by friction
+scale, Al modulus endpoint, and diamond size case, so parameter sweeps can be
+judged by their Zhang trend direction rather than only by pressure-density fit.
 
 The first-pass algorithm run also writes:
 

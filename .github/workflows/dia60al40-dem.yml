@@ -421,6 +421,8 @@ jobs:
           cat ensemble_summary/ensemble_pressure_summary_by_size_case.csv
           cat ensemble_summary/zhang_calibration_best_by_run.csv
           cat ensemble_summary/zhang_calibration_group_summary.csv
+          cat ensemble_summary/zhang_next_sweep_recommendation.json
+          sed -n '1,120p' ensemble_summary/zhang_next_sweep_recommendation.md
           sed -n '1,120p' ensemble_summary/zhang_calibration_ensemble_report.md
 
           mkdir -p ensemble_seed_plots

@@ -43,6 +43,7 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             best = read_csv(outdir / "zhang_calibration_best_by_run.csv")
             groups = read_csv(outdir / "zhang_calibration_group_summary.csv")
             report = (outdir / "zhang_calibration_ensemble_report.md").read_text()
+            recommendation = json.loads((outdir / "zhang_next_sweep_recommendation.json").read_text())
 
             self.assertEqual(result["run_count"], 2)
             self.assertEqual(result["pass_run_count"], 1)
@@ -51,6 +52,8 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             self.assertEqual(review_row["calibration_diagnosis"], "needs_participation_increase")
             self.assertTrue(any(row["group_by"] == "mu_scale" and row["group_value"] == "1.3" for row in groups))
             self.assertIn("Runs with pass candidate: `1`", report)
+            self.assertEqual(recommendation["diagnosis"], "candidate_pass")
+            self.assertIn("workflow_dispatch_inputs", recommendation)
 
     def test_collect_rows_enriches_parameters(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -88,6 +91,25 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertEqual(payload["candidate_count"], 2)
             self.assertTrue((outdir / "zhang_calibration_ensemble_report.md").exists())
+            self.assertTrue((outdir / "zhang_next_sweep_recommendation.json").exists())
+
+    def test_recommends_light_pressure_and_friction_sweep_for_review_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "ensemble_inputs"
+            outdir = Path(tmp) / "summary"
+            write_artifact(root / "artifact-review", mu_scale=1.0, emax=12.0)
+
+            aggregate_zhang_calibration(root, outdir)
+
+            recommendation = json.loads((outdir / "zhang_next_sweep_recommendation.json").read_text())
+            inputs = recommendation["workflow_dispatch_inputs"]
+            emax_values = json.loads(inputs["e_al_emax_sweep_json"])
+            mu_values = json.loads(inputs["mu_scale_json"])
+            self.assertEqual(recommendation["diagnosis"], "needs_participation_increase")
+            self.assertEqual(recommendation["estimated_run_count"], 6)
+            self.assertTrue(any(float(value) > 24.0 for value in emax_values))
+            self.assertEqual(mu_values, ["0.7", "1", "1.3"])
+            self.assertTrue((outdir / "zhang_next_sweep_recommendation.md").exists())
 
 
 def write_artifact(

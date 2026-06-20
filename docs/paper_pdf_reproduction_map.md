@@ -167,6 +167,11 @@ expected evidence bundles:
   arch candidates,
   electrothermal contact fields, particle temperature fields, diffusion
   mechanisms, diffusion neck ratios, and heat-isolated neck increments
+- Zhang calibration artifacts also include a machine-readable next-sweep
+  recommendation. When the reduced run remains below the Zhang endpoint
+  pressure and force-chain participation still trends the wrong way, the next
+  light GitHub Actions sweep is defined over Al endpoint modulus and friction
+  scale rather than only over post-processing thresholds.
 
 This does not yet mean the full thesis/article figures are calibrated one-to-one.
 It means the reproduction route is executable, source-backed by the PDFs, and

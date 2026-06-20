@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import csv
+import json
 import math
 from pathlib import Path
 
 
 SUMMARY_NAME = "zhang_force_chain_calibration_summary.csv"
+ZHANG_ENDPOINT_TARGET_MPA = 600.0
+ZHANG_ENDPOINT_WINDOW_MPA = (572.0, 638.0)
 
 
 def aggregate_zhang_calibration(root: Path, outdir: Path) -> dict[str, object]:
@@ -14,10 +17,18 @@ def aggregate_zhang_calibration(root: Path, outdir: Path) -> dict[str, object]:
         raise SystemExit(f"[FAIL] no {SUMMARY_NAME} files found under {root}")
     best_rows = best_by_artifact(rows)
     group_rows = summarize_groups(best_rows)
+    recommendation = recommend_next_sweep(best_rows)
     outdir.mkdir(parents=True, exist_ok=True)
     write_csv(outdir / "zhang_calibration_candidates.csv", rows)
     write_csv(outdir / "zhang_calibration_best_by_run.csv", best_rows)
     write_csv(outdir / "zhang_calibration_group_summary.csv", group_rows)
+    recommendation_json = outdir / "zhang_next_sweep_recommendation.json"
+    recommendation_json.write_text(
+        json.dumps(recommendation, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    recommendation_md = outdir / "zhang_next_sweep_recommendation.md"
+    recommendation_md.write_text(render_recommendation(recommendation), encoding="utf-8")
     report_path = outdir / "zhang_calibration_ensemble_report.md"
     report_path.write_text(render_report(best_rows, group_rows), encoding="utf-8")
     return {
@@ -26,6 +37,8 @@ def aggregate_zhang_calibration(root: Path, outdir: Path) -> dict[str, object]:
         "pass_run_count": sum(1 for row in best_rows if row.get("status") == "pass"),
         "best_by_run_csv": str(outdir / "zhang_calibration_best_by_run.csv"),
         "group_summary_csv": str(outdir / "zhang_calibration_group_summary.csv"),
+        "next_sweep_json": str(recommendation_json),
+        "next_sweep_markdown": str(recommendation_md),
         "report": str(report_path),
     }
 
@@ -100,6 +113,136 @@ def summarize_groups(best_rows: list[dict[str, object]]) -> list[dict[str, objec
                 }
             )
     return output
+
+
+def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object]:
+    if not best_rows:
+        return {
+            "status": "missing",
+            "reason": "No Zhang calibration rows were available.",
+            "workflow_dispatch_inputs": {},
+            "estimated_run_count": 0,
+        }
+
+    selected = sorted(best_rows, key=candidate_sort_key)[0]
+    mu_values, mu_reason = recommend_mu_values(selected)
+    e_values, pressure_reason = recommend_emax_values(selected)
+    seed_values = recommend_seed_values(selected)
+    size_values = recommend_size_values(selected)
+    inputs = {
+        "runtime_profile": "demo",
+        "mu_scale_json": json.dumps(format_value_list(mu_values)),
+        "e_al_emax_sweep_json": json.dumps(format_value_list(e_values)),
+        "dem_seed_json": json.dumps([str(value) for value in seed_values]),
+        "diamond_size_case_json": json.dumps(size_values),
+    }
+    run_count = len(mu_values) * len(e_values) * len(seed_values) * len(size_values)
+    return {
+        "status": "ready",
+        "selected_artifact": selected.get("artifact"),
+        "selected_status": selected.get("status"),
+        "diagnosis": selected.get("calibration_diagnosis"),
+        "selected_threshold_factor": selected.get("threshold_factor"),
+        "selected_min_chain_length": selected.get("min_chain_length"),
+        "selected_mu_scale": selected.get("mu_scale"),
+        "selected_e_al_emax_gpa": selected.get("e_al_emax_gpa"),
+        "selected_p95_mpa": selected.get("p95_mpa"),
+        "zhang_pressure_target_mpa": ZHANG_ENDPOINT_TARGET_MPA,
+        "zhang_pressure_window_mpa": list(ZHANG_ENDPOINT_WINDOW_MPA),
+        "reason": "; ".join(reason for reason in [pressure_reason, mu_reason] if reason),
+        "workflow_dispatch_inputs": inputs,
+        "estimated_run_count": run_count,
+        "followup_after_light_sweep": (
+            "If any candidate reaches Zhang pass trends, rerun the best mu/E pair "
+            "with dem_seed_json=[\"0\",\"1\",\"2\"] and diamond_size_case_json=[\"C\",\"D\",\"E\"]."
+        ),
+    }
+
+
+def recommend_emax_values(row: dict[str, object]) -> tuple[list[float], str]:
+    emax = optional_float(row.get("e_al_emax_gpa")) or 12.0
+    pressure = optional_float(row.get("p95_mpa"))
+    low, high = ZHANG_ENDPOINT_WINDOW_MPA
+    if pressure is None or pressure <= 0.0:
+        return unique_floats([emax * 1.5, emax * 2.0]), (
+            "pressure endpoint is unavailable, so bracket Al modulus upward"
+        )
+    if pressure < low:
+        scale = min(2.5, max(1.25, ZHANG_ENDPOINT_TARGET_MPA / pressure))
+        return unique_floats([emax * 1.5, emax * scale]), (
+            f"p95={pressure:.3g} MPa is below Zhang's 572-638 MPa endpoint window, "
+            "so sweep higher Al endpoint modulus"
+        )
+    if pressure > high:
+        return unique_floats([emax * 0.65, emax * 0.85]), (
+            f"p95={pressure:.3g} MPa is above Zhang's 572-638 MPa endpoint window, "
+            "so sweep lower Al endpoint modulus"
+        )
+    return unique_floats([emax * 0.9, emax * 1.1]), (
+        "p95 is inside Zhang's pressure endpoint window, so keep a narrow Al modulus bracket"
+    )
+
+
+def recommend_mu_values(row: dict[str, object]) -> tuple[list[float], str]:
+    mu = optional_float(row.get("mu_scale")) or 1.0
+    diagnosis = str(row.get("calibration_diagnosis") or "")
+    if diagnosis == "needs_participation_increase":
+        return unique_floats([mu * 0.7, mu, mu * 1.3]), (
+            "strong-force participation still decreases, so bracket friction scale "
+            "around the current run"
+        )
+    if diagnosis == "needs_d1_decrease":
+        return unique_floats([mu, mu * 1.25, mu * 1.5]), (
+            "strong-force participation improves but D1 does not decrease, so test "
+            "higher friction-driven rearrangement"
+        )
+    if diagnosis == "candidate_pass":
+        return unique_floats([mu * 0.9, mu, mu * 1.1]), (
+            "a Zhang trend candidate exists, so keep a narrow friction bracket"
+        )
+    return unique_floats([mu * 0.6, mu, mu * 1.4]), (
+        "both force-chain trend gates need calibration, so use a wider friction bracket"
+    )
+
+
+def recommend_seed_values(row: dict[str, object]) -> list[int]:
+    seed = optional_int(row.get("seed_index"))
+    if seed is None:
+        return [0]
+    return [seed]
+
+
+def recommend_size_values(row: dict[str, object]) -> list[str]:
+    size = row.get("diamond_size_case")
+    return [str(size)] if size not in (None, "", "?") else ["C"]
+
+
+def render_recommendation(recommendation: dict[str, object]) -> str:
+    lines = [
+        "# Zhang Next Sweep Recommendation",
+        "",
+        f"- Status: `{recommendation.get('status')}`",
+        f"- Selected artifact: `{recommendation.get('selected_artifact', 'missing')}`",
+        f"- Diagnosis: `{recommendation.get('diagnosis', 'missing')}`",
+        f"- Pressure target: `{format_number(recommendation.get('zhang_pressure_target_mpa'))} MPa`",
+        f"- Estimated light runs: `{recommendation.get('estimated_run_count', 0)}`",
+        "",
+        "## Reason",
+        "",
+        str(recommendation.get("reason") or "No recommendation reason was generated."),
+        "",
+        "## Workflow Dispatch Inputs",
+        "",
+        "```json",
+        json.dumps(recommendation.get("workflow_dispatch_inputs", {}), ensure_ascii=False, indent=2, sort_keys=True),
+        "```",
+        "",
+        "## Follow-up",
+        "",
+        str(recommendation.get("followup_after_light_sweep") or "Review the next ensemble summary before broadening the sweep."),
+        "",
+    ]
+    return "\n".join(lines)
 
 
 def render_report(best_rows: list[dict[str, object]], group_rows: list[dict[str, object]]) -> str:
@@ -189,6 +332,31 @@ def diagnose(status: object, participation_delta: float | None, d1_delta: float 
     if participation_ok and not d1_ok:
         return "needs_d1_decrease"
     return "needs_physics_calibration"
+
+
+def unique_floats(values: list[float]) -> list[float]:
+    output: list[float] = []
+    seen: set[str] = set()
+    for value in values:
+        if not math.isfinite(value) or value <= 0:
+            continue
+        rounded = round(value, 3)
+        key = f"{rounded:.3f}"
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(rounded)
+    return output
+
+
+def format_value_list(values: list[float]) -> list[str]:
+    return [format_sweep_value(value) for value in values]
+
+
+def format_sweep_value(value: float) -> str:
+    if abs(value - round(value)) <= 1.0e-9:
+        return str(int(round(value)))
+    return f"{value:.3f}".rstrip("0").rstrip(".")
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:

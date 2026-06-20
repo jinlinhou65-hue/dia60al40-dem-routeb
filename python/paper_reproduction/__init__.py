@@ -44,6 +44,7 @@ from .zhang_force_chain_calibration import (
 from .zhang_calibration_ensemble import (
     aggregate_zhang_calibration,
     collect_zhang_calibration_rows,
+    recommend_next_sweep,
 )
 from .sintering import (
     SINTERING_LAWS,
@@ -96,6 +97,7 @@ __all__ = [
     "calibrate_zhang_force_chains",
     "aggregate_zhang_calibration",
     "collect_zhang_calibration_rows",
+    "recommend_next_sweep",
     "connected_force_chains",
     "force_chain_metrics",
     "get_paper_targets",
