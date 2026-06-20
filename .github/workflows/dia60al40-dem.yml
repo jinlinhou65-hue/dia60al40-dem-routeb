@@ -244,7 +244,11 @@ jobs:
                 find DEM -maxdepth 2 -type f -ls | sort -k11 || true
               fi
             } | tee DEM/failure_diagnostics.txt
-            summary="$(grep -m1 -Ei '(^ERROR|ERROR:|Lost atoms|non-numeric|nan|too many|out of range|failed|fatal)' DEM/failure_diagnostics.txt || true)"
+            summary=""
+            if [ -f dia60al40_liggghts_staged.run.log ]; then
+              summary="$(grep -m1 -Ei '(^ERROR|ERROR:|Lost atoms|non-numeric|nan|too many|out of range|failed|fatal)' \
+                dia60al40_liggghts_staged.run.log || true)"
+            fi
             if [ -z "$summary" ]; then
               summary="exit $status at line $failed_line while running: $failed_command"
             fi
