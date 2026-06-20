@@ -89,16 +89,19 @@ This is the preferred first validation path on Windows machines; WSL2 becomes
 useful after the workflow is green and parameter iteration needs local
 Linux-style solver runs.
 
-### 3a. Run the current Zhang recommended light sweep
+### 3a. Run the current Zhang recommended robustness sweep
 
 The Zhang calibration ensemble writes a machine-readable next sweep. After run
-`27859255390`, the current light matrix is:
+`27866838829`, one candidate, `Emax=41.686` GPa and `mu_scale=0.77`,
+hits the Zhang 572-638 MPa endpoint window with Zhang force-chain trend
+`pass`. The current dispatcher therefore holds that best pair fixed and checks
+seed/size robustness:
 
 ```text
-e_al_emax_sweep_json=["36.261","41.686"]
-mu_scale_json=["0.63","0.7","0.77"]
-dem_seed_json=["0"]
-diamond_size_case_json=["C"]
+e_al_emax_sweep_json=["41.686"]
+mu_scale_json=["0.77"]
+dem_seed_json=["0","1","2"]
+diamond_size_case_json=["C","D","E"]
 runtime_profile=demo
 ```
 
@@ -109,16 +112,16 @@ matrix without editing the DEM workflow:
 gh workflow run zhang-recommended-sweep.yml
 ```
 
-That dispatcher validates the JSON lists, confirms the run count is 6, and then
+That dispatcher validates the JSON lists, confirms the run count is 9, and then
 dispatches `dia60al40-dem.yml` on the same branch. The resulting DEM workflow
 still builds LIGGGHTS-PUBLIC, runs the staged compaction cases, aggregates the
 ensemble, and uploads the normal `dia60al40-dem-ensemble-summary` artifact.
-This path was verified by `zhang-recommended-sweep` run `27859253983`, which
-dispatched `dia60al40-dem` run `27859255390`; all 6 DEM jobs and the aggregate
-ensemble job completed successfully.
-The imported result shows that `mu=0.7` preserves the Zhang force-chain trend
-gate, while the pressure endpoint remains too low. The current default matrix
-therefore keeps low friction and raises the Al endpoint modulus.
+The earlier two 6-job calibration sweeps were verified by
+`zhang-recommended-sweep` runs `27859253983` and `27866837375`, which dispatched
+`dia60al40-dem` runs `27859255390` and `27866838829`; the second imported
+result shows `Emax=41.686` GPa, `mu_scale=0.77`, P95 `632.842 MPa`, and Zhang
+trend `pass`. That is why the current default matrix has moved from calibration
+to robustness validation.
 
 ### 3b. Import the Zhang sweep artifact into versioned evidence
 
@@ -141,8 +144,9 @@ after the workflow lands on the repository default branch, the `workflow_run`
 trigger imports successful `dia60al40-dem.yml` runs automatically. Either path
 keeps the evidence in the repository instead of leaving it only as a downloadable
 artifact.
-The imported evidence for run `27859255390` is stored in
-`docs/zhang_sweep_evidence/run_27859255390/`.
+The imported evidence for the two calibration runs is stored in
+`docs/zhang_sweep_evidence/run_27859255390/` and
+`docs/zhang_sweep_evidence/run_27866838829/`.
 
 ### 4. Convert each DEM stage into paper metrics
 

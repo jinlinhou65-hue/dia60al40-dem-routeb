@@ -111,6 +111,43 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             self.assertEqual(mu_values, ["0.7", "1", "1.3"])
             self.assertTrue((outdir / "zhang_next_sweep_recommendation.md").exists())
 
+    def test_recommends_seed_size_robustness_after_pressure_window_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "ensemble_inputs"
+            outdir = Path(tmp) / "summary"
+            write_artifact(
+                root / "artifact-pass-below-window",
+                mu_scale=0.77,
+                emax=36.261,
+                status="pass",
+                participation_delta=0.154894,
+                d1_delta=-1.32046,
+                p95_mpa=556.268701,
+            )
+            write_artifact(
+                root / "artifact-pass-in-window",
+                mu_scale=0.77,
+                emax=41.686,
+                status="pass",
+                participation_delta=0.144433,
+                d1_delta=-1.32046,
+                p95_mpa=632.841664,
+            )
+
+            aggregate_zhang_calibration(root, outdir)
+
+            recommendation = json.loads((outdir / "zhang_next_sweep_recommendation.json").read_text())
+            inputs = recommendation["workflow_dispatch_inputs"]
+            self.assertEqual(recommendation["next_sweep_mode"], "seed_size_robustness")
+            self.assertEqual(recommendation["selected_artifact"], "artifact-pass-in-window")
+            self.assertEqual(recommendation["selected_e_al_emax_gpa"], 41.686)
+            self.assertEqual(recommendation["selected_mu_scale"], 0.77)
+            self.assertEqual(recommendation["estimated_run_count"], 9)
+            self.assertEqual(json.loads(inputs["e_al_emax_sweep_json"]), ["41.686"])
+            self.assertEqual(json.loads(inputs["mu_scale_json"]), ["0.77"])
+            self.assertEqual(json.loads(inputs["dem_seed_json"]), ["0", "1", "2"])
+            self.assertEqual(json.loads(inputs["diamond_size_case_json"]), ["C", "D", "E"])
+
 
 def write_artifact(
     artifact_dir: Path,
@@ -120,6 +157,7 @@ def write_artifact(
     status: str = "review",
     participation_delta: float = -0.25,
     d1_delta: float = -0.30,
+    p95_mpa: float = 297.8374,
 ) -> None:
     dem_dir = artifact_dir / "DEM"
     calibration = dem_dir / "paper_reproduction" / "zhang_force_chain_calibration"
@@ -134,7 +172,7 @@ def write_artifact(
     )
     (dem_dir / "pressure_density_summary.csv").write_text(
         "target_rho_total,p_target_mpa,reference_mpa,delta_mpa,ratio_to_reference,judgement\n"
-        "0.95,297.8374,200,97.8374,1.489187,high\n",
+        f"0.95,{p95_mpa},200,97.8374,1.489187,high\n",
         encoding="utf-8",
     )
     (dem_dir / "paper_reproduction" / "series_acceptance_summary.csv").write_text(

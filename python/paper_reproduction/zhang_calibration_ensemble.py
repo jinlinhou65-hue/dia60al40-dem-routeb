@@ -124,7 +124,50 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
             "estimated_run_count": 0,
         }
 
-    selected = sorted(best_rows, key=candidate_sort_key)[0]
+    selected = sorted(best_rows, key=recommendation_sort_key)[0]
+    pressure = optional_float(selected.get("p95_mpa"))
+    trend_pass = selected.get("status") == "pass"
+    if trend_pass and pressure_in_endpoint_window(pressure):
+        mu_values = [optional_float(selected.get("mu_scale")) or 1.0]
+        e_values = [optional_float(selected.get("e_al_emax_gpa")) or 12.0]
+        seed_values = [0, 1, 2]
+        size_values = ["C", "D", "E"]
+        inputs = {
+            "runtime_profile": "demo",
+            "mu_scale_json": json.dumps(format_value_list(mu_values)),
+            "e_al_emax_sweep_json": json.dumps(format_value_list(e_values)),
+            "dem_seed_json": json.dumps([str(value) for value in seed_values]),
+            "diamond_size_case_json": json.dumps(size_values),
+        }
+        run_count = len(mu_values) * len(e_values) * len(seed_values) * len(size_values)
+        return {
+            "status": "ready",
+            "next_sweep_mode": "seed_size_robustness",
+            "selected_artifact": selected.get("artifact"),
+            "selected_status": selected.get("status"),
+            "diagnosis": selected.get("calibration_diagnosis"),
+            "selected_threshold_factor": selected.get("threshold_factor"),
+            "selected_min_chain_length": selected.get("min_chain_length"),
+            "selected_mu_scale": selected.get("mu_scale"),
+            "selected_e_al_emax_gpa": selected.get("e_al_emax_gpa"),
+            "selected_p95_mpa": selected.get("p95_mpa"),
+            "zhang_pressure_target_mpa": ZHANG_ENDPOINT_TARGET_MPA,
+            "zhang_pressure_window_mpa": list(ZHANG_ENDPOINT_WINDOW_MPA),
+            "reason": (
+                f"p95={pressure:.3g} MPa is inside Zhang's 572-638 MPa endpoint "
+                "window and the force-chain trend candidate passes, so hold the "
+                "best mu/E pair fixed and validate robustness across seeds and "
+                "diamond size cases"
+            ),
+            "workflow_dispatch_inputs": inputs,
+            "estimated_run_count": run_count,
+            "followup_after_light_sweep": (
+                "If the seed/size matrix remains inside the pressure window with "
+                "Zhang pass trends, promote the parameter pair to the next fidelity "
+                "upgrade instead of broadening the light calibration sweep."
+            ),
+        }
+
     mu_values, mu_reason = recommend_mu_values(selected)
     e_values, pressure_reason = recommend_emax_values(selected)
     seed_values = recommend_seed_values(selected)
@@ -215,6 +258,32 @@ def recommend_seed_values(row: dict[str, object]) -> list[int]:
 def recommend_size_values(row: dict[str, object]) -> list[str]:
     size = row.get("diamond_size_case")
     return [str(size)] if size not in (None, "", "?") else ["C"]
+
+
+def recommendation_sort_key(
+    row: dict[str, object],
+) -> tuple[int, int, float, tuple[int, float, float, float, float, float]]:
+    pressure = optional_float(row.get("p95_mpa"))
+    pressure_rank = 0 if pressure_in_endpoint_window(pressure) else 1
+    pressure_distance = (
+        abs(pressure - ZHANG_ENDPOINT_TARGET_MPA)
+        if pressure is not None
+        else math.inf
+    )
+    status_rank = 0 if row.get("status") == "pass" else 1
+    return (
+        status_rank,
+        pressure_rank,
+        pressure_distance,
+        candidate_sort_key(row),
+    )
+
+
+def pressure_in_endpoint_window(pressure: float | None) -> bool:
+    if pressure is None:
+        return False
+    low, high = ZHANG_ENDPOINT_WINDOW_MPA
+    return low <= pressure <= high
 
 
 def render_recommendation(recommendation: dict[str, object]) -> str:
