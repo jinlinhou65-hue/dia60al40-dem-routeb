@@ -9,7 +9,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 ## 当前判定
 
 - 当前阶段结论：四篇论文的算法层已经可重复生成，真实 LIGGGHTS DEM 轻量 demo 已在 GitHub Actions 跑通。
-- 最新导入证据目录：`docs/reproduction_goal/03_zhang_particle_scale/evidence/pscale2_followup_run_27883033303/`、`pscale2_followup_run_27883034434/`、`pscale2_followup_run_27883035658/`
+- 最新导入证据目录：`docs/reproduction_goal/03_zhang_particle_scale/evidence/pscale2_c_seed_recheck_run_27898770533/`
 - 论文算法 workflow：[paper-algorithm-reproduction run 27866974626](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866974626)，状态 `success`
 - Zhang 推荐 sweep 调度器：[zhang-recommended-sweep run 27866837375](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866837375)，状态 `success`
 - Zhang 推荐 6-job DEM sweep：[dia60al40-dem run 27866838829](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27866838829)，状态 `success`
@@ -19,7 +19,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 - Zhang 尺寸分组证据导入：[zhang-size-specific-artifact-report run 27874391838](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27874391838)，状态 `success`，自动提交 `a8d4319`
 - Zhang 粒子数升级路径：`particle_count_scale=2` 的 C/D/E 三条 GitHub demo 均已跑通并导入 `docs/reproduction_goal/03_zhang_particle_scale/`。D 的初始失败被定位为 verifier 硬编码 `radius>24 um` 误判；修复为按渲染 DS/DL 半径分类后，D run `27875951506` 成功并产出完整 artifact。2x 判读结果为 `review`：C/D/E 的 P95 分别为 `411.866/413.405/371.868 MPa`，均低于 Zhang `572-638 MPa` endpoint window。
 - Zhang pscale=2 follow-up：C/D/E follow-up 已运行并导入。C 已得到 `Emax=63.462 GPa, mu=0.654, P95=586.646 MPa` 的 pressure pass + trend pass 候选；D 仍为 trend review；E 仍低于压力窗口。
-- Zhang C seed recheck：已生成 C-only 5-job 计划，固定 `Emax=63.462 GPa, mu=0.654, particle_count_scale=2`，只扫 seeds `0..4`；该计划尚未运行和导入。
+- Zhang C seed recheck：C-only 5-job 已在 GitHub Actions 成功运行并导入，固定 `Emax=63.462 GPa, mu=0.654, particle_count_scale=2`，只扫 seeds `0..4`。结果为 `review`：只有 1/5 seed 同时满足压力窗口和 trend gate。
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
@@ -77,7 +77,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 | Zhang pscale=2 pressure recalibration | `zhang-pscale2-recalibration.yml` run `27882364909` dispatched DEM runs `27882367107`, `27882368312`, and `27882369414`; all three completed `success` and were imported. The report `docs/reproduction_goal/03_zhang_particle_scale/pscale2_recalibration_report.md` shows C best `567.207 MPa/pass`, D best `634.795 MPa/review`, E best `480.140 MPa/review`; therefore continue pscale=2 size-specific calibration before 4x. |
 | Zhang pscale=2 follow-up plan | `scripts/dispatch_zhang_pscale2_followup.py` and `zhang-pscale2-followup.yml` define the next 10-job GitHub demo matrix. C runs four narrow Emax candidates around the local 61.962 GPa best, D holds `Emax=57.173 GPa` and sweeps `mu=0.77/0.847/0.963`, and E extends Emax to `75.454/79.426/87.368 GPa`. Plan artifact: `docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_followup_plan.json`. |
 | Zhang pscale=2 follow-up results | `zhang-pscale2-followup.yml` run `27883030240` dispatched C run `27883033303`, D run `27883034434`, and E run `27883035658`; all completed `success` and were imported. The report `docs/reproduction_goal/03_zhang_particle_scale/pscale2_followup_report.md` shows C best `586.646 MPa/pass`, D best `634.795 MPa/review`, E best `543.689 MPa/pass`. C is ready for seed recheck; D/E are not ready for 4x. |
-| Zhang C seed recheck plan | `scripts/dispatch_zhang_pscale2_c_seed_recheck.py` and `zhang-pscale2-c-seed-recheck.yml` define a 5-job GitHub demo matrix for C only. It fixes `Emax=63.462 GPa`, `mu=0.654`, `particle_count_scale=2` and sweeps seeds `0,1,2,3,4`. Plan artifact: `docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_c_seed_recheck_plan.json`. This is a robustness plan, not an imported result yet. |
+| Zhang C seed recheck results | `zhang-pscale2-c-seed-recheck.yml` run `27898768547` dispatched `dia60al40-dem.yml` run `27898770533`; all five C seed jobs and aggregate ensemble completed `success`. The report `docs/reproduction_goal/03_zhang_particle_scale/pscale2_c_seed_recheck_report.md` shows C is not seed-robust: 4/5 trend pass, 1/5 pressure-window pass, and 1/5 pass both. |
 | Zhang particle-scale feasibility diagnostic | `scripts/diagnose_particle_scale_feasibility.py` writes `outputs/zhang_particle_scale_feasibility.csv`. It shows D pscale=2 has 70 Al + 22 large-diamond particles, final DEM disk packing fraction `1.013`, insert-region disk packing `0.474`, and largest-diameter/final-height ratio `0.346`; these remain useful risk indicators for later 4x/8x scaling, but 2x no longer fails the DEM evidence gate after the verifier fix. |
 
 Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 找到了 `Emax=41.686`、`mu=0.77` 这一可行候选；随后 9-job 稳健性 sweep 证明 workflow 可稳定运行，但一个全局 mu/E 参数不能同时覆盖 C/D/E 粒径 case 和三个随机 seed。最新 36-job 尺寸分组 sweep 进一步证明 C/D/E 需要不同的 endpoint modulus/friction bracket，并给出了下一轮高保真 Zhang DEM 的三个起始参数。
@@ -86,7 +86,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 下一步从尺寸分组候选升级到更高保真校准：以 C `44.772/0.654`、D `37.517/0.77`、E `37.517/0.693` 为起点，`particle_count_scale=2` 的三条 GitHub demo 已全部跑通并导入；随后 9-job pressure-first 重标定和 10-job follow-up 也已跑通并导入。当前结论是 C 已得到 `Emax=63.462 GPa, mu=0.654, P95=586.646 MPa` 的 pass 候选，并已生成 seeds `0..4` 的 robustness recheck 计划；D 压力候选仍 trend review；E trend pass 但压力仍低。因此下一步不是 4x/8x，而是运行并导入 C seed recheck，D/E 继续 pscale=2 加载路径、接触律或 endpoint modulus 校准。继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
+3. Zhang 下一步从尺寸分组候选升级到更高保真校准：以 C `44.772/0.654`、D `37.517/0.77`、E `37.517/0.693` 为起点，`particle_count_scale=2` 的三条 GitHub demo 已全部跑通并导入；随后 9-job pressure-first 重标定、10-job follow-up 和 5-job C seed recheck 也已跑通并导入。当前结论是 C 单 seed 可进入窗口，但多 seed 不稳健：只有 1/5 seed 同时满足压力窗口和 trend gate；D 压力候选仍 trend review；E trend pass 但压力仍低。因此下一步不是 4x/8x，而是在 pscale=2 继续调整 C/D/E 的加载路径、接触律或 endpoint modulus，恢复多 seed 稳健性。继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。

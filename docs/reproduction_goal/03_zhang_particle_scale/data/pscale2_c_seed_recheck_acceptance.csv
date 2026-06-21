@@ -1,0 +1,2 @@
+diamond_size_case,artifact_imported,workflow_completed,seed_count,pressure_window_gate,trend_gate,robust_gate,decision
+C,True,True,5,review,review,review,c_candidate_not_seed_robust

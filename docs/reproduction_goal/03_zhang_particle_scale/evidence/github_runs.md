@@ -40,6 +40,16 @@ This file records the GitHub Actions evidence imported into this stage.
 | D | [27883034434](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27883034434) | `7768668597` | `sha256:4a9e5795cbf18925bff643aaa50cd86436eb0ff9eada7b6602fea390dece09dc` | `evidence/pscale2_followup_run_27883034434/` |
 | E | [27883035658](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27883035658) | `7768669712` | `sha256:b2660a8899b38587c543cb03dd5d4b5d88fd86bc9b654fa47cb9d13f16039b3c` | `evidence/pscale2_followup_run_27883035658/` |
 
+## pscale=2 C Seed Recheck
+
+| Workflow | Run | Status | Commit |
+|---|---:|---|---|
+| `zhang-pscale2-c-seed-recheck.yml` | [27898768547](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27898768547) | success | `3d3e7cc` |
+
+| DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [27898770533](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27898770533) | `7773522783` | `sha256:d1c03fdba2ce58c7509d7f13bd5066f045c440acd8691af14df443bbd0fc740e` | `evidence/pscale2_c_seed_recheck_run_27898770533/` |
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through
@@ -70,3 +80,11 @@ The interpreted pscale=2 follow-up result is stored in:
 - `data/pscale2_followup_summary.json`
 - `figures/pscale2_followup_p95.png`
 - `pscale2_followup_report.md`
+
+The interpreted pscale=2 C seed recheck result is stored in:
+
+- `data/pscale2_c_seed_recheck_candidates.csv`
+- `data/pscale2_c_seed_recheck_acceptance.csv`
+- `data/pscale2_c_seed_recheck_summary.json`
+- `figures/pscale2_c_seed_recheck_p95.png`
+- `pscale2_c_seed_recheck_report.md`

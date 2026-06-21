@@ -1,0 +1,24 @@
+{
+  "decision": "c_candidate_not_seed_robust",
+  "diamond_size_case": "C",
+  "e_al_emax_gpa": 63.462,
+  "mu_scale": 0.654,
+  "p95_cv": 0.0804299091029106,
+  "p95_max_mpa": 586.646265,
+  "p95_mean_mpa": 524.6190186,
+  "p95_min_mpa": 493.878095,
+  "p95_range_mpa": 92.76817,
+  "p95_stdev_mpa": 42.195059979656165,
+  "particle_count_scale": 2,
+  "pass_and_window_count": 1,
+  "pass_count": 4,
+  "pressure_window_count": 1,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "C is not seed-robust: 1/5 seeds both pass trend and fall inside the Zhang pressure window, 1/5 are in the pressure window, and 4/5 pass trend. Raise pressure or adjust loading/contact law while preserving the trend gate before moving to 4x.",
+  "row_count": 5,
+  "run_id": "27898770533",
+  "seed_count": 5
+}

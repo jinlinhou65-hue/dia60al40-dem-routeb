@@ -20,7 +20,7 @@
 | pscale=2 pressure-first 重标定 | 已运行并导入，结论为分 size 继续校准 |
 | pscale=2 size-specific follow-up plan | 已生成 10-job GitHub Actions 调度矩阵 |
 | pscale=2 size-specific follow-up results | 已运行并导入，C 进入窗口且 trend pass，D/E 仍需校准 |
-| pscale=2 C seed robustness recheck plan | 已生成 5-job GitHub Actions 调度矩阵，待运行并导入 |
+| pscale=2 C seed robustness recheck | 已运行并导入，结论为 C 不具备 seed 稳健性 |
 
 ## 当前候选参数
 
@@ -92,10 +92,10 @@ run，三条 ensemble summary 均已导入。判读结果：
 
 follow-up 报告：`pscale2_followup_report.md`。
 
-## C seed robustness recheck 计划
+## C seed robustness recheck
 
 `zhang-pscale2-c-seed-recheck.yml` 固定 follow-up 中唯一同时满足 pressure
-window 和 trend gate 的 C 候选，只改变随机 seed。该计划用于判断 C 候选是否
+window 和 trend gate 的 C 候选，只改变随机 seed。该 recheck 用于判断 C 候选是否
 稳健，而不是继续扩大参数搜索。
 
 | Size | Emax GPa | Mu | Particle scale | Seeds | Jobs | 目的 |
@@ -104,9 +104,20 @@ window 和 trend gate 的 C 候选，只改变随机 seed。该计划用于判�
 
 计划文件：`data/pscale2_c_seed_recheck_plan.json`。
 
-通过标准：5 个 seed 的 artifact 必须完整导入；至少先统计每个 seed 的 P95、
-pressure gate、trend gate 和 overall gate。如果 C 多 seed 不稳健，则继续
-在 pscale=2 调加载路径或接触律；如果稳健，再把 C 暂时冻结并继续处理 D/E。
+执行证据：`zhang-pscale2-c-seed-recheck.yml` run `27898768547` 成功，
+其调度的 `dia60al40-dem.yml` run `27898770533` 中 5 个 seed DEM job 和
+aggregate ensemble 全部成功。ensemble summary artifact 已导入到
+`evidence/pscale2_c_seed_recheck_run_27898770533/`。
+
+判读结果：C 不是 seed-robust 候选。5 个 seed 中只有 1 个 seed 同时满足
+pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
+`572-638 MPa` 端点窗口。
+
+| Seeds | Trend pass | Pressure window | Pass + window | P95 mean MPa | P95 min MPa | P95 max MPa | Decision |
+|---:|---:|---:|---:|---:|---:|---:|---|
+| 5 | 4 | 1 | 1 | 524.619 | 493.878 | 586.646 | `c_candidate_not_seed_robust` |
+
+报告：`pscale2_c_seed_recheck_report.md`。
 
 ## 已归档产物
 
@@ -125,10 +136,14 @@ pressure gate、trend gate 和 overall gate。如果 C 多 seed 不稳健，则�
     pscale2_followup_size_summary.csv
     pscale2_followup_summary.json
     pscale2_c_seed_recheck_plan.json
+    pscale2_c_seed_recheck_acceptance.csv
+    pscale2_c_seed_recheck_candidates.csv
+    pscale2_c_seed_recheck_summary.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
     github_runs.md
+    pscale2_c_seed_recheck_run_27898770533/
     pscale2_followup_run_27883033303/
     pscale2_followup_run_27883034434/
     pscale2_followup_run_27883035658/
@@ -143,6 +158,8 @@ pressure gate、trend gate 和 overall gate。如果 C 多 seed 不稳健，则�
     p95_delta_percent.png
     pscale2_followup_p95.png
     pscale2_recalibration_p95.png
+    pscale2_c_seed_recheck_p95.png
+  pscale2_c_seed_recheck_report.md
   pscale2_followup_report.md
   pscale2_recalibration_report.md
   report.md
@@ -151,7 +168,7 @@ pressure gate、trend gate 和 overall gate。如果 C 多 seed 不稳健，则�
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：以 `Emax=63.462 GPa, mu=0.654` 为 pscale=2 候选，已生成 seeds `0..4` 的 recheck 计划；下一步运行 workflow 并导入 artifact。
+2. C：`Emax=63.462 GPa, mu=0.654` 的 seed recheck 不稳健；下一步提高压力或调整加载路径/接触律，同时保持 trend gate。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -159,6 +176,7 @@ pressure gate、trend gate 和 overall gate。如果 C 多 seed 不稳健，则�
 上一轮计划文件：`data/pscale2_recalibration_plan.json`。
 follow-up 计划文件：`data/pscale2_followup_plan.json`。
 C seed recheck 计划文件：`data/pscale2_c_seed_recheck_plan.json`。
+C seed recheck 报告：`pscale2_c_seed_recheck_report.md`。
 
 ## 验收门槛
 
@@ -171,4 +189,5 @@ C seed recheck 计划文件：`data/pscale2_c_seed_recheck_plan.json`。
 | pscale=2 follow-up 矩阵已生成 | 通过：10 个 GitHub demo job，C/D/E 各自只改一个主要变量 |
 | pscale=2 follow-up 结果已导入 | 通过：C pass，D/E review |
 | pscale=2 C seed recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只变 seed，不变 C 参数 |
+| pscale=2 C seed recheck 结果已导入 | review：workflow/artifact 通过，但只有 1/5 seed 同时 pressure pass + trend pass |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |
