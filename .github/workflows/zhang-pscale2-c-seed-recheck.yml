@@ -1,0 +1,86 @@
+name: zhang-pscale2-c-seed-recheck
+on:
+  workflow_dispatch:
+    inputs:
+      seed_json:
+        description: 'JSON list of DEM seed indices for the C pscale=2 recheck'
+        required: false
+        default: '["0","1","2","3","4"]'
+  push:
+    paths:
+      - '.github/workflows/zhang-pscale2-c-seed-recheck.yml'
+      - '.github/workflows/dia60al40-dem.yml'
+      - 'scripts/dispatch_zhang_pscale2_c_seed_recheck.py'
+      - 'scripts/dispatch_zhang_size_specific_sweeps.py'
+      - 'docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_followup_size_summary.csv'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-c-seed-recheck:
+    name: dispatch Zhang pscale=2 C seed recheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Zhang C seed recheck plan
+        env:
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_seed_recheck.py \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --max-total-runs 5 \
+            > /tmp/zhang_pscale2_c_seed_recheck_plan.json
+          cat /tmp/zhang_pscale2_c_seed_recheck_plan.json
+
+      - name: Validate Zhang C seed recheck plan
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          plan = json.load(open("/tmp/zhang_pscale2_c_seed_recheck_plan.json", encoding="utf-8"))
+          if plan["mode"] != "zhang_pscale2_c_seed_recheck":
+              raise SystemExit(f"unexpected mode: {plan['mode']}")
+          if plan["payload_count"] != 1:
+              raise SystemExit(f"expected one C payload, got {plan['payload_count']}")
+          if plan["total_estimated_run_count"] != 5:
+              raise SystemExit(f"expected 5 DEM jobs, got {plan['total_estimated_run_count']}")
+          item = plan["payloads"][0]
+          inputs = item["inputs"]
+          metadata = item["metadata"]
+          if metadata["diamond_size_case"] != "C":
+              raise SystemExit(f"unexpected size case: {metadata['diamond_size_case']}")
+          if metadata["purpose"] != "c_seed_robustness_recheck":
+              raise SystemExit(f"unexpected purpose: {metadata['purpose']}")
+          if inputs["runtime_profile"] != "demo":
+              raise SystemExit("seed recheck must remain runtime_profile=demo")
+          if inputs["allow_evidence_mismatch"] != "true":
+              raise SystemExit("seed recheck must collect complete review evidence")
+          if json.loads(inputs["particle_count_scale_json"]) != ["2"]:
+              raise SystemExit("seed recheck must keep particle_count_scale_json=[\"2\"]")
+          if json.loads(inputs["diamond_size_case_json"]) != ["C"]:
+              raise SystemExit("seed recheck must run only size C")
+          if json.loads(inputs["e_al_emax_sweep_json"]) != ["63.462"]:
+              raise SystemExit("seed recheck must hold C Emax at 63.462 GPa")
+          if json.loads(inputs["mu_scale_json"]) != ["0.654"]:
+              raise SystemExit("seed recheck must hold C mu at 0.654")
+          if json.loads(inputs["dem_seed_json"]) != ["0", "1", "2", "3", "4"]:
+              raise SystemExit("seed recheck must run seeds 0..4")
+          PY
+
+      - name: Dispatch Zhang C seed recheck DEM run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_seed_recheck.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --max-total-runs 5 \
+            --dispatch

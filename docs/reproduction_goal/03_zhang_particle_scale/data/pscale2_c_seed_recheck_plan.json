@@ -1,0 +1,53 @@
+{
+  "dispatch": false,
+  "mode": "zhang_pscale2_c_seed_recheck",
+  "payload_count": 1,
+  "payloads": [
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\", \"3\", \"4\"]",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"63.462\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.654\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "diamond_size_case": "C",
+        "estimated_run_count": 5,
+        "particle_count_scale": 2,
+        "purpose": "c_seed_robustness_recheck",
+        "rationale": "C has a pscale=2 candidate that satisfies both the Zhang pressure window and force-chain trend gates. Re-run only the random mixing seed to test whether the candidate survives stochastic particle placement.",
+        "seed_candidates": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "source_best_e_al_emax_gpa": 63.462,
+        "source_best_mu_scale": 0.654,
+        "source_best_p95_mpa": 586.646265,
+        "source_decision": "candidate_ready_for_seed_recheck"
+      },
+      "ref": "codex/paper-reproduction-demo"
+    }
+  ],
+  "ref": "codex/paper-reproduction-demo",
+  "summary": "docs\\reproduction_goal\\03_zhang_particle_scale\\data\\pscale2_followup_size_summary.csv",
+  "total_estimated_run_count": 5,
+  "workflow": "dia60al40-dem.yml"
+}
