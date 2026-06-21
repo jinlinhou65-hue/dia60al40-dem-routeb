@@ -28,6 +28,18 @@ This file records the GitHub Actions evidence imported into this stage.
 | [27882368312](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27882368312) | `7768478594` | `sha256:b9f010164e668380564bd4af2e17a196bf3a6f7781dcb461c119dc40f5f92a16` | `evidence/pscale2_recalibration_run_27882368312/` |
 | [27882369414](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27882369414) | `7768477174` | `sha256:6d2775c456c9c4825d82385deea40de7e0c4c16d800df6c1ddde5d801e3a6a0a` | `evidence/pscale2_recalibration_run_27882369414/` |
 
+## pscale=2 Follow-up
+
+| Workflow | Run | Status | Commit |
+|---|---:|---|---|
+| `zhang-pscale2-followup.yml` | [27883030240](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27883030240) | success | `17302ff` |
+
+| Size | DEM run | Artifact id | Artifact digest | Imported directory |
+|---|---:|---:|---|---|
+| C | [27883033303](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27883033303) | `7768674921` | `sha256:d3159abb6f033b131fcbf49359bbb0fddce40c1c1b06a4107587342edf0ff69f` | `evidence/pscale2_followup_run_27883033303/` |
+| D | [27883034434](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27883034434) | `7768668597` | `sha256:4a9e5795cbf18925bff643aaa50cd86436eb0ff9eada7b6602fea390dece09dc` | `evidence/pscale2_followup_run_27883034434/` |
+| E | [27883035658](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27883035658) | `7768669712` | `sha256:b2660a8899b38587c543cb03dd5d4b5d88fd86bc9b654fa47cb9d13f16039b3c` | `evidence/pscale2_followup_run_27883035658/` |
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through
@@ -49,3 +61,12 @@ The interpreted pscale=2 recalibration result is stored in:
 - `data/pscale2_recalibration_summary.json`
 - `figures/pscale2_recalibration_p95.png`
 - `pscale2_recalibration_report.md`
+
+The interpreted pscale=2 follow-up result is stored in:
+
+- `data/pscale2_followup_candidates.csv`
+- `data/pscale2_followup_size_summary.csv`
+- `data/pscale2_followup_acceptance.csv`
+- `data/pscale2_followup_summary.json`
+- `figures/pscale2_followup_p95.png`
+- `pscale2_followup_report.md`

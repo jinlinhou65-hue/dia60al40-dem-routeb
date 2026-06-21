@@ -1,0 +1,77 @@
+{
+  "pass_and_window_candidate_count": 1,
+  "pressure_window_candidate_count": 2,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "C now has a pscale=2 pressure-window and trend-pass candidate, but D and E are not ready for 4x. Hold C for a seed recheck; for D, pressure and force-chain trend conflict under friction-only tuning; for E, pressure improved but remains below the 572 MPa lower bound.",
+  "row_count": 10,
+  "run_ids": [
+    "27883033303",
+    "27883034434",
+    "27883035658"
+  ],
+  "size_summary": [
+    {
+      "best_artifact": "dia60al40-dem-artifacts-sizeC-pscale2-Emax63.462-mu0.654-seed2",
+      "best_calibration_diagnosis": "candidate_pass",
+      "best_d1_delta": -1.1592771855944781,
+      "best_e_al_emax_gpa": 63.462,
+      "best_mu_scale": 0.654,
+      "best_p95_mpa": 586.646265,
+      "best_participation_delta": 0.06508292468119092,
+      "best_pressure_in_window": true,
+      "best_status": "pass",
+      "decision": "candidate_ready_for_seed_recheck",
+      "diamond_size_case": "C",
+      "p95_max_mpa": 586.646265,
+      "p95_mean_mpa": 554.8133142500001,
+      "p95_min_mpa": 527.445994,
+      "pass_and_window_count": 1,
+      "pass_count": 4,
+      "pressure_window_count": 1,
+      "run_count": 4
+    },
+    {
+      "best_artifact": "dia60al40-dem-artifacts-sizeD-pscale2-Emax57.173-mu0.77-seed2",
+      "best_calibration_diagnosis": "needs_participation_increase",
+      "best_d1_delta": -0.16442023092204994,
+      "best_e_al_emax_gpa": 57.173,
+      "best_mu_scale": 0.77,
+      "best_p95_mpa": 634.794852,
+      "best_participation_delta": -0.13692148885408062,
+      "best_pressure_in_window": true,
+      "best_status": "review",
+      "decision": "hold_pressure_candidate_and_tune_trend",
+      "diamond_size_case": "D",
+      "p95_max_mpa": 634.794852,
+      "p95_mean_mpa": 571.7202836666667,
+      "p95_min_mpa": 520.276832,
+      "pass_and_window_count": 0,
+      "pass_count": 0,
+      "pressure_window_count": 1,
+      "run_count": 3
+    },
+    {
+      "best_artifact": "dia60al40-dem-artifacts-sizeE-pscale2-Emax87.368-mu0.693-seed2",
+      "best_calibration_diagnosis": "candidate_pass",
+      "best_d1_delta": -0.9423744710599662,
+      "best_e_al_emax_gpa": 87.368,
+      "best_mu_scale": 0.693,
+      "best_p95_mpa": 543.689453,
+      "best_participation_delta": 0.019894247752086147,
+      "best_pressure_in_window": false,
+      "best_status": "pass",
+      "decision": "extend_pressure_without_losing_trend",
+      "diamond_size_case": "E",
+      "p95_max_mpa": 543.689453,
+      "p95_mean_mpa": 533.3261393333333,
+      "p95_min_mpa": 520.090432,
+      "pass_and_window_count": 0,
+      "pass_count": 2,
+      "pressure_window_count": 0,
+      "run_count": 3
+    }
+  ]
+}

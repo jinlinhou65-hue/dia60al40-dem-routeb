@@ -1,0 +1,19 @@
+{
+  "best_row_count": 3,
+  "copied_files": [
+    "ensemble_runs.csv",
+    "ensemble_pressure_summary.csv",
+    "ensemble_pressure_summary_by_size_case.csv",
+    "zhang_calibration_candidates.csv",
+    "zhang_calibration_best_by_run.csv",
+    "zhang_calibration_group_summary.csv",
+    "zhang_calibration_ensemble_report.md",
+    "zhang_next_sweep_recommendation.json",
+    "zhang_next_sweep_recommendation.md"
+  ],
+  "group_row_count": 6,
+  "readme": "docs/reproduction_goal/03_zhang_particle_scale/evidence/pscale2_followup_run_27883035658/README.md",
+  "run_id": "27883035658",
+  "source_artifact": "dia60al40-dem-ensemble-summary",
+  "workflow_url": "https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27883035658"
+}

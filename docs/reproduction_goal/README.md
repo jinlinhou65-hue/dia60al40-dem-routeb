@@ -98,8 +98,8 @@ stage_folder/
 
 ## 当前下一步
 
-下一步只做一件事：运行并导入 `zhang-pscale2-followup.yml`。9-job
-`zhang-pscale2-recalibration.yml` 已成功运行并导入：C 接近压力窗口但略低，
-D 有压力窗口候选但 force-chain participation 仍需调，E 仍明显偏低。因此
-不能直接进入 4x/8x。下一轮 follow-up 是 10 个 demo job：C 做 Emax 窄扫，
-D 固定 Emax 调摩擦，E 延伸 endpoint modulus。
+下一步只做一件事：继续 Zhang 的 pscale=2 分支收敛。10-job
+`zhang-pscale2-followup.yml` 已成功运行并导入：C 已得到压力窗口内且
+trend pass 的候选，D 仍是压力窗口和力链趋势冲突，E 趋势可用但压力仍低于
+572 MPa。因此不能直接进入 4x/8x；下一步是 C 做 seed robustness recheck，
+D/E 继续在 pscale=2 上调整加载路径、接触律或 endpoint modulus。
