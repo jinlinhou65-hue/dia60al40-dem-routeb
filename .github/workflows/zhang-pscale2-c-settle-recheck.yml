@@ -1,4 +1,5 @@
 name: zhang-pscale2-c-settle-recheck
+# Revision 2 reruns the experiment after the core runtime-control heredoc fix.
 on:
   workflow_dispatch:
     inputs:

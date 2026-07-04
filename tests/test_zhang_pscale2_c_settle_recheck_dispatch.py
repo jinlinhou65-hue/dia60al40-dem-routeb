@@ -65,6 +65,8 @@ class ZhangPscale2CSettleRecheckDispatchTest(unittest.TestCase):
         self.assertIn("demo_settle_scale:", workflow)
         self.assertIn("INITIAL_SETTLE_STEPS", workflow)
         self.assertIn("FINAL_SETTLE_STEPS", workflow)
+        self.assertIn("\n          PY\n          if [", workflow)
+        self.assertNotIn("\n            PY\n", workflow)
 
 
 if __name__ == "__main__":
