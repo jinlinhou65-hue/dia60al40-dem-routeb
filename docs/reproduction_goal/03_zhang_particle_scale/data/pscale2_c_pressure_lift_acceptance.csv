@@ -1,0 +1,2 @@
+diamond_size_case,artifact_imported,workflow_completed,mean_pressure_gate,all_seed_pressure_gate,all_seed_trend_gate,seed_robust_gate,decision
+C,True,True,pass,review,review,review,c_pressure_lift_improves_but_not_seed_robust

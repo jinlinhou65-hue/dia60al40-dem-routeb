@@ -50,6 +50,16 @@ This file records the GitHub Actions evidence imported into this stage.
 |---:|---:|---|---|
 | [27898770533](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/27898770533) | `7773522783` | `sha256:d1c03fdba2ce58c7509d7f13bd5066f045c440acd8691af14df443bbd0fc740e` | `evidence/pscale2_c_seed_recheck_run_27898770533/` |
 
+## pscale=2 C Pressure-Lift Recheck
+
+| Workflow | Run | Status | Commit |
+|---|---:|---|---|
+| `zhang-pscale2-c-pressure-lift-recheck.yml` | [28709922833](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28709922833) | success | `bd38196` |
+
+| DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [28709925303](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28709925303) | `8082751629` | `sha256:6cde0e89856c6fd3be2808d182053cf64a4ea5ae198526898344819bf6232b27` | `evidence/pscale2_c_pressure_lift_recheck_run_28709925303/` |
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through
@@ -88,3 +98,12 @@ The interpreted pscale=2 C seed recheck result is stored in:
 - `data/pscale2_c_seed_recheck_summary.json`
 - `figures/pscale2_c_seed_recheck_p95.png`
 - `pscale2_c_seed_recheck_report.md`
+
+The interpreted pscale=2 C pressure-lift result is stored in:
+
+- `data/pscale2_c_pressure_lift_candidates.csv`
+- `data/pscale2_c_pressure_lift_paired.csv`
+- `data/pscale2_c_pressure_lift_acceptance.csv`
+- `data/pscale2_c_pressure_lift_summary.json`
+- `figures/pscale2_c_pressure_lift_paired.png`
+- `pscale2_c_pressure_lift_report.md`

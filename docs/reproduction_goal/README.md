@@ -64,6 +64,7 @@ flowchart TD
 | Zhang 2x 粒子数 demo | C `27875950305`、D `27875951506`、E `27875952754` 均成功并已导入阶段目录 |
 | Zhang pscale=2 follow-up | C 已得到 `Emax=63.462 GPa, mu=0.654, P95=586.646 MPa` 的 pass 候选，D/E 仍为 review |
 | Zhang C seed recheck | 5 个 seed 已成功运行并导入；C 只有 1/5 同时满足压力窗口和 trend gate，不稳健 |
+| Zhang C pressure-lift recheck | Emax 单变量 5-seed run 已成功并导入；平均 P95 回到 574.211 MPa、CV 降至 0.0396，但只有 2/5 同时通过双门槛 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 
 ## 仍未完成的边界
@@ -103,6 +104,7 @@ stage_folder/
 下一步只做一件事：继续 Zhang 的 pscale=2 分支收敛。10-job
 `zhang-pscale2-followup.yml` 已成功运行并导入：C 已得到压力窗口内且
 trend pass 的候选，D 仍是压力窗口和力链趋势冲突，E 趋势可用但压力仍低于
-572 MPa。因此不能直接进入 4x/8x；C seed robustness recheck 已成功运行并
-导入，但只有 1/5 seed 同时满足压力窗口和 trend gate。下一步是在 pscale=2
-继续调整 C/D/E 的加载路径、接触律或 endpoint modulus，先恢复多 seed 稳健性。
+572 MPa。因此不能直接进入 4x/8x；C seed robustness recheck 和单变量 Emax
+pressure-lift recheck 均已成功运行并导入。后者把平均 P95 提高到 `574.211 MPa`
+并将 CV 降低约 50.8%，但仍只有 2/5 seed 同时满足压力窗口和 trend gate。
+下一步固定 C 的 Emax/mu，只改变一个加载路径或接触松弛变量，先降低 seed 方差。

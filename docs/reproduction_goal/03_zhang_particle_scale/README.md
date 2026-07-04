@@ -21,7 +21,7 @@
 | pscale=2 size-specific follow-up plan | 已生成 10-job GitHub Actions 调度矩阵 |
 | pscale=2 size-specific follow-up results | 已运行并导入，C 进入窗口且 trend pass，D/E 仍需校准 |
 | pscale=2 C seed robustness recheck | 已运行并导入，结论为 C 不具备 seed 稳健性 |
-| pscale=2 C pressure-lift recheck | 已生成 5-job 单变量计划，等待 GitHub workflow 结果 |
+| pscale=2 C pressure-lift recheck | 已运行并导入；均值回窗但仅 2/5 seeds 同时通过双门槛 |
 
 ## 当前候选参数
 
@@ -120,7 +120,7 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
 
 报告：`pscale2_c_seed_recheck_report.md`。
 
-## C pressure-lift recheck plan
+## C pressure-lift recheck
 
 上一轮 C recheck 的 5-seed 平均 P95 为 `524.619 MPa`。本轮用
 `63.462 * 600 / 524.619 = 72.581 GPa` 得到待验证的 Emax，并保持
@@ -133,6 +133,24 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
 | C | 63.462 GPa | 72.581 GPa | 0.654 | `0,1,2,3,4` | 5 | `e_al_emax_gpa` only |
 
 计划文件：`data/pscale2_c_pressure_lift_recheck_plan.json`。
+
+GitHub dispatcher run `28709922833` 和 DEM run `28709925303` 均成功，5 个
+seed job 与 aggregate ensemble 全部完成。结果证明 Emax 抬升有效，但比例假设
+高估了平均压力响应：Emax 增加 `14.37%`，平均 P95 只增加 `9.45%`。
+
+| Metric | Baseline | Emax 72.581 GPa | Result |
+|---|---:|---:|---|
+| Mean P95 MPa | 524.619 | 574.211 | 平均值进入 572-638 MPa 窗口 |
+| P95 CV | 0.0804 | 0.0396 | 离散性下降 50.80% |
+| Trend pass | 4/5 | 4/5 | 未改善全 seed trend gate |
+| Pressure window | 1/5 | 3/5 | 有改善但未稳健 |
+| Pass + window | 1/5 | 2/5 | 仍不满足 seed robustness |
+
+因此保留 `Emax=72.581 GPa` 作为 C 的压力参考，不再把继续提高 Emax 当作
+唯一控制变量。下一轮应只改变一个加载路径或接触松弛变量以降低 seed 方差，
+保持 `mu=0.654` 并复跑相同 seeds `0..4`。
+
+结果报告：`pscale2_c_pressure_lift_report.md`。
 
 ## 已归档产物
 
@@ -155,11 +173,16 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
     pscale2_c_seed_recheck_candidates.csv
     pscale2_c_seed_recheck_summary.json
     pscale2_c_pressure_lift_recheck_plan.json
+    pscale2_c_pressure_lift_acceptance.csv
+    pscale2_c_pressure_lift_candidates.csv
+    pscale2_c_pressure_lift_paired.csv
+    pscale2_c_pressure_lift_summary.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
     github_runs.md
     pscale2_c_seed_recheck_run_27898770533/
+    pscale2_c_pressure_lift_recheck_run_28709925303/
     pscale2_followup_run_27883033303/
     pscale2_followup_run_27883034434/
     pscale2_followup_run_27883035658/
@@ -175,6 +198,8 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
     pscale2_followup_p95.png
     pscale2_recalibration_p95.png
     pscale2_c_seed_recheck_p95.png
+    pscale2_c_pressure_lift_paired.png
+  pscale2_c_pressure_lift_report.md
   pscale2_c_seed_recheck_report.md
   pscale2_followup_report.md
   pscale2_recalibration_report.md
@@ -184,8 +209,7 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：`Emax=63.462 GPa, mu=0.654` 的 seed recheck 不稳健；下一步提高压力或调整加载路径/接触律，同时保持 trend gate。
-   已先生成只提高 Emax 到 `72.581 GPa` 的 5-seed 检验；在结果导入前不再扩大矩阵。
+2. C：`Emax=72.581 GPa, mu=0.654` 使平均压力回窗并降低 CV，但只有 2/5 seeds 同时通过 pressure + trend；下一步固定该 Emax/mu，只改变一个加载路径或接触松弛变量以降低 seed 方差。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -194,6 +218,7 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
 follow-up 计划文件：`data/pscale2_followup_plan.json`。
 C seed recheck 计划文件：`data/pscale2_c_seed_recheck_plan.json`。
 C seed recheck 报告：`pscale2_c_seed_recheck_report.md`。
+C pressure-lift 报告：`pscale2_c_pressure_lift_report.md`。
 
 ## 验收门槛
 
@@ -208,4 +233,5 @@ C seed recheck 报告：`pscale2_c_seed_recheck_report.md`。
 | pscale=2 C seed recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只变 seed，不变 C 参数 |
 | pscale=2 C seed recheck 结果已导入 | review：workflow/artifact 通过，但只有 1/5 seed 同时 pressure pass + trend pass |
 | pscale=2 C pressure-lift recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只改变 Emax，保持 mu/size/pscale/seeds 不变 |
+| pscale=2 C pressure-lift 结果已导入 | review：平均 P95 回窗且 CV 下降，但只有 2/5 seeds 同时 pressure pass + trend pass |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

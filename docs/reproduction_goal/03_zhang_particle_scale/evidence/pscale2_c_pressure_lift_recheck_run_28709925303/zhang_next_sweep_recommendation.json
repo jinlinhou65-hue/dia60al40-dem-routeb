@@ -1,0 +1,56 @@
+{
+  "diagnosis": "candidate_pass",
+  "estimated_run_count": 20,
+  "followup_after_light_sweep": "Run separate size-case calibration sweeps instead of repeating the same global seed/size matrix: C needs higher-pressure stabilization, while D/E need lower-pressure brackets or a particle-size dependent contact-law fit.",
+  "next_sweep_mode": "size_specific_calibration",
+  "reason": "only 2/5 seed/size rows both pass Zhang trend gates and fall inside the 572-638 MPa endpoint window, so one global mu/E pair is not robust",
+  "selected_artifact": "dia60al40-dem-artifacts-sizeC-pscale2-Emax72.581-mu0.654-seed2",
+  "selected_e_al_emax_gpa": "72.581",
+  "selected_min_chain_length": "2",
+  "selected_mu_scale": "0.654",
+  "selected_p95_mpa": "607.731725",
+  "selected_status": "pass",
+  "selected_threshold_factor": "0.05",
+  "size_case_summary": [
+    {
+      "diamond_size_case": "C",
+      "p95_max_mpa": 607.731725,
+      "p95_mean_mpa": 574.2111361999999,
+      "p95_min_mpa": 543.867388,
+      "pass_run_count": 4,
+      "pressure_window_count": 3,
+      "run_count": 5
+    }
+  ],
+  "status": "needs_calibration",
+  "workflow_dispatch_inputs": {},
+  "workflow_dispatch_plan": [
+    {
+      "d1_delta_mean": -0.8825528378744092,
+      "diamond_size_case": "C",
+      "estimated_run_count": 20,
+      "p95_max_mpa": 607.731725,
+      "p95_mean_mpa": 574.2111361999999,
+      "p95_min_mpa": 543.867388,
+      "participation_delta_mean": 0.10353935187501773,
+      "pass_run_count": 4,
+      "pressure_action": "mean endpoint pressure is inside Zhang window; keep a narrow endpoint modulus bracket",
+      "pressure_window_count": 3,
+      "run_count": 5,
+      "trend_action": "size case has mixed trend gates; bracket friction around the current value",
+      "workflow_dispatch_inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\", \"3\", \"4\"]",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_emax_sweep_json": "[\"68.952\", \"76.21\"]",
+        "mu_scale_json": "[\"0.556\", \"0.752\"]",
+        "runtime_profile": "demo"
+      }
+    }
+  ],
+  "zhang_pressure_target_mpa": 600.0,
+  "zhang_pressure_window_mpa": [
+    572.0,
+    638.0
+  ]
+}
