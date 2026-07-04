@@ -1,0 +1,66 @@
+{
+  "dispatch": false,
+  "mode": "zhang_pscale2_c_pressure_lift_recheck",
+  "payload_count": 1,
+  "payloads": [
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\", \"3\", \"4\"]",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"72.581\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.654\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "applied_lift_ratio": 1.143687092,
+        "changed_variable": "e_al_emax_gpa",
+        "diamond_size_case": "C",
+        "estimated_run_count": 5,
+        "held_variables": [
+          "diamond_size_case",
+          "particle_count_scale",
+          "mu_scale",
+          "dem_seed_set",
+          "runtime_profile"
+        ],
+        "particle_count_scale": 2,
+        "purpose": "c_pressure_lift_seed_recheck",
+        "requested_lift_ratio": 1.143687092,
+        "scaling_hypothesis": "Use a first-order P95-to-Emax proportional lift to target 600 MPa; the DEM run tests this hypothesis rather than assuming it is valid.",
+        "seed_candidates": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "source_decision": "c_candidate_not_seed_robust",
+        "source_e_al_emax_gpa": 63.462,
+        "source_mu_scale": 0.654,
+        "source_p95_mean_mpa": 524.619019,
+        "source_run_id": "27898770533",
+        "target_e_al_emax_gpa": 72.581,
+        "target_pressure_mpa": 600.0
+      },
+      "ref": "codex/paper-reproduction-demo"
+    }
+  ],
+  "ref": "codex/paper-reproduction-demo",
+  "summary": "docs\\reproduction_goal\\03_zhang_particle_scale\\data\\pscale2_c_seed_recheck_summary.json",
+  "total_estimated_run_count": 5,
+  "workflow": "dia60al40-dem.yml"
+}

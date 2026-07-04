@@ -21,6 +21,7 @@
 | pscale=2 size-specific follow-up plan | 已生成 10-job GitHub Actions 调度矩阵 |
 | pscale=2 size-specific follow-up results | 已运行并导入，C 进入窗口且 trend pass，D/E 仍需校准 |
 | pscale=2 C seed robustness recheck | 已运行并导入，结论为 C 不具备 seed 稳健性 |
+| pscale=2 C pressure-lift recheck | 已生成 5-job 单变量计划，等待 GitHub workflow 结果 |
 
 ## 当前候选参数
 
@@ -119,6 +120,20 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
 
 报告：`pscale2_c_seed_recheck_report.md`。
 
+## C pressure-lift recheck plan
+
+上一轮 C recheck 的 5-seed 平均 P95 为 `524.619 MPa`。本轮用
+`63.462 * 600 / 524.619 = 72.581 GPa` 得到待验证的 Emax，并保持
+`mu=0.654`、`particle_count_scale=2`、size C 和 seeds `0..4` 不变。
+
+这不是把线性比例关系当成物理结论，而是用 5 个轻量 DEM job 检验该假设：
+
+| Size | Source Emax | Target Emax | Mu | Seeds | Jobs | Changed variable |
+|---|---:|---:|---:|---|---:|---|
+| C | 63.462 GPa | 72.581 GPa | 0.654 | `0,1,2,3,4` | 5 | `e_al_emax_gpa` only |
+
+计划文件：`data/pscale2_c_pressure_lift_recheck_plan.json`。
+
 ## 已归档产物
 
 ```text
@@ -139,6 +154,7 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
     pscale2_c_seed_recheck_acceptance.csv
     pscale2_c_seed_recheck_candidates.csv
     pscale2_c_seed_recheck_summary.json
+    pscale2_c_pressure_lift_recheck_plan.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -169,6 +185,7 @@ pressure window 和 trend gate；P95 平均值为 `524.619 MPa`，低于 Zhang
 
 1. 不启动 4x/8x。
 2. C：`Emax=63.462 GPa, mu=0.654` 的 seed recheck 不稳健；下一步提高压力或调整加载路径/接触律，同时保持 trend gate。
+   已先生成只提高 Emax 到 `72.581 GPa` 的 5-seed 检验；在结果导入前不再扩大矩阵。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -190,4 +207,5 @@ C seed recheck 报告：`pscale2_c_seed_recheck_report.md`。
 | pscale=2 follow-up 结果已导入 | 通过：C pass，D/E review |
 | pscale=2 C seed recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只变 seed，不变 C 参数 |
 | pscale=2 C seed recheck 结果已导入 | review：workflow/artifact 通过，但只有 1/5 seed 同时 pressure pass + trend pass |
+| pscale=2 C pressure-lift recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只改变 Emax，保持 mu/size/pscale/seeds 不变 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |
