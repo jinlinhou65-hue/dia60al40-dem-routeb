@@ -74,6 +74,10 @@ on:
         description: 'DEM runtime profile: full for calibrated runs, demo for fast feasibility reruns'
         required: false
         default: 'full'
+      demo_settle_scale:
+        description: 'Multiplier for demo initial/stage/final settle steps; ignored by full profile'
+        required: false
+        default: '1'
       allow_evidence_mismatch:
         description: 'Allow complete DEM artifacts with paper-trend mismatches so robustness sweeps can aggregate non-passing samples'
         required: false
@@ -91,7 +95,7 @@ concurrency:
 
 jobs:
   dem:
-    name: dem size=${{ matrix.diamond_size_case }} pscale=${{ matrix.particle_count_scale }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }}
+    name: dem size=${{ matrix.diamond_size_case }} pscale=${{ matrix.particle_count_scale }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }} settle=${{ inputs.demo_settle_scale || '1' }}
     strategy:
       fail-fast: false
       matrix:
@@ -181,10 +185,28 @@ jobs:
           RUNTIME_PROFILE="${{ inputs.runtime_profile || 'demo' }}"
           runtime_args=()
           if [ "$RUNTIME_PROFILE" = "demo" ]; then
+            export DEMO_SETTLE_SCALE="${{ inputs.demo_settle_scale || '1' }}"
+            python3 - <<'PY' > /tmp/dem_runtime_controls.env
+            import math
+            import os
+
+            scale = float(os.environ["DEMO_SETTLE_SCALE"])
+            if not math.isfinite(scale) or not 0.25 <= scale <= 10.0:
+                raise SystemExit("demo_settle_scale must be finite and in [0.25, 10]")
+
+            def scaled(base):
+                return max(1, round(base * scale))
+
+            print(f"INITIAL_SETTLE_STEPS={scaled(20000)}")
+            print(f"STAGE_SETTLE_STEPS={scaled(20000)}")
+            print(f"FINAL_SETTLE_STEPS={scaled(50000)}")
+            PY
+            cat /tmp/dem_runtime_controls.env
+            source /tmp/dem_runtime_controls.env
             runtime_args+=(--top-vel-cm-s 50)
-            runtime_args+=(--initial-settle-steps 20000)
-            runtime_args+=(--stage-settle-steps 20000)
-            runtime_args+=(--final-settle-steps 50000)
+            runtime_args+=(--initial-settle-steps "$INITIAL_SETTLE_STEPS")
+            runtime_args+=(--stage-settle-steps "$STAGE_SETTLE_STEPS")
+            runtime_args+=(--final-settle-steps "$FINAL_SETTLE_STEPS")
           elif [ "$RUNTIME_PROFILE" != "full" ]; then
             echo "[FATAL] unsupported runtime_profile=$RUNTIME_PROFILE; use full or demo"
             exit 1
@@ -444,7 +466,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dia60al40-dem-artifacts-size${{ matrix.diamond_size_case }}-pscale${{ matrix.particle_count_scale }}-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}
+          name: dia60al40-dem-artifacts-size${{ matrix.diamond_size_case }}-pscale${{ matrix.particle_count_scale }}-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}-settle${{ inputs.demo_settle_scale || '1' }}
           path: |
             liggghts/DEM/**
             liggghts/*.log

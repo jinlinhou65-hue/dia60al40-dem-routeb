@@ -8,8 +8,6 @@ on:
         default: '600'
   push:
     paths:
-      - '.github/workflows/zhang-pscale2-followup.yml'
-      - '.github/workflows/dia60al40-dem.yml'
       - 'scripts/dispatch_zhang_pscale2_followup.py'
       - 'scripts/dispatch_zhang_size_specific_sweeps.py'
       - 'docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_recalibration_size_summary.csv'

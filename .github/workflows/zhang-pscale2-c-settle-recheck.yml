@@ -1,0 +1,95 @@
+name: zhang-pscale2-c-settle-recheck
+on:
+  workflow_dispatch:
+    inputs:
+      seed_json:
+        description: 'JSON list of DEM seeds for the C settle-duration recheck'
+        required: false
+        default: '["0","1","2","3","4"]'
+  push:
+    paths:
+      - '.github/workflows/zhang-pscale2-c-settle-recheck.yml'
+      - 'scripts/dispatch_zhang_pscale2_c_settle_recheck.py'
+      - 'scripts/dispatch_zhang_pscale2_c_pressure_lift_recheck.py'
+      - 'scripts/dispatch_zhang_size_specific_sweeps.py'
+      - 'docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_c_pressure_lift_summary.json'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-c-settle-recheck:
+    name: dispatch Zhang pscale=2 C 4x-settle recheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build one-variable C settle plan
+        env:
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_settle_recheck.py \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --settle-scale 4 \
+            --max-total-runs 5 \
+            > /tmp/zhang_pscale2_c_settle_recheck_plan.json
+          cat /tmp/zhang_pscale2_c_settle_recheck_plan.json
+
+      - name: Validate one-variable C settle plan
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+
+          plan = json.load(open(
+              "/tmp/zhang_pscale2_c_settle_recheck_plan.json",
+              encoding="utf-8",
+          ))
+          if plan["mode"] != "zhang_pscale2_c_settle_recheck":
+              raise SystemExit(f"unexpected mode: {plan['mode']}")
+          if plan["payload_count"] != 1 or plan["total_estimated_run_count"] != 5:
+              raise SystemExit("settle plan must contain one payload and five DEM jobs")
+
+          item = plan["payloads"][0]
+          inputs = item["inputs"]
+          metadata = item["metadata"]
+          if metadata["purpose"] != "c_settle_relaxation_seed_recheck":
+              raise SystemExit(f"unexpected purpose: {metadata['purpose']}")
+          if metadata["changed_variable"] != "demo_settle_scale":
+              raise SystemExit("the only changed loading variable must be settle scale")
+          if metadata["target_settle_steps"] != {
+              "initial": 80000,
+              "stage": 80000,
+              "final": 200000,
+          }:
+              raise SystemExit(f"unexpected target settle steps: {metadata['target_settle_steps']}")
+          if inputs["runtime_profile"] != "demo" or inputs["demo_settle_scale"] != "4":
+              raise SystemExit("settle recheck must use demo profile with scale 4")
+          if json.loads(inputs["diamond_size_case_json"]) != ["C"]:
+              raise SystemExit("settle recheck must run only size C")
+          if json.loads(inputs["particle_count_scale_json"]) != ["2"]:
+              raise SystemExit("settle recheck must hold particle scale at 2")
+          if json.loads(inputs["e_al_emax_sweep_json"]) != ["72.581"]:
+              raise SystemExit("settle recheck must hold Emax at 72.581 GPa")
+          if json.loads(inputs["mu_scale_json"]) != ["0.654"]:
+              raise SystemExit("settle recheck must hold mu at 0.654")
+          if json.loads(inputs["dem_seed_json"]) != ["0", "1", "2", "3", "4"]:
+              raise SystemExit("settle recheck must preserve seeds 0..4")
+          PY
+
+      - name: Dispatch Zhang C 4x-settle DEM run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_settle_recheck.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --settle-scale 4 \
+            --max-total-runs 5 \
+            --dispatch

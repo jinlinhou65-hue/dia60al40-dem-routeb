@@ -8,8 +8,6 @@ on:
         default: '["0","1","2","3","4"]'
   push:
     paths:
-      - '.github/workflows/zhang-pscale2-c-seed-recheck.yml'
-      - '.github/workflows/dia60al40-dem.yml'
       - 'scripts/dispatch_zhang_pscale2_c_seed_recheck.py'
       - 'scripts/dispatch_zhang_size_specific_sweeps.py'
       - 'docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_followup_size_summary.csv'

@@ -12,8 +12,6 @@ on:
         default: '[0.95,1.0,1.05]'
   push:
     paths:
-      - '.github/workflows/zhang-pscale2-recalibration.yml'
-      - '.github/workflows/dia60al40-dem.yml'
       - 'scripts/dispatch_zhang_pscale2_recalibration.py'
       - 'scripts/dispatch_zhang_size_specific_sweeps.py'
       - 'docs/reproduction_goal/03_zhang_particle_scale/data/1x_vs_2x_comparison.csv'

@@ -8,13 +8,8 @@ on:
         default: '2'
   push:
     paths:
-      - '.github/workflows/zhang-scale-pilot.yml'
-      - '.github/workflows/dia60al40-dem.yml'
       - 'scripts/dispatch_zhang_scale_pilot.py'
       - 'scripts/dispatch_zhang_size_specific_sweeps.py'
-      - 'python/render_dem_deck.py'
-      - 'python/dem_case_config.py'
-      - 'python/dem_case_geometry.py'
       - 'docs/zhang_sweep_evidence/size_specific_27874059503_27874061902_27874064063/summary.json'
 
 permissions:
