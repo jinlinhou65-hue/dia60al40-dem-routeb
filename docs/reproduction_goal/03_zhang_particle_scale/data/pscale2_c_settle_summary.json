@@ -1,0 +1,45 @@
+{
+  "baseline_p95_cv": 0.03957423315053406,
+  "baseline_p95_mean_mpa": 574.2111361999999,
+  "baseline_p95_stdev_mpa": 22.723965381611865,
+  "baseline_pass_and_window_count": 2,
+  "baseline_pass_count": 4,
+  "baseline_run_id": "28709925303",
+  "baseline_settle_steps": {
+    "final": 50000,
+    "initial": 20000,
+    "stage": 20000
+  },
+  "baseline_window_count": 3,
+  "decision": "c_settle_improves_trend_but_worsens_pressure_robustness",
+  "diamond_size_case": "C",
+  "e_al_emax_gpa": 72.581,
+  "mu_scale": 0.654,
+  "p95_cv_change_percent": 130.21796712668848,
+  "p95_mean_delta_mpa": -6.979294200000027,
+  "p95_mean_delta_percent": -1.2154578272701964,
+  "particle_count_scale": 2,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "Reject settle scale 4 for the C baseline: it makes all five trend gates pass, but increases pressure CV and reduces pass+window coverage. Restore settle scale 1. If dwell remains the next variable, test only the bounded midpoint settle scale 2 with Emax=72.581 GPa and mu=0.654 held fixed.",
+  "run_id": "28710536524",
+  "seed_count": 5,
+  "settle_p95_cv": 0.09110699506513555,
+  "settle_p95_max_mpa": 651.920164,
+  "settle_p95_mean_mpa": 567.2318419999999,
+  "settle_p95_min_mpa": 525.969686,
+  "settle_p95_stdev_mpa": 51.67878862988174,
+  "settle_pass_and_window_count": 1,
+  "settle_pass_count": 5,
+  "settle_scale": 4,
+  "settle_window_count": 1,
+  "test_settle_steps": {
+    "final": 200000,
+    "initial": 80000,
+    "stage": 80000
+  },
+  "time_step_seconds": 2e-10,
+  "top_velocity_cm_s": 50.0
+}

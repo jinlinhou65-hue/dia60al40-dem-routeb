@@ -65,6 +65,7 @@ flowchart TD
 | Zhang pscale=2 follow-up | C 已得到 `Emax=63.462 GPa, mu=0.654, P95=586.646 MPa` 的 pass 候选，D/E 仍为 review |
 | Zhang C seed recheck | 5 个 seed 已成功运行并导入；C 只有 1/5 同时满足压力窗口和 trend gate，不稳健 |
 | Zhang C pressure-lift recheck | Emax 单变量 5-seed run 已成功并导入；平均 P95 回到 574.211 MPa、CV 降至 0.0396，但只有 2/5 同时通过双门槛 |
+| Zhang C 4x-settle recheck | 运行与参数溯源已通过；trend 提高到 5/5，但压力 CV 恶化 130.22%、仅 1/5 同时通过双门槛，故拒绝 4x dwell |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 
 ## 仍未完成的边界
@@ -107,4 +108,6 @@ trend pass 的候选，D 仍是压力窗口和力链趋势冲突，E 趋势可�
 572 MPa。因此不能直接进入 4x/8x；C seed robustness recheck 和单变量 Emax
 pressure-lift recheck 均已成功运行并导入。后者把平均 P95 提高到 `574.211 MPa`
 并将 CV 降低约 50.8%，但仍只有 2/5 seed 同时满足压力窗口和 trend gate。
-下一步固定 C 的 Emax/mu，只改变一个加载路径或接触松弛变量，先降低 seed 方差。
+随后 4x-settle recheck 使 trend 提高到 5/5，却把压力 CV 从 `0.0396` 提高到
+`0.0911`，双门槛覆盖降为 1/5。因此拒绝 scale 4；若继续 dwell 分支，下一步
+仅测试有界中点 scale 2，并保持 C 的 Emax/mu、速度、时间步和 seeds 不变。

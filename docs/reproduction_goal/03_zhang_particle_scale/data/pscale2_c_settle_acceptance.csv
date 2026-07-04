@@ -1,0 +1,2 @@
+diamond_size_case,artifact_imported,workflow_completed,runtime_provenance_gate,all_seed_trend_gate,all_seed_pressure_gate,seed_robust_gate,decision
+C,True,True,pass,pass,review,review,c_settle_improves_trend_but_worsens_pressure_robustness

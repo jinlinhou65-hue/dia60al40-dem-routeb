@@ -22,7 +22,7 @@
 | pscale=2 size-specific follow-up results | 已运行并导入，C 进入窗口且 trend pass，D/E 仍需校准 |
 | pscale=2 C seed robustness recheck | 已运行并导入，结论为 C 不具备 seed 稳健性 |
 | pscale=2 C pressure-lift recheck | 已运行并导入；均值回窗但仅 2/5 seeds 同时通过双门槛 |
-| pscale=2 C 4x-settle recheck | 已生成 5-job 单变量计划，等待 GitHub workflow 结果 |
+| pscale=2 C 4x-settle recheck | 已运行并导入；trend 全 pass，但压力稳健性显著恶化 |
 
 ## 当前候选参数
 
@@ -153,7 +153,7 @@ seed job 与 aggregate ensemble 全部完成。结果证明 Emax 抬升有效，
 
 结果报告：`pscale2_c_pressure_lift_report.md`。
 
-## C 4x-settle recheck plan
+## C 4x-settle recheck
 
 pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差。下一轮固定
 `Emax=72.581 GPa`、`mu=0.654`、size C、`particle_count_scale=2`、压头速度
@@ -170,6 +170,24 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
 速度、时间步和 settle steps 会写入每个 artifact 的 `model_parameters.csv`。
 
 计划文件：`data/pscale2_c_settle_recheck_plan.json`。
+
+首次 child run `28710435532` 因 workflow heredoc 缩进在 deck 渲染前失败，
+没有产生物理结果。修复提交 `e2eb4ea` 后，dispatcher run `28710534299`
+调度 child run `28710536524`；5 个 DEM job 与 aggregate ensemble 全部成功，
+且 `model_parameters.csv` 记录了 `80k/80k/200k` settle steps。
+
+| Metric | Settle scale 1 | Settle scale 4 | Result |
+|---|---:|---:|---|
+| Mean P95 MPa | 574.211 | 567.232 | 降低 6.979 MPa，跌出窗口均值下限 |
+| P95 CV | 0.0396 | 0.0911 | 增加 130.22%，seed 方差恶化 |
+| Trend pass | 4/5 | 5/5 | 力链趋势改善 |
+| Pressure window | 3/5 | 1/5 | 压力覆盖恶化 |
+| Pass + window | 2/5 | 1/5 | 总体稳健性恶化 |
+
+结论：拒绝 settle scale 4，恢复 scale 1。若继续检验 dwell，下一步只测试
+有界中点 scale 2，并继续固定 `Emax=72.581 GPa, mu=0.654`。
+
+结果报告：`pscale2_c_settle_report.md`。
 
 ## 已归档产物
 
@@ -197,12 +215,17 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
     pscale2_c_pressure_lift_paired.csv
     pscale2_c_pressure_lift_summary.json
     pscale2_c_settle_recheck_plan.json
+    pscale2_c_settle_acceptance.csv
+    pscale2_c_settle_candidates.csv
+    pscale2_c_settle_paired.csv
+    pscale2_c_settle_summary.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
     github_runs.md
     pscale2_c_seed_recheck_run_27898770533/
     pscale2_c_pressure_lift_recheck_run_28709925303/
+    pscale2_c_settle_recheck_run_28710536524/
     pscale2_followup_run_27883033303/
     pscale2_followup_run_27883034434/
     pscale2_followup_run_27883035658/
@@ -219,8 +242,10 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
     pscale2_recalibration_p95.png
     pscale2_c_seed_recheck_p95.png
     pscale2_c_pressure_lift_paired.png
+    pscale2_c_settle_paired.png
   pscale2_c_pressure_lift_report.md
   pscale2_c_seed_recheck_report.md
+  pscale2_c_settle_report.md
   pscale2_followup_report.md
   pscale2_recalibration_report.md
   report.md
@@ -229,7 +254,7 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：`Emax=72.581 GPa, mu=0.654` 使平均压力回窗并降低 CV，但只有 2/5 seeds 同时通过 pressure + trend；已生成只把 settle duration 放大 4 倍的 5-seed 计划，在结果导入前不改其他变量。
+2. C：4x settle 虽使 trend 达到 5/5，但把 CV 提高 130.22%、双门槛覆盖降到 1/5；拒绝 scale 4。下一步仅测试 dwell 中点 scale 2，其他参数不变。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -239,6 +264,7 @@ follow-up 计划文件：`data/pscale2_followup_plan.json`。
 C seed recheck 计划文件：`data/pscale2_c_seed_recheck_plan.json`。
 C seed recheck 报告：`pscale2_c_seed_recheck_report.md`。
 C pressure-lift 报告：`pscale2_c_pressure_lift_report.md`。
+C 4x-settle 报告：`pscale2_c_settle_report.md`。
 
 ## 验收门槛
 
@@ -255,4 +281,5 @@ C pressure-lift 报告：`pscale2_c_pressure_lift_report.md`。
 | pscale=2 C pressure-lift recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只改变 Emax，保持 mu/size/pscale/seeds 不变 |
 | pscale=2 C pressure-lift 结果已导入 | review：平均 P95 回窗且 CV 下降，但只有 2/5 seeds 同时 pressure pass + trend pass |
 | pscale=2 C 4x-settle recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只改变 settle duration scale |
+| pscale=2 C 4x-settle 结果已导入 | review：trend 5/5 pass，但 CV 恶化、仅 1/5 同时通过双门槛；拒绝 scale 4 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

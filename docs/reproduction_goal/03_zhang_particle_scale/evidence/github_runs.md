@@ -60,6 +60,19 @@ This file records the GitHub Actions evidence imported into this stage.
 |---:|---:|---|---|
 | [28709925303](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28709925303) | `8082751629` | `sha256:6cde0e89856c6fd3be2808d182053cf64a4ea5ae198526898344819bf6232b27` | `evidence/pscale2_c_pressure_lift_recheck_run_28709925303/` |
 
+## pscale=2 C 4x-Settle Recheck
+
+| Workflow | Run | Status | Commit | Meaning |
+|---|---:|---|---|---|
+| `zhang-pscale2-c-settle-recheck.yml` | [28710433141](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28710433141) | success | `c67129b` | Dispatched first child |
+| `dia60al40-dem.yml` | [28710435532](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28710435532) | failure | `c67129b` | Heredoc syntax failure before DEM; excluded from physics |
+| `zhang-pscale2-c-settle-recheck.yml` | [28710534299](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28710534299) | success | `e2eb4ea` | Dispatched fixed child |
+| `dia60al40-dem.yml` push regression | [28710534321](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28710534321) | success | `e2eb4ea` | Core settle=1 regression |
+
+| Valid DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [28710536524](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28710536524) | `8082918491` | `sha256:2e9b0b63917057c3e3aec871e3b1410c526c8dc8015451107d4e22c446cd8f89` | `evidence/pscale2_c_settle_recheck_run_28710536524/` |
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through
@@ -107,3 +120,12 @@ The interpreted pscale=2 C pressure-lift result is stored in:
 - `data/pscale2_c_pressure_lift_summary.json`
 - `figures/pscale2_c_pressure_lift_paired.png`
 - `pscale2_c_pressure_lift_report.md`
+
+The interpreted pscale=2 C 4x-settle result is stored in:
+
+- `data/pscale2_c_settle_candidates.csv`
+- `data/pscale2_c_settle_paired.csv`
+- `data/pscale2_c_settle_acceptance.csv`
+- `data/pscale2_c_settle_summary.json`
+- `figures/pscale2_c_settle_paired.png`
+- `pscale2_c_settle_report.md`
