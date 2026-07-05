@@ -1,0 +1,67 @@
+{
+  "baseline_run_id": "28709925303",
+  "decision": "c_settle_midpoint_not_better",
+  "diamond_size_case": "C",
+  "e_al_emax_gpa": 72.581,
+  "groups": {
+    "settle1": {
+      "p95_cv": 0.03957423315053406,
+      "p95_max_mpa": 607.731725,
+      "p95_mean_mpa": 574.2111361999999,
+      "p95_min_mpa": 543.867388,
+      "p95_stdev_mpa": 22.723965381611865,
+      "pass_and_window_count": 2,
+      "pressure_window_count": 3,
+      "trend_pass_count": 4
+    },
+    "settle2": {
+      "p95_cv": 0.12680989659276906,
+      "p95_max_mpa": 674.741429,
+      "p95_mean_mpa": 563.3231498,
+      "p95_min_mpa": 478.278079,
+      "p95_stdev_mpa": 71.43495037445095,
+      "pass_and_window_count": 0,
+      "pressure_window_count": 0,
+      "trend_pass_count": 5
+    },
+    "settle4": {
+      "p95_cv": 0.09110699506513555,
+      "p95_max_mpa": 651.920164,
+      "p95_mean_mpa": 567.2318419999999,
+      "p95_min_mpa": 525.969686,
+      "p95_stdev_mpa": 51.67878862988174,
+      "pass_and_window_count": 1,
+      "pressure_window_count": 1,
+      "trend_pass_count": 5
+    }
+  },
+  "mu_scale": 0.654,
+  "particle_count_scale": 2,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "Reject settle scale 2 as well as scale 4. Restore settle scale 1 and stop using dwell duration as the next C calibration variable; test one different loading/contact control.",
+  "run_id": "28729403153",
+  "seed_count": 5,
+  "settle4_run_id": "28710536524",
+  "settle_steps": {
+    "1": {
+      "final": 50000,
+      "initial": 20000,
+      "stage": 20000
+    },
+    "2": {
+      "final": 100000,
+      "initial": 40000,
+      "stage": 40000
+    },
+    "4": {
+      "final": 200000,
+      "initial": 80000,
+      "stage": 80000
+    }
+  },
+  "time_step_seconds": 2e-10,
+  "top_velocity_cm_s": 50.0
+}

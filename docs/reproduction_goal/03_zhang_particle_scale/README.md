@@ -23,7 +23,7 @@
 | pscale=2 C seed robustness recheck | 已运行并导入，结论为 C 不具备 seed 稳健性 |
 | pscale=2 C pressure-lift recheck | 已运行并导入；均值回窗但仅 2/5 seeds 同时通过双门槛 |
 | pscale=2 C 4x-settle recheck | 已运行并导入；trend 全 pass，但压力稳健性显著恶化 |
-| pscale=2 C settle=2 midpoint | 计划与 workflow 已生成，等待 GitHub 实跑结果 |
+| pscale=2 C settle=2 midpoint | 已运行并导入；trend 5/5，但压力窗口 0/5、CV 高于 scale 1/4，故拒绝 |
 
 ## 当前候选参数
 
@@ -190,7 +190,7 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
 
 结果报告：`pscale2_c_settle_report.md`。
 
-## C settle=2 midpoint plan
+## C settle=2 midpoint result
 
 中点试验不修改旧的 4x workflow，也不重新搜索 Emax 或摩擦系数。它复用相同
 五个 seed，并将静置步数设置为 `40k/40k/100k`。GitHub workflow 在调度前
@@ -207,6 +207,26 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
 dwell，恢复 scale 1 并改测一个不同的加载或接触变量。
 
 计划文件：`data/pscale2_c_settle_midpoint_plan.json`。
+
+dispatcher run `28729401297` 成功调度 child run `28729403153`；五个 DEM
+seed job 与 aggregate ensemble 全部成功。summary artifact `8088289183` 的本地
+SHA-256 与 GitHub digest `8a94ce39...e3ba4f` 一致，运行参数验证为
+`40k/40k/100k`。
+
+| Metric | Settle scale 1 | Settle scale 2 | Settle scale 4 |
+|---|---:|---:|---:|
+| Mean P95 MPa | 574.211 | 563.323 | 567.232 |
+| P95 CV | 0.0396 | 0.1268 | 0.0911 |
+| Trend pass | 4/5 | 5/5 | 5/5 |
+| Pressure window | 3/5 | 0/5 | 1/5 |
+| Pass + window | 2/5 | 0/5 | 1/5 |
+
+scale 2 没有满足预注册的压力均值、CV 和双门槛覆盖要求。其 seed 2 达到
+`674.741 MPa`，seed 3 降到 `478.278 MPa`，说明中点静置并未产生平滑插值，
+反而放大了不同初始接触网络的重排差异。因此 C 的 dwell 分支到此停止，恢复
+settle scale 1。
+
+结果报告：`pscale2_c_settle_midpoint_report.md`。
 
 ## 已归档产物
 
@@ -239,6 +259,10 @@ dwell，恢复 scale 1 并改测一个不同的加载或接触变量。
     pscale2_c_settle_paired.csv
     pscale2_c_settle_summary.json
     pscale2_c_settle_midpoint_plan.json
+    pscale2_c_settle_midpoint_acceptance.csv
+    pscale2_c_settle_midpoint_candidates.csv
+    pscale2_c_settle_midpoint_paired.csv
+    pscale2_c_settle_midpoint_summary.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -246,6 +270,7 @@ dwell，恢复 scale 1 并改测一个不同的加载或接触变量。
     pscale2_c_seed_recheck_run_27898770533/
     pscale2_c_pressure_lift_recheck_run_28709925303/
     pscale2_c_settle_recheck_run_28710536524/
+    pscale2_c_settle_midpoint_run_28729403153/
     pscale2_followup_run_27883033303/
     pscale2_followup_run_27883034434/
     pscale2_followup_run_27883035658/
@@ -263,9 +288,11 @@ dwell，恢复 scale 1 并改测一个不同的加载或接触变量。
     pscale2_c_seed_recheck_p95.png
     pscale2_c_pressure_lift_paired.png
     pscale2_c_settle_paired.png
+    pscale2_c_settle_midpoint_paired.png
   pscale2_c_pressure_lift_report.md
   pscale2_c_seed_recheck_report.md
   pscale2_c_settle_report.md
+  pscale2_c_settle_midpoint_report.md
   pscale2_followup_report.md
   pscale2_recalibration_report.md
   report.md
@@ -274,7 +301,7 @@ dwell，恢复 scale 1 并改测一个不同的加载或接触变量。
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：4x settle 虽使 trend 达到 5/5，但把 CV 提高 130.22%、双门槛覆盖降到 1/5；拒绝 scale 4。下一步仅测试 dwell 中点 scale 2，其他参数不变。
+2. C：settle scale 2/4 都使 trend 达到 5/5，但压力 CV 和双门槛覆盖均比 scale 1 更差；拒绝两者并恢复 scale 1。下一步只测试一个不同的加载速率或接触控制变量。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -286,6 +313,7 @@ C seed recheck 报告：`pscale2_c_seed_recheck_report.md`。
 C pressure-lift 报告：`pscale2_c_pressure_lift_report.md`。
 C 4x-settle 报告：`pscale2_c_settle_report.md`。
 C settle=2 midpoint 计划：`data/pscale2_c_settle_midpoint_plan.json`。
+C settle=2 midpoint 报告：`pscale2_c_settle_midpoint_report.md`。
 
 ## 验收门槛
 
@@ -304,5 +332,5 @@ C settle=2 midpoint 计划：`data/pscale2_c_settle_midpoint_plan.json`。
 | pscale=2 C 4x-settle recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只改变 settle duration scale |
 | pscale=2 C 4x-settle 结果已导入 | review：trend 5/5 pass，但 CV 恶化、仅 1/5 同时通过双门槛；拒绝 scale 4 |
 | pscale=2 C settle=2 midpoint 矩阵已生成 | 通过：5 个 GitHub demo job，固定 Emax/mu/size/pscale/seeds，只把 settle scale 设为 2 |
-| pscale=2 C settle=2 midpoint 结果已导入 | pending：workflow 尚未完成，不能作物理结论 |
+| pscale=2 C settle=2 midpoint 结果已导入 | review：5/5 trend pass，但 0/5 进入压力窗口、CV=0.1268；拒绝 scale 2 并停止 dwell 分支 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

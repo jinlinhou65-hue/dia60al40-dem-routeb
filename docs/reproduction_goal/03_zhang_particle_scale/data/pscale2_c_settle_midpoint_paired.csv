@@ -1,0 +1,6 @@
+seed_index,settle1_run_id,settle2_run_id,settle4_run_id,settle1_p95_mpa,settle2_p95_mpa,settle4_p95_mpa,settle2_minus_1_mpa,settle4_minus_1_mpa,settle1_status,settle2_status,settle4_status,settle1_pressure_in_window,settle2_pressure_in_window,settle4_pressure_in_window,settle1_pass_and_window,settle2_pass_and_window,settle4_pass_and_window
+0,28709925303,28729403153,28710536524,573.482648,536.402418,574.407459,-37.08023000000003,0.924810999999977,review,pass,pass,True,False,True,False,False,True
+1,28709925303,28729403153,28710536524,543.867388,568.082212,557.363897,24.21482400000002,13.496508999999946,pass,pass,pass,False,False,False,False,False,False
+2,28709925303,28729403153,28710536524,607.731725,674.741429,526.498004,67.00970400000006,-81.23372099999995,pass,pass,pass,True,False,False,True,False,False
+3,28709925303,28729403153,28710536524,575.954583,478.278079,651.920164,-97.67650399999997,75.96558100000004,pass,pass,pass,True,False,False,True,False,False
+4,28709925303,28729403153,28710536524,570.019337,559.111611,525.969686,-10.907725999999911,-44.049650999999926,pass,pass,pass,False,False,False,False,False,False

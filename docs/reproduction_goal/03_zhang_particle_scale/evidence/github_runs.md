@@ -73,6 +73,18 @@ This file records the GitHub Actions evidence imported into this stage.
 |---:|---:|---|---|
 | [28710536524](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28710536524) | `8082918491` | `sha256:2e9b0b63917057c3e3aec871e3b1410c526c8dc8015451107d4e22c446cd8f89` | `evidence/pscale2_c_settle_recheck_run_28710536524/` |
 
+## pscale=2 C Settle Midpoint
+
+| Workflow | Run | Status | Commit | Meaning |
+|---|---:|---|---|---|
+| `zhang-pscale2-c-settle-midpoint.yml` | [28729401297](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729401297) | success | `ade94e5` | Validated and dispatched settle scale 2 |
+| `dia60al40-dem.yml` | [28729403153](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729403153) | success | `ade94e5` | Five midpoint seed jobs plus ensemble |
+| `dia60al40-dem.yml` push regression | [28729401281](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729401281) | success | `ade94e5` | Core settle=1 baseline regression; excluded from midpoint physics |
+
+| Valid DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [28729403153](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729403153) | `8088289183` | `sha256:8a94ce39c92f2b79ae3a9631dc4350118f3e7935d9d641d588a56a4025e3ba4f` | `evidence/pscale2_c_settle_midpoint_run_28729403153/` |
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through
@@ -129,3 +141,12 @@ The interpreted pscale=2 C 4x-settle result is stored in:
 - `data/pscale2_c_settle_summary.json`
 - `figures/pscale2_c_settle_paired.png`
 - `pscale2_c_settle_report.md`
+
+The interpreted pscale=2 C settle midpoint result is stored in:
+
+- `data/pscale2_c_settle_midpoint_candidates.csv`
+- `data/pscale2_c_settle_midpoint_paired.csv`
+- `data/pscale2_c_settle_midpoint_acceptance.csv`
+- `data/pscale2_c_settle_midpoint_summary.json`
+- `figures/pscale2_c_settle_midpoint_paired.png`
+- `pscale2_c_settle_midpoint_report.md`

@@ -1,0 +1,6 @@
+artifact,diamond_size_case,particle_count_scale,particle_count_total,seed_index,e_al_emax_gpa,mu_scale,top_velocity_cm_s,time_step_seconds,initial_settle_steps,stage_settle_steps,final_settle_steps,al_radius_um,diamond_ds_radius_um,diamond_dl_radius_um,diamond_count_ds,diamond_count_dl,al_area_fraction,diamond_area_fraction,p95_mpa
+dia60al40-dem-artifacts-sizeC-pscale2-Emax72.581-mu0.654-seed0-settle2,C,2,151,0,72.581,0.654,50.0,2e-10,40000,40000,100000,9.19238816,16.9706,27.5772,16,16,0.399674767,0.600325233,536.402418
+dia60al40-dem-artifacts-sizeC-pscale2-Emax72.581-mu0.654-seed1-settle2,C,2,151,1,72.581,0.654,50.0,2e-10,40000,40000,100000,9.19238816,16.9706,27.5772,16,16,0.399674767,0.600325233,568.082212
+dia60al40-dem-artifacts-sizeC-pscale2-Emax72.581-mu0.654-seed2-settle2,C,2,151,2,72.581,0.654,50.0,2e-10,40000,40000,100000,9.19238816,16.9706,27.5772,16,16,0.399674767,0.600325233,674.741429
+dia60al40-dem-artifacts-sizeC-pscale2-Emax72.581-mu0.654-seed3-settle2,C,2,151,3,72.581,0.654,50.0,2e-10,40000,40000,100000,9.19238816,16.9706,27.5772,16,16,0.399674767,0.600325233,478.278079
+dia60al40-dem-artifacts-sizeC-pscale2-Emax72.581-mu0.654-seed4-settle2,C,2,151,4,72.581,0.654,50.0,2e-10,40000,40000,100000,9.19238816,16.9706,27.5772,16,16,0.399674767,0.600325233,559.111611

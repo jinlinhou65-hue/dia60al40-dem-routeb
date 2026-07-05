@@ -82,6 +82,43 @@ class ZhangPscale2CSettleMidpointResultsTest(unittest.TestCase):
             )
             self.assertIn("settle2_minus_1_mpa", paired)
 
+    def test_rejects_real_settle_2_midpoint_artifact(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--evidence-root",
+                    str(STAGE / "evidence"),
+                    "--run-id",
+                    "28729403153",
+                    "--baseline",
+                    str(STAGE / "data" / "pscale2_c_pressure_lift_candidates.csv"),
+                    "--settle4",
+                    str(STAGE / "data" / "pscale2_c_settle_candidates.csv"),
+                    "--outdir",
+                    str(tmp / "data"),
+                    "--figure-dir",
+                    str(tmp / "figures"),
+                    "--report",
+                    str(tmp / "report.md"),
+                ],
+                cwd=REPO_ROOT,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+
+            summary = json.loads(result.stdout)
+            midpoint = summary["groups"]["settle2"]
+            self.assertEqual(summary["decision"], "c_settle_midpoint_not_better")
+            self.assertAlmostEqual(midpoint["p95_mean_mpa"], 563.3231498)
+            self.assertAlmostEqual(midpoint["p95_cv"], 0.12680989659276906)
+            self.assertEqual(midpoint["trend_pass_count"], 5)
+            self.assertEqual(midpoint["pressure_window_count"], 0)
+            self.assertEqual(midpoint["pass_and_window_count"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,2 @@
+diamond_size_case,artifact_imported,workflow_completed,paired_seed_gate,runtime_provenance_gate,midpoint_mean_pressure_gate,midpoint_cv_gate,midpoint_tradeoff_gate,decision
+C,True,True,pass,pass,review,review,review,c_settle_midpoint_not_better
