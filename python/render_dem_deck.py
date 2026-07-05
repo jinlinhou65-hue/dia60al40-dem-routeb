@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import re
 from pathlib import Path
 
@@ -98,13 +99,13 @@ def friction_block(args: argparse.Namespace) -> str:
     aa = args.mu_al_al * args.mu_scale
     ad = args.mu_al_diamond * args.mu_scale
     at = args.mu_al_tool * args.mu_scale
-    aw = args.mu_al_wall * args.mu_scale
+    aw = args.mu_al_wall * args.mu_scale * args.mu_wall_scale
     dd = args.mu_diamond_diamond * args.mu_scale
     dt = args.mu_diamond_tool * args.mu_scale
-    dw = args.mu_diamond_wall * args.mu_scale
+    dw = args.mu_diamond_wall * args.mu_scale * args.mu_wall_scale
     tt = args.mu_tool_tool * args.mu_scale
-    tw = args.mu_tool_wall * args.mu_scale
-    ww = args.mu_wall_wall * args.mu_scale
+    tw = args.mu_tool_wall * args.mu_scale * args.mu_wall_scale
+    ww = args.mu_wall_wall * args.mu_scale * args.mu_wall_scale
     return (
         "fix             cof all property/global coefficientFriction peratomtypepair 4 &\n"
         f"                {aa:.6g} {ad:.6g} {at:.6g} {aw:.6g} &\n"
@@ -282,16 +283,17 @@ def model_parameter_block(
             f'print           "E_Tool,{args.e_tool_gpa:.6g},GPa" append DEM/model_parameters.csv screen no',
             f'print           "E_Wall,{args.e_wall_gpa:.6g},GPa" append DEM/model_parameters.csv screen no',
             f'print           "mu_scale,{args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
+            f'print           "mu_wall_scale,{args.mu_wall_scale:.6g},1" append DEM/model_parameters.csv screen no',
             f'print           "mu_Al_Al,{args.mu_al_al * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
             f'print           "mu_Al_Diamond,{args.mu_al_diamond * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
             f'print           "mu_Al_Tool,{args.mu_al_tool * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
-            f'print           "mu_Al_Wall,{args.mu_al_wall * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
+            f'print           "mu_Al_Wall,{args.mu_al_wall * args.mu_scale * args.mu_wall_scale:.6g},1" append DEM/model_parameters.csv screen no',
             f'print           "mu_Diamond_Diamond,{args.mu_diamond_diamond * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
             f'print           "mu_Diamond_Tool,{args.mu_diamond_tool * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
-            f'print           "mu_Diamond_Wall,{args.mu_diamond_wall * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
+            f'print           "mu_Diamond_Wall,{args.mu_diamond_wall * args.mu_scale * args.mu_wall_scale:.6g},1" append DEM/model_parameters.csv screen no',
             f'print           "mu_Tool_Tool,{args.mu_tool_tool * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
-            f'print           "mu_Tool_Wall,{args.mu_tool_wall * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
-            f'print           "mu_Wall_Wall,{args.mu_wall_wall * args.mu_scale:.6g},1" append DEM/model_parameters.csv screen no',
+            f'print           "mu_Tool_Wall,{args.mu_tool_wall * args.mu_scale * args.mu_wall_scale:.6g},1" append DEM/model_parameters.csv screen no',
+            f'print           "mu_Wall_Wall,{args.mu_wall_wall * args.mu_scale * args.mu_wall_scale:.6g},1" append DEM/model_parameters.csv screen no',
             'print           "smoothstep_E_Al,E0_plus_Emax_minus_E0_times_3x2_minus_2x3,description" append DEM/model_parameters.csv screen no',
         ]
     )
@@ -490,6 +492,7 @@ def main() -> None:
     parser.add_argument("--mu-tool-wall", type=float, default=0.08)
     parser.add_argument("--mu-wall-wall", type=float, default=0.08)
     parser.add_argument("--mu-scale", type=float, default=1.0)
+    parser.add_argument("--mu-wall-scale", type=positive_float, default=1.0)
     parser.add_argument("--seed-index", type=int, default=0)
     parser.add_argument("--particle-count-scale", type=positive_int, default=1)
     parser.add_argument("--top-vel-cm-s", type=float, default=TOP_VEL_CM_S)
@@ -504,6 +507,13 @@ def positive_int(value: str) -> int:
     parsed = int(value)
     if parsed < 1:
         raise argparse.ArgumentTypeError("must be >= 1")
+    return parsed
+
+
+def positive_float(value: str) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed) or parsed <= 0.0:
+        raise argparse.ArgumentTypeError("must be finite and > 0")
     return parsed
 
 

@@ -25,6 +25,8 @@
 | pscale=2 C 4x-settle recheck | 已运行并导入；trend 全 pass，但压力稳健性显著恶化 |
 | pscale=2 C settle=2 midpoint | 已运行并导入；trend 5/5，但压力窗口 0/5、CV 高于 scale 1/4，故拒绝 |
 | pscale=2 C 25 cm/s loading-rate recheck | 已运行并导入；trend 与双门槛覆盖改善，但 CV 增加 33.52%，故拒绝 |
+| Zhang 接触模型与阻尼参数审计 | 已完成；论文阻尼系数 0.2 不等同于 LIGGGHTS 恢复系数 |
+| pscale=2 C sidewall-friction paired recheck | 已预注册 10-job 计划，待 GitHub Actions 实算 |
 
 ## 当前候选参数
 
@@ -261,6 +263,25 @@ SHA-256 与 GitHub digest `2047d65c...27060a` 一致，artifact 运行参数验�
 
 结果报告：`pscale2_c_loading_rate_report.md`。
 
+## Contact-model audit and sidewall-friction plan
+
+对用户提供的 Zhang PDF 做了整本页级复核。该文件实际是 2024 年《机械工程学报》
+10 页期刊论文，而不是 2019 年学位论文全文。论文在 PDF p.3（印刷 p.170）给出
+Hertz-Mindlin-Deresiewicz、Coulomb、法/切向阻尼系数 `0.2`，但没有阻尼方程、
+单位、恢复系数换算或求解器名称。因此不能把 `0.2` 直接写入 LIGGGHTS 的
+`coefficientRestitution`，也不能无依据切换到 `hertz/stiffness`。
+
+审计同时确认论文分别扫描 `mu_p` 与 `mu_w`，而当前 `mu_scale` 会一起缩放粒间、
+压头和侧壁摩擦。下一轮因此新增 sidewall-only scale，并将 LIGGGHTS-PUBLIC 固定到
+提交 `3d5c00f20519e6bb6eb6756f51f1ad36564e649d`。计划在同一次 child run 内执行
+`wall scale=1.0/0.019113` 与相同 seeds `0..4`，共 10 个 job；测试点对应有效
+Al-wall 和 diamond-wall 摩擦因数约 `0.001`，其余物理量不变。
+
+审计：`zhang_contact_model_audit.md`。
+术语表：`zhang_contact_terminology.md`。
+机器证据：`data/zhang_contact_parameter_audit.json`。
+试验计划：`data/pscale2_c_wall_friction_plan.json`。
+
 ## 已归档产物
 
 ```text
@@ -301,6 +322,8 @@ SHA-256 与 GitHub digest `2047d65c...27060a` 一致，artifact 运行参数验�
     pscale2_c_loading_rate_candidates.csv
     pscale2_c_loading_rate_paired.csv
     pscale2_c_loading_rate_summary.json
+    zhang_contact_parameter_audit.json
+    pscale2_c_wall_friction_plan.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -334,6 +357,8 @@ SHA-256 与 GitHub digest `2047d65c...27060a` 一致，artifact 运行参数验�
   pscale2_c_settle_report.md
   pscale2_c_settle_midpoint_report.md
   pscale2_c_loading_rate_report.md
+  zhang_contact_model_audit.md
+  zhang_contact_terminology.md
   pscale2_followup_report.md
   pscale2_recalibration_report.md
   report.md
@@ -342,7 +367,7 @@ SHA-256 与 GitHub digest `2047d65c...27060a` 一致，artifact 运行参数验�
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：settle scale 2/4 和 25 cm/s loading-rate 均未降低 seed 方差；恢复 settle scale 1、50 cm/s。下一步先审查当前接触律与阻尼参数，只选择一个物理可解释的接触控制变量。
+2. C：接触律审计已完成。先运行固定 LIGGGHTS 提交下的 `wall scale=1/0.019113` 成对 10-job 试验；不要把论文阻尼 `0.2` 当作恢复系数。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -357,6 +382,8 @@ C settle=2 midpoint 计划：`data/pscale2_c_settle_midpoint_plan.json`。
 C settle=2 midpoint 报告：`pscale2_c_settle_midpoint_report.md`。
 C 25 cm/s loading-rate 计划：`data/pscale2_c_loading_rate_plan.json`。
 C 25 cm/s loading-rate 报告：`pscale2_c_loading_rate_report.md`。
+Zhang 接触模型审计：`zhang_contact_model_audit.md`。
+C sidewall-friction 成对计划：`data/pscale2_c_wall_friction_plan.json`。
 
 ## 验收门槛
 
@@ -378,4 +405,7 @@ C 25 cm/s loading-rate 报告：`pscale2_c_loading_rate_report.md`。
 | pscale=2 C settle=2 midpoint 结果已导入 | review：5/5 trend pass，但 0/5 进入压力窗口、CV=0.1268；拒绝 scale 2 并停止 dwell 分支 |
 | pscale=2 C 25 cm/s loading-rate 矩阵已生成 | 通过：5 个 GitHub demo job，只改变压头速度，恢复 settle scale 1 |
 | pscale=2 C 25 cm/s loading-rate 结果已导入 | review：trend 5/5、双门槛 3/5，但 CV 增加 33.52%；拒绝 25 cm/s |
+| Zhang 接触模型和阻尼定义已审计 | 通过：带 PDF 页码、文件哈希和官方 LIGGGHTS 源码映射；禁止将阻尼 0.2 直接映射为恢复系数 |
+| LIGGGHTS 求解器来源已固定 | 通过：workflow 与 cloud script 固定提交并输出 `solver_provenance.csv` |
+| C sidewall-friction 成对矩阵已生成 | 通过：2 个 wall scales x 5 个相同 seeds，只改变 `mu_wall_scale`；尚待实算 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

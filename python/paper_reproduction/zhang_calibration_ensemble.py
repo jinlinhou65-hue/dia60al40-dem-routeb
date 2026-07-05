@@ -49,6 +49,12 @@ def collect_zhang_calibration_rows(root: Path) -> list[dict[str, object]]:
         dem_dir = summary_path.parents[2]
         artifact = dem_dir.parent.name
         params = read_parameters(dem_dir / "model_parameters.csv")
+        provenance_path = dem_dir / "solver_provenance.csv"
+        provenance = (
+            {row["field"]: row["value"] for row in read_csv(provenance_path)}
+            if provenance_path.exists()
+            else {}
+        )
         pressure_summary = first_row(dem_dir / "pressure_density_summary.csv")
         zhang_status = paper_status(dem_dir / "paper_reproduction" / "series_acceptance_summary.csv", "Zhang")
         for row in read_csv(summary_path):
@@ -63,6 +69,12 @@ def collect_zhang_calibration_rows(root: Path) -> list[dict[str, object]]:
                     "seed_index": optional_int(params.get("DEM_seed_index")),
                     "e_al_emax_gpa": optional_float(params.get("E_Al_smoothstep_Emax")),
                     "mu_scale": optional_float(params.get("mu_scale")),
+                    "mu_wall_scale": optional_float(params.get("mu_wall_scale")) or 1.0,
+                    "liggghts_commit": provenance.get("resolved_commit", "unrecorded"),
+                    "mu_al_wall": optional_float(params.get("mu_Al_Wall")),
+                    "mu_diamond_wall": optional_float(params.get("mu_Diamond_Wall")),
+                    "mu_al_tool": optional_float(params.get("mu_Al_Tool")),
+                    "mu_diamond_tool": optional_float(params.get("mu_Diamond_Tool")),
                     "top_velocity_cm_s": optional_float(params.get("top_velocity_cm_s")),
                     "time_step_seconds": optional_float(params.get("time_step_seconds")),
                     "initial_settle_steps": optional_int(params.get("initial_settle_steps")),
@@ -98,7 +110,13 @@ def best_by_artifact(rows: list[dict[str, object]]) -> list[dict[str, object]]:
 
 def summarize_groups(best_rows: list[dict[str, object]]) -> list[dict[str, object]]:
     output: list[dict[str, object]] = []
-    for field in ("diamond_size_case", "particle_count_scale", "mu_scale", "e_al_emax_gpa"):
+    for field in (
+        "diamond_size_case",
+        "particle_count_scale",
+        "mu_scale",
+        "mu_wall_scale",
+        "e_al_emax_gpa",
+    ):
         groups: dict[str, list[dict[str, object]]] = {}
         for row in best_rows:
             groups.setdefault(str(row.get(field)), []).append(row)
@@ -177,6 +195,7 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
                 }
 
         mu_values = [optional_float(selected.get("mu_scale")) or 1.0]
+        wall_mu_values = [optional_float(selected.get("mu_wall_scale")) or 1.0]
         e_values = [optional_float(selected.get("e_al_emax_gpa")) or 12.0]
         seed_values = [0, 1, 2]
         size_values = ["C", "D", "E"]
@@ -184,6 +203,7 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
             "runtime_profile": "demo",
             "allow_evidence_mismatch": "true",
             "mu_scale_json": json.dumps(format_value_list(mu_values)),
+            "mu_wall_scale_json": json.dumps(format_value_list(wall_mu_values)),
             "e_al_emax_sweep_json": json.dumps(format_value_list(e_values)),
             "dem_seed_json": json.dumps([str(value) for value in seed_values]),
             "diamond_size_case_json": json.dumps(size_values),
@@ -218,12 +238,14 @@ def recommend_next_sweep(best_rows: list[dict[str, object]]) -> dict[str, object
         }
 
     mu_values, mu_reason = recommend_mu_values(selected)
+    wall_mu_values = [optional_float(selected.get("mu_wall_scale")) or 1.0]
     e_values, pressure_reason = recommend_emax_values(selected)
     seed_values = recommend_seed_values(selected)
     size_values = recommend_size_values(selected)
     inputs = {
         "runtime_profile": "demo",
         "mu_scale_json": json.dumps(format_value_list(mu_values)),
+        "mu_wall_scale_json": json.dumps(format_value_list(wall_mu_values)),
         "e_al_emax_sweep_json": json.dumps(format_value_list(e_values)),
         "dem_seed_json": json.dumps([str(value) for value in seed_values]),
         "diamond_size_case_json": json.dumps(size_values),
@@ -341,6 +363,7 @@ def matching_pair_robustness_rows(
 ) -> list[dict[str, object]] | None:
     selected_emax = optional_float(selected.get("e_al_emax_gpa"))
     selected_mu = optional_float(selected.get("mu_scale"))
+    selected_wall_mu = optional_float(selected.get("mu_wall_scale")) or 1.0
     if selected_emax is None or selected_mu is None:
         return None
     rows = [
@@ -348,6 +371,7 @@ def matching_pair_robustness_rows(
         for row in best_rows
         if close_float(optional_float(row.get("e_al_emax_gpa")), selected_emax)
         and close_float(optional_float(row.get("mu_scale")), selected_mu)
+        and close_float(optional_float(row.get("mu_wall_scale")) or 1.0, selected_wall_mu)
     ]
     seeds = {str(row.get("seed_index")) for row in rows}
     sizes = {str(row.get("diamond_size_case")) for row in rows}
@@ -437,6 +461,9 @@ def build_size_specific_dispatch_plan(
             "runtime_profile": "demo",
             "allow_evidence_mismatch": "true",
             "mu_scale_json": json.dumps(format_value_list(mu_values)),
+            "mu_wall_scale_json": json.dumps(
+                format_value_list([optional_float(selected.get("mu_wall_scale")) or 1.0])
+            ),
             "e_al_emax_sweep_json": json.dumps(format_value_list(e_values)),
             "dem_seed_json": json.dumps([str(value) for value in seed_values]),
             "diamond_size_case_json": json.dumps([size]),
@@ -584,18 +611,19 @@ def render_report(best_rows: list[dict[str, object]], group_rows: list[dict[str,
         "",
         "## Best Candidate By DEM Run",
         "",
-        "| Artifact | Size | PScale | Seed | Emax GPa | Mu Scale | Status | Threshold | Min Chain | Participation Delta | D1 Delta | Diagnosis |",
-        "|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|",
+        "| Artifact | Size | PScale | Seed | Emax GPa | Mu Scale | Wall Mu Scale | Status | Threshold | Min Chain | Participation Delta | D1 Delta | Diagnosis |",
+        "|---|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---|",
     ]
     for row in sorted(best_rows, key=candidate_sort_key):
         lines.append(
-            "| {artifact} | {size} | {pscale} | {seed} | {emax} | {mu} | {status} | {threshold} | {chain} | {participation} | {d1} | {diagnosis} |".format(
+            "| {artifact} | {size} | {pscale} | {seed} | {emax} | {mu} | {wall_mu} | {status} | {threshold} | {chain} | {participation} | {d1} | {diagnosis} |".format(
                 artifact=row.get("artifact"),
                 size=row.get("diamond_size_case"),
                 pscale=format_number(row.get("particle_count_scale")),
                 seed=format_number(row.get("seed_index")),
                 emax=format_number(row.get("e_al_emax_gpa")),
                 mu=format_number(row.get("mu_scale")),
+                wall_mu=format_number(row.get("mu_wall_scale")),
                 status=row.get("status"),
                 threshold=format_number(row.get("threshold_factor")),
                 chain=format_number(row.get("min_chain_length")),

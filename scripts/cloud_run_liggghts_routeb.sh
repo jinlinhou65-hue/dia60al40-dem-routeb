@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ROOT="${ROOT:-$PWD}"
+LIGGGHTS_REPOSITORY="${LIGGGHTS_REPOSITORY:-https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git}"
+LIGGGHTS_COMMIT="${LIGGGHTS_COMMIT:-3d5c00f20519e6bb6eb6756f51f1ad36564e649d}"
 cd "$ROOT"
 
 echo "[CLOUD] Ubuntu info"
@@ -26,18 +28,21 @@ else
   DEM_PLOTS_AVAILABLE=0
 fi
 
-if ! command -v liggghts >/dev/null 2>&1; then
-  echo "[CLOUD] build LIGGGHTS-PUBLIC serial binary from source"
-  rm -rf /tmp/lpub
-  git clone --depth=1 https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git /tmp/lpub
-  (
-    cd /tmp/lpub/src
-    ( cd STUBS && make 2>&1 | tail -10 )
-    make -j"$(nproc)" serial 2>&1 | tee /tmp/build_serial.log
-    test -x lmp_serial
-    sudo install -m 0755 lmp_serial /usr/local/bin/liggghts
-  )
-fi
+echo "[CLOUD] build pinned LIGGGHTS-PUBLIC serial binary from source"
+rm -rf /tmp/lpub
+git init /tmp/lpub
+git -C /tmp/lpub remote add origin "$LIGGGHTS_REPOSITORY"
+git -C /tmp/lpub fetch --depth=1 origin "$LIGGGHTS_COMMIT"
+git -C /tmp/lpub checkout --detach FETCH_HEAD
+RESOLVED_LIGGGHTS_COMMIT="$(git -C /tmp/lpub rev-parse HEAD)"
+test "$RESOLVED_LIGGGHTS_COMMIT" = "$LIGGGHTS_COMMIT"
+(
+  cd /tmp/lpub/src
+  ( cd STUBS && make 2>&1 | tail -10 )
+  make -j"$(nproc)" serial 2>&1 | tee /tmp/build_serial.log
+  test -x lmp_serial
+  sudo install -m 0755 lmp_serial /usr/local/bin/liggghts
+)
 
 echo "[CLOUD] LIGGGHTS binary"
 command -v liggghts
@@ -71,11 +76,19 @@ python3 python/render_dem_deck.py \
   --mu-diamond-tool "${MU_DIAMOND_TOOL:-0.08}" \
   --mu-diamond-wall "${MU_DIAMOND_WALL:-0.08}" \
   --mu-scale "${MU_SCALE:-1.0}" \
+  --mu-wall-scale "${MU_WALL_SCALE:-1.0}" \
   --seed-index "${DEM_SEED_INDEX:-0}"
 
 echo "[CLOUD] run staged DEM"
 cd liggghts
 mkdir -p DEM
+printf '%s\n' \
+  'field,value' \
+  "repository,$LIGGGHTS_REPOSITORY" \
+  "requested_commit,$LIGGGHTS_COMMIT" \
+  "resolved_commit,$RESOLVED_LIGGGHTS_COMMIT" \
+  'build_mode,serial' \
+  > DEM/solver_provenance.csv
 liggghts -in in.dia60al40_dem_staged.rendered.liggghts | tee dia60al40_liggghts_staged.run.log
 cd "$ROOT"
 

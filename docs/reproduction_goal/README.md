@@ -68,6 +68,7 @@ flowchart TD
 | Zhang C 4x-settle recheck | 运行与参数溯源已通过；trend 提高到 5/5，但压力 CV 恶化 130.22%、仅 1/5 同时通过双门槛，故拒绝 4x dwell |
 | Zhang C settle=2 midpoint | 五 seed 与 ensemble 已成功；trend 5/5，但压力窗口 0/5、CV=0.1268，故拒绝 scale 2 并停止 dwell 分支 |
 | Zhang C 25 cm/s loading-rate recheck | 五 seed 与 ensemble 已成功；trend 5/5、双门槛 3/5，但 CV 增加 33.52%，故拒绝 |
+| Zhang contact-model audit | 已核清论文阻尼 0.2 与 LIGGGHTS 恢复系数语义不同；已固定求解器提交并注册 sidewall-only 10-job 计划 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 
 ## 仍未完成的边界
@@ -113,5 +114,6 @@ pressure-lift recheck 均已成功运行并导入。后者把平均 P95 提高�
 随后 scale 4 与 scale 2 settle recheck 都使 trend 提高到 5/5，却分别把压力
 CV 提高到 `0.0911` 和 `0.1268`，双门槛覆盖降为 1/5 和 0/5。两个 dwell
 候选均被拒绝，C 恢复 settle scale 1。25 cm/s loading-rate recheck 虽把 trend
-提高到 5/5、双门槛提高到 3/5，却使 CV 增加 33.52%，也被拒绝。下一步恢复
-50 cm/s，先审查接触律与阻尼参数，再选择一个物理可解释的单变量实验。
+提高到 5/5、双门槛提高到 3/5，却使 CV 增加 33.52%，也被拒绝。接触参数审计
+现已完成：不直接映射论文阻尼 `0.2`，下一步在固定求解器提交下成对测试
+`mu_w=0.05232` 与论文支持的 `mu_w=0.001`。

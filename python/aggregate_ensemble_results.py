@@ -60,6 +60,12 @@ def collect_runs(root: Path) -> list[dict[str, object]]:
         curve_rows = read_csv(curve)
         summary_rows = read_csv(summary_path)
         params = read_parameters(params_path)
+        provenance_path = dem_dir / "solver_provenance.csv"
+        provenance = (
+            {row["field"]: row["value"] for row in read_csv(provenance_path)}
+            if provenance_path.exists()
+            else {}
+        )
         p95 = math.nan
         for row in summary_rows:
             if "p_target_mpa" in row:
@@ -84,6 +90,12 @@ def collect_runs(root: Path) -> list[dict[str, object]]:
                 "seed_index": int(float(params.get("DEM_seed_index", "0"))),
                 "e_al_emax_gpa": float(params.get("E_Al_smoothstep_Emax", "nan")),
                 "mu_scale": float(params.get("mu_scale", "nan")),
+                "mu_wall_scale": float(params.get("mu_wall_scale", "1")),
+                "liggghts_commit": provenance.get("resolved_commit", "unrecorded"),
+                "mu_al_wall": float(params.get("mu_Al_Wall", "nan")),
+                "mu_diamond_wall": float(params.get("mu_Diamond_Wall", "nan")),
+                "mu_al_tool": float(params.get("mu_Al_Tool", "nan")),
+                "mu_diamond_tool": float(params.get("mu_Diamond_Tool", "nan")),
                 "top_velocity_cm_s": float(params.get("top_velocity_cm_s", "nan")),
                 "time_step_seconds": float(params.get("time_step_seconds", "nan")),
                 "initial_settle_steps": int(float(params.get("initial_settle_steps", "0"))),
@@ -185,6 +197,12 @@ def write_run_csv(path: Path, runs: list[dict[str, object]]) -> None:
         "seed_index",
         "e_al_emax_gpa",
         "mu_scale",
+        "mu_wall_scale",
+        "liggghts_commit",
+        "mu_al_wall",
+        "mu_diamond_wall",
+        "mu_al_tool",
+        "mu_diamond_tool",
         "top_velocity_cm_s",
         "time_step_seconds",
         "initial_settle_steps",
@@ -209,6 +227,7 @@ def write_run_csv(path: Path, runs: list[dict[str, object]]) -> None:
                 int(r["particle_count_scale"]),
                 float(r["e_al_emax_gpa"]),
                 float(r["mu_scale"]),
+                float(r["mu_wall_scale"]),
                 int(r["seed_index"]),
             ),
         ):

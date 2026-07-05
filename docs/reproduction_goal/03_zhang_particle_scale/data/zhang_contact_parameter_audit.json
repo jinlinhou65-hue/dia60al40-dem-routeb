@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0",
+  "audit_date": "2026-07-06",
+  "paper": {
+    "title_zh": "金属粉末压制中多尺度力学特征不均匀性模拟研究",
+    "title_en": "Simulation Study of the Inhomogeneity Characteristics of Multiscale Mechanics during Metal Powder Compaction",
+    "document_type": "journal_article",
+    "journal": "Journal of Mechanical Engineering",
+    "volume": 60,
+    "issue": 2,
+    "year": 2024,
+    "doi": "10.3901/JME.2024.02.168",
+    "pdf_page_count": 10,
+    "article_pages": "168-177",
+    "file_size_bytes": 1780662,
+    "sha256": "d26641c507f56b45d90ea0eeefcabc9ff6d52a11903a9cf0076b6fa017bd184f",
+    "identity_note": "The supplied PDF is the 2024 article; it cites Zhang Wei's 2019 doctoral thesis as reference 12."
+  },
+  "source_anchors": [
+    {
+      "source_id": "ZC001",
+      "pdf_page": 3,
+      "printed_page": 170,
+      "section": "1.1",
+      "evidence": "Hertz-Mindlin-Deresiewicz contact, Coulomb tangential limit, added damping term, no adhesion or fracture",
+      "confidence": "high"
+    },
+    {
+      "source_id": "ZC002",
+      "pdf_page": 3,
+      "printed_page": 170,
+      "section": "1.2",
+      "evidence": "10 mm x 15 mm model; 3000 particles; density 7800 kg/m3; diameter 148-296 um; mean 222 um",
+      "confidence": "high"
+    },
+    {
+      "source_id": "ZC003",
+      "pdf_page": 3,
+      "printed_page": 170,
+      "section": "1.2",
+      "evidence": "mu_p=0.25; particle-wall friction=0.25; E=209 GPa; nu=0.25; normal/tangential damping coefficient=0.2; wall contact stiffness=2e12 N/m",
+      "confidence": "high",
+      "missing_evidence": "Damping coefficient equation, units and normalization are not reported."
+    },
+    {
+      "source_id": "ZC004",
+      "pdf_page": 3,
+      "printed_page": 170,
+      "section": "1.2",
+      "evidence": "Punch velocity 0.2 m/s; endpoint axial strain 0.25; endpoint pressure about 600 MPa",
+      "confidence": "high"
+    },
+    {
+      "source_id": "ZC005",
+      "pdf_pages": [3, 4],
+      "printed_pages": [170, 171],
+      "section": "1.3",
+      "evidence": "Experiment endpoint 572 MPa and simulation endpoint 638 MPa at 2.25 mm punch travel",
+      "confidence": "high"
+    },
+    {
+      "source_id": "ZC006",
+      "pdf_page": 5,
+      "printed_page": 172,
+      "section": "3.1",
+      "evidence": "Independent mu_w and mu_p sweeps at 0.001, 0.1, 0.2 and 0.3",
+      "confidence": "high"
+    },
+    {
+      "source_id": "ZC007",
+      "pdf_pages": [6, 7, 8],
+      "printed_pages": [173, 174, 175],
+      "sections": ["3.1", "3.2", "3.3"],
+      "evidence": "Higher friction increases inhomogeneity; interparticle friction has stronger micro/mesoscale effects; both affect macroscale stress",
+      "confidence": "high"
+    }
+  ],
+  "paper_parameters": {
+    "material": "ferrous powder",
+    "particle_count": 3000,
+    "width_mm": 10.0,
+    "height_mm": 15.0,
+    "density_kg_m3": 7800.0,
+    "diameter_um": {
+      "minimum": 148.0,
+      "maximum": 296.0,
+      "mean": 222.0,
+      "distribution": "approximately_uniform"
+    },
+    "youngs_modulus_gpa": 209.0,
+    "poissons_ratio": 0.25,
+    "initial_interparticle_friction": 0.25,
+    "initial_particle_wall_friction": 0.25,
+    "normal_damping_coefficient": 0.2,
+    "tangential_damping_coefficient": 0.2,
+    "damping_definition_status": "not_reported",
+    "particle_wall_normal_stiffness_n_m": 2000000000000.0,
+    "particle_wall_tangential_stiffness_n_m": 2000000000000.0,
+    "initial_porosity": 0.19,
+    "gravity_m_s2": 9.8,
+    "punch_velocity_m_s": 0.2,
+    "endpoint_axial_strain": 0.25,
+    "endpoint_pressure_bracket_mpa": [572.0, 638.0],
+    "friction_sweep_values": [0.001, 0.1, 0.2, 0.3]
+  },
+  "liggghts_audit": {
+    "official_repository": "https://github.com/CFDEMproject/LIGGGHTS-PUBLIC",
+    "audited_commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+    "current_contact_style": "model hertz tangential history",
+    "current_restitution_matrix_range": [0.1, 0.2],
+    "restitution_source_status": "heuristic_not_paper_derived",
+    "damping_mapping": "not_equivalent",
+    "reason": "LIGGGHTS derives gamma_n and gamma_t from restitution, effective stiffness, effective mass and overlap; the paper does not define its reported damping coefficient.",
+    "current_mu_scale": 0.654,
+    "current_effective_friction": {
+      "al_al": 0.1962,
+      "al_diamond": 0.1962,
+      "diamond_diamond": 0.0654,
+      "al_tool": 0.05232,
+      "al_wall": 0.05232,
+      "diamond_tool": 0.05232,
+      "diamond_wall": 0.05232
+    }
+  },
+  "decision": {
+    "prohibited_shortcut": "Do not assign paper damping coefficient 0.2 to LIGGGHTS coefficientRestitution or explicit gamman/gammat without a verified definition.",
+    "next_variable": "sidewall_friction_only",
+    "experiment_type": "paired_five_seed_paper_guided_sensitivity",
+    "baseline_effective_mu_wall": 0.05232,
+    "test_effective_mu_wall": 0.001,
+    "test_wall_scale": 0.019113,
+    "fixed_controls": {
+      "diamond_size_case": "C",
+      "particle_count_scale": 2,
+      "e_al_emax_gpa": 72.581,
+      "mu_scale": 0.654,
+      "top_velocity_cm_s": 50.0,
+      "settle_scale": 1,
+      "seeds": [0, 1, 2, 3, 4]
+    },
+    "acceptance": {
+      "pinned_liggghts_same_for_both_groups": true,
+      "mean_p95_mpa_min": 572.0,
+      "mean_p95_mpa_max": 638.0,
+      "p95_cv_strictly_below": 0.03957423315,
+      "trend_pass_count_min": 4,
+      "combined_pass_count_strictly_above": 2,
+      "artifact_records_actual_pair_coefficients": true,
+      "artifact_records_solver_provenance": true
+    }
+  }
+}

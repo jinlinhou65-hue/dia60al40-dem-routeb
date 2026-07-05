@@ -1,0 +1,69 @@
+{
+  "dispatch": false,
+  "mode": "zhang_pscale2_c_wall_friction_recheck",
+  "payload_count": 1,
+  "payloads": [
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\", \"3\", \"4\"]",
+        "demo_settle_scale": "1",
+        "demo_top_velocity_cm_s": "50",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"72.581\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.654\"]",
+        "mu_wall_scale_json": "[\"1\", \"0.019113\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "baseline_effective_mu_wall": 0.05232,
+        "baseline_mu_wall_scale": 1.0,
+        "changed_variable": "mu_wall_scale",
+        "estimated_run_count": 10,
+        "held_variables": [
+          "diamond_size_case",
+          "particle_count_scale",
+          "e_al_emax_gpa",
+          "mu_scale",
+          "particle_particle_friction",
+          "particle_tool_friction",
+          "coefficient_restitution",
+          "demo_settle_scale",
+          "demo_top_velocity_cm_s",
+          "time_step_seconds",
+          "dem_seed_set"
+        ],
+        "hypothesis": "The paper-supported low sidewall friction point mu_w=0.001 reduces seed-to-seed pressure and force-network inhomogeneity without moving the mean endpoint pressure outside 572-638 MPa.",
+        "liggghts_commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+        "purpose": "c_paired_sidewall_friction_recheck",
+        "seed_candidates": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "test_effective_mu_wall": 0.001,
+        "test_mu_wall_scale": 0.019113
+      },
+      "ref": "codex/paper-reproduction-demo"
+    }
+  ],
+  "ref": "codex/paper-reproduction-demo",
+  "source_audit": "docs\\reproduction_goal\\03_zhang_particle_scale\\data\\zhang_contact_parameter_audit.json",
+  "total_estimated_run_count": 10,
+  "workflow": "dia60al40-dem.yml"
+}
