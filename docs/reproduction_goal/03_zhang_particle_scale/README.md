@@ -24,6 +24,7 @@
 | pscale=2 C pressure-lift recheck | 已运行并导入；均值回窗但仅 2/5 seeds 同时通过双门槛 |
 | pscale=2 C 4x-settle recheck | 已运行并导入；trend 全 pass，但压力稳健性显著恶化 |
 | pscale=2 C settle=2 midpoint | 已运行并导入；trend 5/5，但压力窗口 0/5、CV 高于 scale 1/4，故拒绝 |
+| pscale=2 C 25 cm/s loading-rate recheck | 计划与 workflow 已生成，等待 GitHub 实跑结果 |
 
 ## 当前候选参数
 
@@ -228,6 +229,19 @@ settle scale 1。
 
 结果报告：`pscale2_c_settle_midpoint_report.md`。
 
+## C 25 cm/s loading-rate plan
+
+dwell 分支已经由 scale 2/4 两个实验排除。本轮恢复 settle scale 1，只把 demo
+压头速度从 `50` 降到 `25 cm/s`，并保持 `Emax=72.581 GPa`、`mu=0.654`、
+size C、`particle_count_scale=2`、时间步和 seeds `0..4` 不变。速度会写入
+`model_parameters.csv` 和 ensemble CSV，artifact 名称也包含速度值。
+
+预先固定的接受条件是：五 seed 平均 P95 仍在 `572-638 MPa`、P95 CV 低于
+50 cm/s 基线、trend pass 数不下降、pass + window 覆盖高于基线 2/5。
+任一条件不满足，就恢复 50 cm/s 并停止把加载速率作为下一控制变量。
+
+计划文件：`data/pscale2_c_loading_rate_plan.json`。
+
 ## 已归档产物
 
 ```text
@@ -263,6 +277,7 @@ settle scale 1。
     pscale2_c_settle_midpoint_candidates.csv
     pscale2_c_settle_midpoint_paired.csv
     pscale2_c_settle_midpoint_summary.json
+    pscale2_c_loading_rate_plan.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -301,7 +316,7 @@ settle scale 1。
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：settle scale 2/4 都使 trend 达到 5/5，但压力 CV 和双门槛覆盖均比 scale 1 更差；拒绝两者并恢复 scale 1。下一步只测试一个不同的加载速率或接触控制变量。
+2. C：settle scale 2/4 都使 trend 达到 5/5，但压力 CV 和双门槛覆盖均比 scale 1 更差；拒绝两者并恢复 scale 1。下一步只测试 25 cm/s 加载速率，其他变量不变。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -314,6 +329,7 @@ C pressure-lift 报告：`pscale2_c_pressure_lift_report.md`。
 C 4x-settle 报告：`pscale2_c_settle_report.md`。
 C settle=2 midpoint 计划：`data/pscale2_c_settle_midpoint_plan.json`。
 C settle=2 midpoint 报告：`pscale2_c_settle_midpoint_report.md`。
+C 25 cm/s loading-rate 计划：`data/pscale2_c_loading_rate_plan.json`。
 
 ## 验收门槛
 
@@ -333,4 +349,6 @@ C settle=2 midpoint 报告：`pscale2_c_settle_midpoint_report.md`。
 | pscale=2 C 4x-settle 结果已导入 | review：trend 5/5 pass，但 CV 恶化、仅 1/5 同时通过双门槛；拒绝 scale 4 |
 | pscale=2 C settle=2 midpoint 矩阵已生成 | 通过：5 个 GitHub demo job，固定 Emax/mu/size/pscale/seeds，只把 settle scale 设为 2 |
 | pscale=2 C settle=2 midpoint 结果已导入 | review：5/5 trend pass，但 0/5 进入压力窗口、CV=0.1268；拒绝 scale 2 并停止 dwell 分支 |
+| pscale=2 C 25 cm/s loading-rate 矩阵已生成 | 通过：5 个 GitHub demo job，只改变压头速度，恢复 settle scale 1 |
+| pscale=2 C 25 cm/s loading-rate 结果已导入 | pending：workflow 尚未完成，不能作物理结论 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

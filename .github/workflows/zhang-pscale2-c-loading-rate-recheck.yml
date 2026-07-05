@@ -1,0 +1,96 @@
+name: zhang-pscale2-c-loading-rate-recheck
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_json:
+        description: 'JSON list of DEM seeds for the C loading-rate recheck'
+        required: false
+        default: '["0","1","2","3","4"]'
+  push:
+    paths:
+      - '.github/workflows/zhang-pscale2-c-loading-rate-recheck.yml'
+      - 'scripts/dispatch_zhang_pscale2_c_loading_rate_recheck.py'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-c-loading-rate:
+    name: dispatch Zhang pscale=2 C 25cm_s loading-rate recheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build one-variable C loading-rate plan
+        env:
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_loading_rate_recheck.py \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --target-velocity-cm-s 25 \
+            --max-total-runs 5 \
+            > /tmp/zhang_pscale2_c_loading_rate_plan.json
+          cat /tmp/zhang_pscale2_c_loading_rate_plan.json
+
+      - name: Validate one-variable C loading-rate plan
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+
+          plan = json.load(open(
+              "/tmp/zhang_pscale2_c_loading_rate_plan.json",
+              encoding="utf-8",
+          ))
+          if plan["mode"] != "zhang_pscale2_c_loading_rate_recheck":
+              raise SystemExit(f"unexpected mode: {plan['mode']}")
+          if plan["payload_count"] != 1 or plan["total_estimated_run_count"] != 5:
+              raise SystemExit("loading-rate plan must contain one payload and five DEM jobs")
+          item = plan["payloads"][0]
+          inputs = item["inputs"]
+          metadata = item["metadata"]
+          if metadata["purpose"] != "c_loading_rate_seed_recheck":
+              raise SystemExit(f"unexpected purpose: {metadata['purpose']}")
+          if metadata["changed_variable"] != "demo_top_velocity_cm_s":
+              raise SystemExit("the only changed variable must be top velocity")
+          if metadata["settle_steps"] != {
+              "initial": 20000,
+              "stage": 20000,
+              "final": 50000,
+          }:
+              raise SystemExit(f"unexpected settle steps: {metadata['settle_steps']}")
+          if inputs["runtime_profile"] != "demo":
+              raise SystemExit("loading-rate recheck must use demo profile")
+          if inputs["demo_settle_scale"] != "1":
+              raise SystemExit("loading-rate recheck must restore settle scale 1")
+          if inputs["demo_top_velocity_cm_s"] != "25":
+              raise SystemExit("loading-rate recheck must use 25 cm/s")
+          if json.loads(inputs["diamond_size_case_json"]) != ["C"]:
+              raise SystemExit("loading-rate recheck must run only size C")
+          if json.loads(inputs["particle_count_scale_json"]) != ["2"]:
+              raise SystemExit("loading-rate recheck must hold particle scale at 2")
+          if json.loads(inputs["e_al_emax_sweep_json"]) != ["72.581"]:
+              raise SystemExit("loading-rate recheck must hold Emax at 72.581 GPa")
+          if json.loads(inputs["mu_scale_json"]) != ["0.654"]:
+              raise SystemExit("loading-rate recheck must hold mu at 0.654")
+          if json.loads(inputs["dem_seed_json"]) != ["0", "1", "2", "3", "4"]:
+              raise SystemExit("loading-rate recheck must preserve seeds 0..4")
+          PY
+
+      - name: Dispatch Zhang C 25cm_s DEM run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_loading_rate_recheck.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --target-velocity-cm-s 25 \
+            --max-total-runs 5 \
+            --dispatch

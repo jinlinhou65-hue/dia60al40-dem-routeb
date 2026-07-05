@@ -78,6 +78,10 @@ on:
         description: 'Multiplier for demo initial/stage/final settle steps; ignored by full profile'
         required: false
         default: '1'
+      demo_top_velocity_cm_s:
+        description: 'Top-punch velocity for demo runs in cm/s; ignored by full profile'
+        required: false
+        default: '50'
       allow_evidence_mismatch:
         description: 'Allow complete DEM artifacts with paper-trend mismatches so robustness sweeps can aggregate non-passing samples'
         required: false
@@ -95,7 +99,7 @@ concurrency:
 
 jobs:
   dem:
-    name: dem size=${{ matrix.diamond_size_case }} pscale=${{ matrix.particle_count_scale }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }} settle=${{ inputs.demo_settle_scale || '1' }}
+    name: dem size=${{ matrix.diamond_size_case }} pscale=${{ matrix.particle_count_scale }} Emax=${{ matrix.e_al_emax }}GPa mu_scale=${{ matrix.mu_scale }} seed=${{ matrix.dem_seed }} settle=${{ inputs.demo_settle_scale || '1' }} vel=${{ inputs.demo_top_velocity_cm_s || '50' }}cm_s
     strategy:
       fail-fast: false
       matrix:
@@ -185,6 +189,7 @@ jobs:
           RUNTIME_PROFILE="${{ inputs.runtime_profile || 'demo' }}"
           runtime_args=()
           export DEMO_SETTLE_SCALE="${{ inputs.demo_settle_scale || '1' }}"
+          export DEMO_TOP_VELOCITY_CM_S="${{ inputs.demo_top_velocity_cm_s || '50' }}"
           python3 - <<'PY' > /tmp/dem_runtime_controls.env
           import math
           import os
@@ -192,6 +197,9 @@ jobs:
           scale = float(os.environ["DEMO_SETTLE_SCALE"])
           if not math.isfinite(scale) or not 0.25 <= scale <= 10.0:
               raise SystemExit("demo_settle_scale must be finite and in [0.25, 10]")
+          velocity = float(os.environ["DEMO_TOP_VELOCITY_CM_S"])
+          if not math.isfinite(velocity) or not 1.0 <= velocity <= 100.0:
+              raise SystemExit("demo_top_velocity_cm_s must be finite and in [1, 100]")
 
           def scaled(base):
               return max(1, round(base * scale))
@@ -199,11 +207,12 @@ jobs:
           print(f"INITIAL_SETTLE_STEPS={scaled(20000)}")
           print(f"STAGE_SETTLE_STEPS={scaled(20000)}")
           print(f"FINAL_SETTLE_STEPS={scaled(50000)}")
+          print(f"TOP_VELOCITY_CM_S={velocity:.9g}")
           PY
           if [ "$RUNTIME_PROFILE" = "demo" ]; then
             cat /tmp/dem_runtime_controls.env
             source /tmp/dem_runtime_controls.env
-            runtime_args+=(--top-vel-cm-s 50)
+            runtime_args+=(--top-vel-cm-s "$TOP_VELOCITY_CM_S")
             runtime_args+=(--initial-settle-steps "$INITIAL_SETTLE_STEPS")
             runtime_args+=(--stage-settle-steps "$STAGE_SETTLE_STEPS")
             runtime_args+=(--final-settle-steps "$FINAL_SETTLE_STEPS")
@@ -466,7 +475,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dia60al40-dem-artifacts-size${{ matrix.diamond_size_case }}-pscale${{ matrix.particle_count_scale }}-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}-settle${{ inputs.demo_settle_scale || '1' }}
+          name: dia60al40-dem-artifacts-size${{ matrix.diamond_size_case }}-pscale${{ matrix.particle_count_scale }}-Emax${{ matrix.e_al_emax }}-mu${{ matrix.mu_scale }}-seed${{ matrix.dem_seed }}-settle${{ inputs.demo_settle_scale || '1' }}-vel${{ inputs.demo_top_velocity_cm_s || '50' }}
           path: |
             liggghts/DEM/**
             liggghts/*.log

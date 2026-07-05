@@ -508,7 +508,9 @@ class PaperReproductionTest(unittest.TestCase):
         self.assertIn("failed_command", workflow)
         self.assertIn("::error title=DEM compaction failure::", workflow)
         self.assertIn("--allow-mismatch", workflow)
-        self.assertIn("--top-vel-cm-s 50", workflow)
+        self.assertIn("demo_top_velocity_cm_s:", workflow)
+        self.assertIn("default: '50'", workflow)
+        self.assertIn('runtime_args+=(--top-vel-cm-s "$TOP_VELOCITY_CM_S")', workflow)
         self.assertIn("dem_seed: ${{ fromJSON(inputs.dem_seed_json || '[\"0\"]') }}", workflow)
         self.assertIn(
             "diamond_size_case: ${{ fromJSON(inputs.diamond_size_case_json || '[\"C\"]') }}",
