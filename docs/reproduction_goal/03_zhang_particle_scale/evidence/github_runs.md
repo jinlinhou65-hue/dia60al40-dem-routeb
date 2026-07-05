@@ -85,6 +85,18 @@ This file records the GitHub Actions evidence imported into this stage.
 |---:|---:|---|---|
 | [28729403153](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729403153) | `8088289183` | `sha256:8a94ce39c92f2b79ae3a9631dc4350118f3e7935d9d641d588a56a4025e3ba4f` | `evidence/pscale2_c_settle_midpoint_run_28729403153/` |
 
+## pscale=2 C Loading-Rate Recheck
+
+| Workflow | Run | Status | Commit | Meaning |
+|---|---:|---|---|---|
+| `zhang-pscale2-c-loading-rate-recheck.yml` | [28729752015](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729752015) | success | `47fdf51` | Validated and dispatched 25 cm/s plan |
+| `dia60al40-dem.yml` | [28729754426](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729754426) | success | `47fdf51` | Five 25 cm/s seed jobs plus ensemble |
+| `dia60al40-dem.yml` push regression | [28729751982](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729751982) | success | `47fdf51` | Default 50 cm/s core regression; excluded from recheck physics |
+
+| Valid DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [28729754426](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729754426) | `8088409305` | `sha256:2047d65c1a2823161075ed187c05da110163fc897cb3b1c080b5e4989f27060a` | `evidence/pscale2_c_loading_rate_recheck_run_28729754426/` |
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through
@@ -150,3 +162,12 @@ The interpreted pscale=2 C settle midpoint result is stored in:
 - `data/pscale2_c_settle_midpoint_summary.json`
 - `figures/pscale2_c_settle_midpoint_paired.png`
 - `pscale2_c_settle_midpoint_report.md`
+
+The interpreted pscale=2 C loading-rate result is stored in:
+
+- `data/pscale2_c_loading_rate_candidates.csv`
+- `data/pscale2_c_loading_rate_paired.csv`
+- `data/pscale2_c_loading_rate_acceptance.csv`
+- `data/pscale2_c_loading_rate_summary.json`
+- `figures/pscale2_c_loading_rate_paired.png`
+- `pscale2_c_loading_rate_report.md`

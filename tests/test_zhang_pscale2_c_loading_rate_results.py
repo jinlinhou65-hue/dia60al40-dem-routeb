@@ -73,6 +73,40 @@ class ZhangPscale2CLoadingRateResultsTest(unittest.TestCase):
             self.assertIn("50 cm/s baseline", report)
             self.assertIn("c_loading_rate_improves_tradeoff", report)
 
+    def test_rejects_real_25cm_s_artifact_because_cv_increases(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--evidence-root",
+                    str(STAGE / "evidence"),
+                    "--run-id",
+                    "28729754426",
+                    "--baseline",
+                    str(STAGE / "data" / "pscale2_c_pressure_lift_candidates.csv"),
+                    "--outdir",
+                    str(tmp / "data"),
+                    "--figure-dir",
+                    str(tmp / "figures"),
+                    "--report",
+                    str(tmp / "report.md"),
+                ],
+                cwd=REPO_ROOT,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+
+            summary = json.loads(result.stdout)
+            self.assertEqual(summary["decision"], "c_loading_rate_not_better")
+            self.assertAlmostEqual(summary["test"]["p95_mean_mpa"], 578.432016)
+            self.assertAlmostEqual(summary["test"]["p95_cv"], 0.052841281320507236)
+            self.assertEqual(summary["test"]["trend_pass_count"], 5)
+            self.assertEqual(summary["test"]["pass_and_window_count"], 3)
+            self.assertGreater(summary["test"]["p95_cv"], summary["baseline"]["p95_cv"])
+
 
 if __name__ == "__main__":
     unittest.main()

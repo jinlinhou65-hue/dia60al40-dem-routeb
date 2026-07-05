@@ -1,0 +1,47 @@
+{
+  "baseline": {
+    "p95_cv": 0.03957423315053406,
+    "p95_max_mpa": 607.731725,
+    "p95_mean_mpa": 574.2111361999999,
+    "p95_min_mpa": 543.867388,
+    "p95_stdev_mpa": 22.723965381611865,
+    "pass_and_window_count": 2,
+    "pressure_window_count": 3,
+    "trend_pass_count": 4
+  },
+  "baseline_run_id": "28709925303",
+  "baseline_velocity_cm_s": 50.0,
+  "decision": "c_loading_rate_not_better",
+  "diamond_size_case": "C",
+  "e_al_emax_gpa": 72.581,
+  "mu_scale": 0.654,
+  "p95_cv_change_percent": 33.52446052335985,
+  "p95_mean_delta_mpa": 4.220879800000034,
+  "particle_count_scale": 2,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "Restore the 50 cm/s baseline and stop using loading rate as the next C variable; test one contact-law or damping control while keeping settle scale 1.",
+  "run_id": "28729754426",
+  "seed_count": 5,
+  "settle_scale": 1,
+  "settle_steps": {
+    "final": 50000,
+    "initial": 20000,
+    "stage": 20000
+  },
+  "test": {
+    "p95_cv": 0.052841281320507236,
+    "p95_max_mpa": 628.782931,
+    "p95_mean_mpa": 578.432016,
+    "p95_min_mpa": 545.872753,
+    "p95_stdev_mpa": 30.56508888224414,
+    "pass_and_window_count": 3,
+    "pressure_window_count": 3,
+    "trend_pass_count": 5
+  },
+  "test_velocity_cm_s": 25.0,
+  "time_step_seconds": 2e-10,
+  "velocity_ratio": 0.5
+}

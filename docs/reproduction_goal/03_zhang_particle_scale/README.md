@@ -24,7 +24,7 @@
 | pscale=2 C pressure-lift recheck | 已运行并导入；均值回窗但仅 2/5 seeds 同时通过双门槛 |
 | pscale=2 C 4x-settle recheck | 已运行并导入；trend 全 pass，但压力稳健性显著恶化 |
 | pscale=2 C settle=2 midpoint | 已运行并导入；trend 5/5，但压力窗口 0/5、CV 高于 scale 1/4，故拒绝 |
-| pscale=2 C 25 cm/s loading-rate recheck | 计划与 workflow 已生成，等待 GitHub 实跑结果 |
+| pscale=2 C 25 cm/s loading-rate recheck | 已运行并导入；trend 与双门槛覆盖改善，但 CV 增加 33.52%，故拒绝 |
 
 ## 当前候选参数
 
@@ -229,7 +229,7 @@ settle scale 1。
 
 结果报告：`pscale2_c_settle_midpoint_report.md`。
 
-## C 25 cm/s loading-rate plan
+## C 25 cm/s loading-rate result
 
 dwell 分支已经由 scale 2/4 两个实验排除。本轮恢复 settle scale 1，只把 demo
 压头速度从 `50` 降到 `25 cm/s`，并保持 `Emax=72.581 GPa`、`mu=0.654`、
@@ -241,6 +241,25 @@ size C、`particle_count_scale=2`、时间步和 seeds `0..4` 不变。速度会
 任一条件不满足，就恢复 50 cm/s 并停止把加载速率作为下一控制变量。
 
 计划文件：`data/pscale2_c_loading_rate_plan.json`。
+
+dispatcher run `28729752015` 成功调度 child run `28729754426`；五个 DEM
+seed job 与 aggregate ensemble 全部成功。summary artifact `8088409305` 的本地
+SHA-256 与 GitHub digest `2047d65c...27060a` 一致，artifact 运行参数验证为
+`25 cm/s`、`dt=2e-10 s`、settle steps `20k/20k/50k`。
+
+| Metric | 50 cm/s baseline | 25 cm/s test | Result |
+|---|---:|---:|---|
+| Mean P95 MPa | 574.211 | 578.432 | 保持在窗口内 |
+| P95 CV | 0.0396 | 0.0528 | 增加 33.52% |
+| Trend pass | 4/5 | 5/5 | 改善 1 seed |
+| Pressure window | 3/5 | 3/5 | 不变 |
+| Pass + window | 2/5 | 3/5 | 改善 1 seed |
+
+降低速度改善了 trend 和双门槛覆盖，但 seed 0/1 压力上升、seed 2/3 压力下降，
+导致 CV 明显恶化，未满足预注册的方差门槛。因此拒绝 25 cm/s，恢复 50 cm/s，
+并停止把加载速率作为 C 的下一控制变量。
+
+结果报告：`pscale2_c_loading_rate_report.md`。
 
 ## 已归档产物
 
@@ -278,6 +297,10 @@ size C、`particle_count_scale=2`、时间步和 seeds `0..4` 不变。速度会
     pscale2_c_settle_midpoint_paired.csv
     pscale2_c_settle_midpoint_summary.json
     pscale2_c_loading_rate_plan.json
+    pscale2_c_loading_rate_acceptance.csv
+    pscale2_c_loading_rate_candidates.csv
+    pscale2_c_loading_rate_paired.csv
+    pscale2_c_loading_rate_summary.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -286,6 +309,7 @@ size C、`particle_count_scale=2`、时间步和 seeds `0..4` 不变。速度会
     pscale2_c_pressure_lift_recheck_run_28709925303/
     pscale2_c_settle_recheck_run_28710536524/
     pscale2_c_settle_midpoint_run_28729403153/
+    pscale2_c_loading_rate_recheck_run_28729754426/
     pscale2_followup_run_27883033303/
     pscale2_followup_run_27883034434/
     pscale2_followup_run_27883035658/
@@ -304,10 +328,12 @@ size C、`particle_count_scale=2`、时间步和 seeds `0..4` 不变。速度会
     pscale2_c_pressure_lift_paired.png
     pscale2_c_settle_paired.png
     pscale2_c_settle_midpoint_paired.png
+    pscale2_c_loading_rate_paired.png
   pscale2_c_pressure_lift_report.md
   pscale2_c_seed_recheck_report.md
   pscale2_c_settle_report.md
   pscale2_c_settle_midpoint_report.md
+  pscale2_c_loading_rate_report.md
   pscale2_followup_report.md
   pscale2_recalibration_report.md
   report.md
@@ -316,7 +342,7 @@ size C、`particle_count_scale=2`、时间步和 seeds `0..4` 不变。速度会
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：settle scale 2/4 都使 trend 达到 5/5，但压力 CV 和双门槛覆盖均比 scale 1 更差；拒绝两者并恢复 scale 1。下一步只测试 25 cm/s 加载速率，其他变量不变。
+2. C：settle scale 2/4 和 25 cm/s loading-rate 均未降低 seed 方差；恢复 settle scale 1、50 cm/s。下一步先审查当前接触律与阻尼参数，只选择一个物理可解释的接触控制变量。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -330,6 +356,7 @@ C 4x-settle 报告：`pscale2_c_settle_report.md`。
 C settle=2 midpoint 计划：`data/pscale2_c_settle_midpoint_plan.json`。
 C settle=2 midpoint 报告：`pscale2_c_settle_midpoint_report.md`。
 C 25 cm/s loading-rate 计划：`data/pscale2_c_loading_rate_plan.json`。
+C 25 cm/s loading-rate 报告：`pscale2_c_loading_rate_report.md`。
 
 ## 验收门槛
 
@@ -350,5 +377,5 @@ C 25 cm/s loading-rate 计划：`data/pscale2_c_loading_rate_plan.json`。
 | pscale=2 C settle=2 midpoint 矩阵已生成 | 通过：5 个 GitHub demo job，固定 Emax/mu/size/pscale/seeds，只把 settle scale 设为 2 |
 | pscale=2 C settle=2 midpoint 结果已导入 | review：5/5 trend pass，但 0/5 进入压力窗口、CV=0.1268；拒绝 scale 2 并停止 dwell 分支 |
 | pscale=2 C 25 cm/s loading-rate 矩阵已生成 | 通过：5 个 GitHub demo job，只改变压头速度，恢复 settle scale 1 |
-| pscale=2 C 25 cm/s loading-rate 结果已导入 | pending：workflow 尚未完成，不能作物理结论 |
+| pscale=2 C 25 cm/s loading-rate 结果已导入 | review：trend 5/5、双门槛 3/5，但 CV 增加 33.52%；拒绝 25 cm/s |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

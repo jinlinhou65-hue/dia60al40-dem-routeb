@@ -1,0 +1,2 @@
+diamond_size_case,artifact_imported,workflow_completed,runtime_provenance_gate,mean_pressure_gate,cv_improvement_gate,trend_preservation_gate,combined_coverage_improvement_gate,decision
+C,True,True,pass,pass,review,pass,pass,c_loading_rate_not_better

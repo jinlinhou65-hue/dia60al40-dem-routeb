@@ -67,7 +67,7 @@ flowchart TD
 | Zhang C pressure-lift recheck | Emax 单变量 5-seed run 已成功并导入；平均 P95 回到 574.211 MPa、CV 降至 0.0396，但只有 2/5 同时通过双门槛 |
 | Zhang C 4x-settle recheck | 运行与参数溯源已通过；trend 提高到 5/5，但压力 CV 恶化 130.22%、仅 1/5 同时通过双门槛，故拒绝 4x dwell |
 | Zhang C settle=2 midpoint | 五 seed 与 ensemble 已成功；trend 5/5，但压力窗口 0/5、CV=0.1268，故拒绝 scale 2 并停止 dwell 分支 |
-| Zhang C 25 cm/s loading-rate recheck | 单变量五 seed 计划与 workflow 已生成，等待 GitHub 物理结果 |
+| Zhang C 25 cm/s loading-rate recheck | 五 seed 与 ensemble 已成功；trend 5/5、双门槛 3/5，但 CV 增加 33.52%，故拒绝 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 
 ## 仍未完成的边界
@@ -112,5 +112,6 @@ pressure-lift recheck 均已成功运行并导入。后者把平均 P95 提高�
 并将 CV 降低约 50.8%，但仍只有 2/5 seed 同时满足压力窗口和 trend gate。
 随后 scale 4 与 scale 2 settle recheck 都使 trend 提高到 5/5，却分别把压力
 CV 提高到 `0.0911` 和 `0.1268`，双门槛覆盖降为 1/5 和 0/5。两个 dwell
-候选均被拒绝，C 恢复 settle scale 1。下一步只把压头速度从 `50` 降到
-`25 cm/s`，继续固定 C 的 Emax/mu、粒子倍率、时间步、settle steps 和 seeds。
+候选均被拒绝，C 恢复 settle scale 1。25 cm/s loading-rate recheck 虽把 trend
+提高到 5/5、双门槛提高到 3/5，却使 CV 增加 33.52%，也被拒绝。下一步恢复
+50 cm/s，先审查接触律与阻尼参数，再选择一个物理可解释的单变量实验。

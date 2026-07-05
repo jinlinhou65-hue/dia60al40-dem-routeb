@@ -23,6 +23,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 - Zhang C pressure-lift recheck：固定 `mu=0.654, particle_count_scale=2` 和 seeds `0..4`，只把 Emax 从 `63.462` 提高到 `72.581 GPa`。5 个 DEM job 和 ensemble 均成功；平均 P95 从 `524.619` 提高到 `574.211 MPa`，CV 从 `0.0804` 降到 `0.0396`，但仍只有 2/5 seed 同时满足压力窗口和 trend gate。
 - Zhang C 4x-settle recheck：固定 Emax/mu/速度/时间步/粒子尺度/seeds，只把 demo settle steps 从 `20k/20k/50k` 提高到 `80k/80k/200k`。有效 run `28710536524` 的 5 个 DEM job 与 ensemble 均成功，运行参数已进入 artifact；trend 从 4/5 提高到 5/5，但压力 CV 增加 130.22%，双门槛覆盖从 2/5 降到 1/5，因此拒绝 settle scale 4。
 - Zhang C settle=2 midpoint：dispatcher `28729401297` 调度有效 DEM run `28729403153`，5 个 seed job 与 ensemble 均成功；artifact digest 已本地复核。`40k/40k/100k` 使 trend 达到 5/5，但平均 P95 降为 `563.323 MPa`、CV 升为 `0.1268`、压力窗口与双门槛覆盖均为 0/5，因此拒绝 scale 2，并停止 dwell 分支。
+- Zhang C 25 cm/s loading-rate recheck：dispatcher `28729752015` 调度有效 DEM run `28729754426`，5 个 seed job 与 ensemble 均成功，artifact digest 已本地复核。平均 P95 为 `578.432 MPa`、trend 5/5、双门槛 3/5，但 CV 从 `0.0396` 升到 `0.0528`，增加 33.52%，因此拒绝 25 cm/s 并恢复 50 cm/s。
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
@@ -84,6 +85,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 | Zhang C pressure-lift results | `zhang-pscale2-c-pressure-lift-recheck.yml` run `28709922833` dispatched `dia60al40-dem.yml` run `28709925303`; all five jobs and aggregate ensemble completed `success`. The paired report shows Emax +14.37% produced mean P95 +9.45%, reduced CV by 50.80%, and improved pass+window coverage from 1/5 to 2/5, so C remains review. |
 | Zhang C 4x-settle results | First child run `28710435532` failed before DEM because of a heredoc indentation bug and is excluded. After fix `e2eb4ea`, dispatcher `28710534299` triggered valid child `28710536524`; all five DEM jobs and ensemble succeeded. The paired report shows all trend gates pass, but mean P95 falls to `567.232 MPa`, CV rises to `0.0911`, and pass+window coverage falls to 1/5. |
 | Zhang C settle midpoint results | `zhang-pscale2-c-settle-midpoint.yml` run `28729401297` triggered valid child `28729403153`; all five DEM jobs and ensemble succeeded. Settle scale 2 gives 5/5 trend pass but mean P95 `563.323 MPa`, CV `0.1268`, and 0/5 pressure-window or combined passes, so it is rejected. |
+| Zhang C loading-rate results | `zhang-pscale2-c-loading-rate-recheck.yml` run `28729752015` triggered valid child `28729754426`; all five DEM jobs and ensemble succeeded. Reducing velocity to 25 cm/s improves trend to 5/5 and combined coverage to 3/5, but raises CV by 33.52%, so it is rejected under the pre-registered gate. |
 | Zhang particle-scale feasibility diagnostic | `scripts/diagnose_particle_scale_feasibility.py` writes `outputs/zhang_particle_scale_feasibility.csv`. It shows D pscale=2 has 70 Al + 22 large-diamond particles, final DEM disk packing fraction `1.013`, insert-region disk packing `0.474`, and largest-diameter/final-height ratio `0.346`; these remain useful risk indicators for later 4x/8x scaling, but 2x no longer fails the DEM evidence gate after the verifier fix. |
 
 Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 找到了 `Emax=41.686`、`mu=0.77` 这一可行候选；随后 9-job 稳健性 sweep 证明 workflow 可稳定运行，但一个全局 mu/E 参数不能同时覆盖 C/D/E 粒径 case 和三个随机 seed。最新 36-job 尺寸分组 sweep 进一步证明 C/D/E 需要不同的 endpoint modulus/friction bracket，并给出了下一轮高保真 Zhang DEM 的三个起始参数。
@@ -92,7 +94,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 下一步从尺寸分组候选升级到更高保真校准：C/D/E demo、pressure-first 重标定、follow-up、C seed、pressure-lift、4x-settle 和 settle midpoint 均已跑通并导入。C 的 Emax 抬升改善平均压力与 CV；scale 2/4 dwell 虽使 trend 5/5 pass，却都显著恶化压力方差和窗口覆盖。因此下一步不是 4x/8x 粒子数，也不是继续增加 Emax 或 dwell，而是恢复 C settle scale 1，固定 `Emax=72.581 GPa, mu=0.654`，只把压头速度从 `50` 降到 `25 cm/s`。D 压力候选仍 trend review；E trend pass 但压力仍低。继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
+3. Zhang 下一步从尺寸分组候选升级到更高保真校准：C/D/E demo、pressure-first 重标定、follow-up、C seed、pressure-lift、4x-settle、settle midpoint 和 25 cm/s loading-rate 均已跑通并导入。C 的 Emax 抬升改善平均压力与 CV；scale 2/4 dwell 和 25 cm/s loading-rate 都未降低 seed 方差。因此下一步不是 4x/8x 粒子数，也不是继续增加 Emax、dwell 或降低速度，而是恢复 C settle scale 1、50 cm/s，固定 `Emax=72.581 GPa, mu=0.654`，先审查接触律与阻尼参数并选择一个物理可解释的单变量。D 压力候选仍 trend review；E trend pass 但压力仍低。继续使用 `allow_evidence_mismatch=true` 收集完整但非 pass 的样本，缺文件仍失败，趋势/压力不通过则进入 ensemble 诊断。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。
