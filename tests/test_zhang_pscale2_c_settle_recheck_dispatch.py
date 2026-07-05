@@ -68,6 +68,44 @@ class ZhangPscale2CSettleRecheckDispatchTest(unittest.TestCase):
         self.assertIn("\n          PY\n          if [", workflow)
         self.assertNotIn("\n            PY\n", workflow)
 
+    def test_builds_settle_scale_2_midpoint_with_fixed_seed_set(self):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--summary",
+                str(SUMMARY),
+                "--ref",
+                "codex/paper-reproduction-demo",
+                "--settle-scale",
+                "2",
+            ],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+
+        plan = json.loads(result.stdout)
+        item = plan["payloads"][0]
+        self.assertEqual(plan["total_estimated_run_count"], 5)
+        self.assertEqual(item["inputs"]["demo_settle_scale"], "2")
+        self.assertEqual(item["metadata"]["target_settle_steps"], {
+            "initial": 40000,
+            "stage": 40000,
+            "final": 100000,
+        })
+        self.assertEqual(
+            json.loads(item["inputs"]["dem_seed_json"]),
+            ["0", "1", "2", "3", "4"],
+        )
+
+        workflow = (
+            REPO_ROOT / ".github" / "workflows" / "zhang-pscale2-c-settle-midpoint.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("--settle-scale 2", workflow)
+        self.assertNotIn("--settle-scale 4", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

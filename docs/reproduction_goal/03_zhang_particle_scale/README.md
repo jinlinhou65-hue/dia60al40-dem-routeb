@@ -23,6 +23,7 @@
 | pscale=2 C seed robustness recheck | 已运行并导入，结论为 C 不具备 seed 稳健性 |
 | pscale=2 C pressure-lift recheck | 已运行并导入；均值回窗但仅 2/5 seeds 同时通过双门槛 |
 | pscale=2 C 4x-settle recheck | 已运行并导入；trend 全 pass，但压力稳健性显著恶化 |
+| pscale=2 C settle=2 midpoint | 计划与 workflow 已生成，等待 GitHub 实跑结果 |
 
 ## 当前候选参数
 
@@ -189,6 +190,24 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
 
 结果报告：`pscale2_c_settle_report.md`。
 
+## C settle=2 midpoint plan
+
+中点试验不修改旧的 4x workflow，也不重新搜索 Emax 或摩擦系数。它复用相同
+五个 seed，并将静置步数设置为 `40k/40k/100k`。GitHub workflow 在调度前
+验证 size、粒子倍率、Emax、mu、seed 集和目标步数，防止多变量漂移。
+
+中点结果将与 settle scale 1 和 4 做逐 seed 三组配对。预先固定的接受条件是：
+
+1. trend pass 数高于 scale 1；
+2. pass + pressure-window 数不低于 scale 1；
+3. 五 seed 平均压力位于 `572-638 MPa`；
+4. P95 CV 不超过 scale 1 的 `1.25` 倍。
+
+只有四项同时满足，scale 2 才可作为更好的 C 加载路径候选；否则停止继续调整
+dwell，恢复 scale 1 并改测一个不同的加载或接触变量。
+
+计划文件：`data/pscale2_c_settle_midpoint_plan.json`。
+
 ## 已归档产物
 
 ```text
@@ -219,6 +238,7 @@ pressure-lift 结果的主要矛盾已经从平均压力不足变成 seed 方差
     pscale2_c_settle_candidates.csv
     pscale2_c_settle_paired.csv
     pscale2_c_settle_summary.json
+    pscale2_c_settle_midpoint_plan.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -265,6 +285,7 @@ C seed recheck 计划文件：`data/pscale2_c_seed_recheck_plan.json`。
 C seed recheck 报告：`pscale2_c_seed_recheck_report.md`。
 C pressure-lift 报告：`pscale2_c_pressure_lift_report.md`。
 C 4x-settle 报告：`pscale2_c_settle_report.md`。
+C settle=2 midpoint 计划：`data/pscale2_c_settle_midpoint_plan.json`。
 
 ## 验收门槛
 
@@ -282,4 +303,6 @@ C 4x-settle 报告：`pscale2_c_settle_report.md`。
 | pscale=2 C pressure-lift 结果已导入 | review：平均 P95 回窗且 CV 下降，但只有 2/5 seeds 同时 pressure pass + trend pass |
 | pscale=2 C 4x-settle recheck 矩阵已生成 | 通过：5 个 GitHub demo job，只改变 settle duration scale |
 | pscale=2 C 4x-settle 结果已导入 | review：trend 5/5 pass，但 CV 恶化、仅 1/5 同时通过双门槛；拒绝 scale 4 |
+| pscale=2 C settle=2 midpoint 矩阵已生成 | 通过：5 个 GitHub demo job，固定 Emax/mu/size/pscale/seeds，只把 settle scale 设为 2 |
+| pscale=2 C settle=2 midpoint 结果已导入 | pending：workflow 尚未完成，不能作物理结论 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

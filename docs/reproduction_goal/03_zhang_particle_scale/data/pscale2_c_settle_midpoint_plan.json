@@ -1,0 +1,77 @@
+{
+  "dispatch": false,
+  "mode": "zhang_pscale2_c_settle_recheck",
+  "payload_count": 1,
+  "payloads": [
+    {
+      "inputs": {
+        "allow_evidence_mismatch": "true",
+        "dem_seed_json": "[\"0\", \"1\", \"2\", \"3\", \"4\"]",
+        "demo_settle_scale": "2",
+        "diamond_size_case_json": "[\"C\"]",
+        "e_al_e0_gpa": "5",
+        "e_al_emax_gpa": "12",
+        "e_al_emax_sweep_json": "[\"72.581\"]",
+        "e_diamond_gpa": "300",
+        "e_tool_gpa": "600",
+        "e_wall_gpa": "200",
+        "mu_al_al": "0.30",
+        "mu_al_diamond": "0.30",
+        "mu_al_tool": "0.08",
+        "mu_al_wall": "0.08",
+        "mu_diamond_diamond": "0.10",
+        "mu_diamond_tool": "0.08",
+        "mu_diamond_wall": "0.08",
+        "mu_scale_json": "[\"0.654\"]",
+        "particle_count_scale_json": "[\"2\"]",
+        "runtime_profile": "demo"
+      },
+      "metadata": {
+        "baseline_p95_mean_mpa": 574.211136,
+        "baseline_pass_and_window_count": 2,
+        "baseline_settle_steps": {
+          "final": 50000,
+          "initial": 20000,
+          "stage": 20000
+        },
+        "changed_variable": "demo_settle_scale",
+        "diamond_size_case": "C",
+        "e_al_emax_gpa": 72.581,
+        "estimated_run_count": 5,
+        "held_variables": [
+          "diamond_size_case",
+          "particle_count_scale",
+          "e_al_emax_gpa",
+          "mu_scale",
+          "top_velocity_cm_s",
+          "time_step_seconds",
+          "dem_seed_set"
+        ],
+        "hypothesis": "Longer dwell after each displacement stage allows contact relaxation and may reduce seed-to-seed pressure and force-chain variance.",
+        "mu_scale": 0.654,
+        "particle_count_scale": 2,
+        "purpose": "c_settle_relaxation_seed_recheck",
+        "seed_candidates": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "settle_scale": 2.0,
+        "source_decision": "c_pressure_lift_improves_but_not_seed_robust",
+        "source_run_id": "28709925303",
+        "target_settle_steps": {
+          "final": 100000,
+          "initial": 40000,
+          "stage": 40000
+        }
+      },
+      "ref": "codex/paper-reproduction-demo"
+    }
+  ],
+  "ref": "codex/paper-reproduction-demo",
+  "summary": "docs\\reproduction_goal\\03_zhang_particle_scale\\data\\pscale2_c_pressure_lift_summary.json",
+  "total_estimated_run_count": 5,
+  "workflow": "dia60al40-dem.yml"
+}
