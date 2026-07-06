@@ -66,6 +66,9 @@ class ZhangCalibrationEnsembleTest(unittest.TestCase):
             self.assertEqual(rows[0]["diamond_size_case"], "C")
             self.assertEqual(rows[0]["seed_index"], 0)
             self.assertEqual(rows[0]["mu_scale"], 0.7)
+            self.assertEqual(rows[0]["mu_al_al"], 0.001)
+            self.assertEqual(rows[0]["mu_al_diamond"], 0.002)
+            self.assertEqual(rows[0]["mu_diamond_diamond"], 0.003)
             self.assertEqual(rows[0]["zhang_stage_status"], "review")
 
     def test_cli_writes_json_summary(self):
@@ -237,7 +240,10 @@ def write_artifact(
         f"diamond_size_case,{diamond_size_case}\n"
         f"DEM_seed_index,{seed_index}\n"
         f"E_Al_smoothstep_Emax,{emax}\n"
-        f"mu_scale,{mu_scale}\n",
+        f"mu_scale,{mu_scale}\n"
+        "mu_Al_Al,0.001\n"
+        "mu_Al_Diamond,0.002\n"
+        "mu_Diamond_Diamond,0.003\n",
         encoding="utf-8",
     )
     (dem_dir / "pressure_density_summary.csv").write_text(

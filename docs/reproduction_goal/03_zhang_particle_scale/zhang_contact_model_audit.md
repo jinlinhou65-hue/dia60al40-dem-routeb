@@ -134,6 +134,20 @@ Must-pass acceptance gates, registered before execution:
 Failure of any gate rejects `mu_w=0.001`; it does not trigger restitution
 tuning automatically.
 
+### Outcome and successor experiment
+
+The registered sidewall experiment completed in DEM run `28747847286` and
+rejected `mu_w=0.001`: mean P95 fell to `565.114 MPa`, CV rose to `0.0561`,
+and combined pressure/trend coverage fell to 1/5. The baseline group from the
+same pinned run remains the verified reference.
+
+The next experiment therefore follows the article's independent `mu_p` sweep.
+It reuses that five-seed baseline and runs only five new test jobs. All three
+interparticle pairs are set to effective `mu_p=0.001`; particle-tool and
+particle-wall pairs stay at `0.05232`. This is one conceptual particle-friction
+variable, despite requiring three pair coefficients in the composite model.
+The preregistration is `data/pscale2_c_particle_friction_plan.json`.
+
 ## Confidence and missing evidence
 
 - High confidence: bibliographic identity, model family, reported numerical

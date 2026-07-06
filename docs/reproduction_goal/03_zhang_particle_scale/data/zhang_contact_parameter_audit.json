@@ -148,5 +148,21 @@
       "artifact_records_actual_pair_coefficients": true,
       "artifact_records_solver_provenance": true
     }
+  },
+  "experiment_outcome": {
+    "decision": "c_wall_friction_not_better",
+    "effective_mu_wall_tested": 0.001,
+    "mean_p95_mpa": 565.113856,
+    "p95_cv": 0.056080610699139624,
+    "pass_and_window_count": 1,
+    "run_id": "28747847286"
+  },
+  "successor_experiment": {
+    "baseline_run_id": "28747847286",
+    "estimated_new_run_count": 5,
+    "next_variable": "interparticle_friction_only",
+    "plan": "pscale2_c_particle_friction_plan.json",
+    "reuses_verified_baseline": true,
+    "test_effective_mu_particle": 0.001
   }
 }

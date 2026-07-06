@@ -1,0 +1,98 @@
+name: zhang-pscale2-c-particle-friction-recheck
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_json:
+        description: 'JSON list of DEM seeds for the C interparticle-friction recheck'
+        required: false
+        default: '["0","1","2","3","4"]'
+  push:
+    paths:
+      - '.github/workflows/zhang-pscale2-c-particle-friction-recheck.yml'
+      - 'scripts/dispatch_zhang_pscale2_c_particle_friction_recheck.py'
+      - 'scripts/analyze_zhang_pscale2_c_particle_friction_results.py'
+      - 'docs/reproduction_goal/03_zhang_particle_scale/data/pscale2_c_particle_friction_plan.json'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-c-particle-friction:
+    name: dispatch Zhang pscale=2 C interparticle-friction recheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build particle-friction plan
+        env:
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_particle_friction_recheck.py \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --max-total-runs 5 \
+            > /tmp/zhang_pscale2_c_particle_friction_plan.json
+          cat /tmp/zhang_pscale2_c_particle_friction_plan.json
+
+      - name: Validate particle-friction plan
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          import math
+
+          plan = json.load(open(
+              "/tmp/zhang_pscale2_c_particle_friction_plan.json",
+              encoding="utf-8",
+          ))
+          if plan["mode"] != "zhang_pscale2_c_particle_friction_recheck":
+              raise SystemExit(f"unexpected mode: {plan['mode']}")
+          if plan["payload_count"] != 1 or plan["total_estimated_run_count"] != 5:
+              raise SystemExit("particle-friction plan must contain one five-seed payload")
+          item = plan["payloads"][0]
+          inputs = item["inputs"]
+          metadata = item["metadata"]
+          if metadata["changed_variable"] != "interparticle_friction_coefficients":
+              raise SystemExit("only interparticle friction may change")
+          if metadata["baseline_run_id"] != "28747847286":
+              raise SystemExit("particle-friction test must reuse the verified baseline")
+          if inputs["runtime_profile"] != "demo":
+              raise SystemExit("particle-friction recheck must use demo profile")
+          if inputs["demo_settle_scale"] != "1" or inputs["demo_top_velocity_cm_s"] != "50":
+              raise SystemExit("particle-friction recheck must hold settle1 and 50 cm/s")
+          if json.loads(inputs["mu_wall_scale_json"]) != ["1"]:
+              raise SystemExit("particle-friction recheck must restore wall scale 1")
+          if json.loads(inputs["mu_scale_json"]) != ["0.654"]:
+              raise SystemExit("particle-friction recheck must hold global mu at 0.654")
+          for field in ("mu_al_al", "mu_al_diamond", "mu_diamond_diamond"):
+              if not math.isclose(float(inputs[field]) * 0.654, 0.001, abs_tol=5e-10):
+                  raise SystemExit(f"{field} does not produce effective mu_p=0.001")
+          if inputs["mu_al_tool"] != "0.08" or inputs["mu_diamond_tool"] != "0.08":
+              raise SystemExit("particle-tool friction changed")
+          if inputs["mu_al_wall"] != "0.08" or inputs["mu_diamond_wall"] != "0.08":
+              raise SystemExit("particle-wall friction changed")
+          if json.loads(inputs["e_al_emax_sweep_json"]) != ["72.581"]:
+              raise SystemExit("particle-friction recheck must hold Emax")
+          if json.loads(inputs["diamond_size_case_json"]) != ["C"]:
+              raise SystemExit("particle-friction recheck must run size C")
+          if json.loads(inputs["particle_count_scale_json"]) != ["2"]:
+              raise SystemExit("particle-friction recheck must hold particle scale 2")
+          if json.loads(inputs["dem_seed_json"]) != ["0", "1", "2", "3", "4"]:
+              raise SystemExit("particle-friction recheck must preserve seeds 0..4")
+          PY
+
+      - name: Dispatch low interparticle-friction DEM run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_c_particle_friction_recheck.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --max-total-runs 5 \
+            --dispatch

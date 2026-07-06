@@ -27,6 +27,7 @@
 | pscale=2 C 25 cm/s loading-rate recheck | 已运行并导入；trend 与双门槛覆盖改善，但 CV 增加 33.52%，故拒绝 |
 | Zhang 接触模型与阻尼参数审计 | 已完成；论文阻尼系数 0.2 不等同于 LIGGGHTS 恢复系数 |
 | pscale=2 C sidewall-friction paired recheck | 已运行、核验并导入；低侧壁摩擦使 CV 增加 41.71%，故拒绝 |
+| pscale=2 C particle-friction recheck | 已预注册；复用已验证基线，仅需 5 个新 DEM job |
 
 ## 当前候选参数
 
@@ -305,6 +306,20 @@ ensemble 全部成功。artifact `8093807720` 的本地 SHA-256 与 GitHub diges
 
 结果报告：`pscale2_c_wall_friction_report.md`。
 
+## C particle-friction preregistration
+
+论文分别扫描 `mu_w` 和 `mu_p`，且指出粒间摩擦对微观、介观不均匀性的影响更强。
+侧壁最低点失败后，下一项单变量试验把三类粒间接触的有效摩擦统一设为
+`mu_p=0.001`，但保持粒壁和粒压头摩擦为 `0.05232`。
+
+为避免重复计算，不再运行 baseline。分析时复用已通过 solver、运行参数和 artifact
+digest 检查的 run `28747847286` 中 `mu_wall_scale=1` 五种子组，只新增 5 个相同
+seeds 的低粒间摩擦 job。接受条件仍为平均压力处于 `572-638 MPa`、CV 低于
+`0.03957423315`、trend 至少 4/5、双门槛覆盖高于 2/5；任一失败即拒绝
+`mu_p=0.001`。
+
+计划文件：`data/pscale2_c_particle_friction_plan.json`。
+
 ## 已归档产物
 
 ```text
@@ -351,6 +366,7 @@ ensemble 全部成功。artifact `8093807720` 的本地 SHA-256 与 GitHub diges
     pscale2_c_wall_friction_candidates.csv
     pscale2_c_wall_friction_paired.csv
     pscale2_c_wall_friction_summary.json
+    pscale2_c_particle_friction_plan.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -397,7 +413,7 @@ ensemble 全部成功。artifact `8093807720` 的本地 SHA-256 与 GitHub diges
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：低侧壁摩擦已被配对证据否决，恢复 `mu_wall_scale=1`。下一轮先从审计中分离粒间摩擦与压头摩擦，预注册一个 particle-only 单变量试验；不要把论文阻尼 `0.2` 当作恢复系数。
+2. C：低侧壁摩擦已被配对证据否决，恢复 `mu_wall_scale=1`。particle-only 单变量试验已预注册，下一步仅运行 5 个 `mu_p=0.001` test jobs 并复用既有 baseline；不要把论文阻尼 `0.2` 当作恢复系数。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
 4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
@@ -415,6 +431,7 @@ C 25 cm/s loading-rate 报告：`pscale2_c_loading_rate_report.md`。
 Zhang 接触模型审计：`zhang_contact_model_audit.md`。
 C sidewall-friction 成对计划：`data/pscale2_c_wall_friction_plan.json`。
 C sidewall-friction 结果：`pscale2_c_wall_friction_report.md`。
+C particle-friction 计划：`data/pscale2_c_particle_friction_plan.json`。
 
 ## 验收门槛
 
@@ -440,4 +457,5 @@ C sidewall-friction 结果：`pscale2_c_wall_friction_report.md`。
 | LIGGGHTS 求解器来源已固定 | 通过：workflow 与 cloud script 固定提交并输出 `solver_provenance.csv` |
 | C sidewall-friction 成对矩阵已生成 | 通过：2 个 wall scales x 5 个相同 seeds，只改变 `mu_wall_scale` |
 | C sidewall-friction 结果已导入 | review：求解器来源与 artifact digest 通过；低摩擦均值 565.114 MPa、CV=0.0561、双门槛 1/5，故拒绝 `mu_w=0.001` |
+| C particle-friction 试验已预注册 | 通过：复用 run `28747847286` baseline，只新增 5 个相同 seed；粒壁/粒压头/求解器/加载路径全部冻结 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

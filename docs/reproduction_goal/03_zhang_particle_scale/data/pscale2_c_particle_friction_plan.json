@@ -1,0 +1,47 @@
+{
+  "acceptance": {
+    "combined_pass_count_strictly_above": 2,
+    "mean_p95_mpa_max": 638.0,
+    "mean_p95_mpa_min": 572.0,
+    "p95_cv_strictly_below": 0.03957423315053406,
+    "trend_pass_count_min": 4
+  },
+  "baseline": {
+    "effective_mu_al_al": 0.1962,
+    "effective_mu_al_diamond": 0.1962,
+    "effective_mu_diamond_diamond": 0.0654,
+    "effective_mu_particle_wall": 0.05232,
+    "effective_mu_particle_tool": 0.05232,
+    "run_id": "28747847286",
+    "source_group": "mu_wall_scale=1",
+    "summary_sha256": "dd568fbdb5f307c756230a6597ed3cba6377a3fbfb8d00b27d7ded6c513cc3b8"
+  },
+  "fixed_controls": {
+    "demo_settle_scale": 1,
+    "diamond_size_case": "C",
+    "e_al_emax_gpa": 72.581,
+    "liggghts_commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+    "mu_scale": 0.654,
+    "mu_wall_scale": 1.0,
+    "particle_count_scale": 2,
+    "seeds": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "top_velocity_cm_s": 50.0
+  },
+  "hypothesis": "The paper-supported low interparticle-friction point reduces seed-to-seed pressure and force-network inhomogeneity while preserving the endpoint pressure window.",
+  "mode": "zhang_pscale2_c_particle_friction_recheck",
+  "previous_decision": "c_wall_friction_not_better",
+  "schema_version": "1.0",
+  "test": {
+    "effective_mu_al_al": 0.001,
+    "effective_mu_al_diamond": 0.001,
+    "effective_mu_diamond_diamond": 0.001,
+    "input_mu_before_global_scale": 0.00152905198777,
+    "paper_sweep_point": 0.001
+  }
+}
