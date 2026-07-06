@@ -74,7 +74,7 @@ flowchart TD
 | Zhang E pressure-lift plan | 已预注册 5-seed 单变量 Emax 计划：`87.368 → 96.417 GPa` |
 | Zhang E pressure-lift result | 五 seed 已运行并导入；trend 4/5、双门槛 3/5，但均值 644.331 MPa，停止 Emax-only 分支 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
-| COMSOL 电热 smoke | COMSOL 6.4 真实求解成功；与开源 FVM 的 Joule 功率差 1.202%、最大温升差 0.568%，九项门槛全通过 |
+| COMSOL 电热 smoke | COMSOL 6.4 真实求解成功；与开源 FVM 的 Joule 功率差 1.202%、最大温升差 0.568%，九项门槛全通过；GitHub verifier run `28793218330` success |
 
 ## 仍未完成的边界
 

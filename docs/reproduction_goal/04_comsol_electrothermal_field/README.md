@@ -22,6 +22,7 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | Joule 功率相对差 | 1.202% |
 | 电势场归一化 RMSE | 0.293% |
 | 温度场归一化 RMSE | 0.765% |
+| GitHub verifier | run `28793218330`, success, 27 s |
 | 阶段判定 | `smoke_pass` |
 
 ## 代码入口
@@ -47,6 +48,7 @@ data/prepared/     # 属性网格、COMSOL 插值文件、哈希 manifest
 evidence/comsol_smoke/  # MPH、原始 COMSOL CSV、图和 batch log
 evidence/fvm_smoke/     # 开源 FVM 场、摘要和图
 evidence/comparison/    # 九项验收、跨求解器报告和对比图
+evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 ```
 
 ## 证据边界

@@ -26,6 +26,8 @@ Electric Currents、Heat Transfer 和电磁热源完成稳态耦合求解，并�
 - 温度场归一化 RMSE：`0.007652`。
 - FVM 离散电功率守恒误差：`7.26e-16`。
 - 九项 smoke gate 全部通过。
+- GitHub Actions run `28793218330` 在 Ubuntu 上重建输入并重跑 FVM，27 秒完成且
+  状态为 `success`；artifact digest 为 `sha256:2199a770...b6686`。
 
 对比图见 `evidence/comparison/comsol_fvm_comparison.png`，机器判定见
 `evidence/comparison/comparison_summary.json`。
