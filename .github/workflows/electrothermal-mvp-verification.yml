@@ -24,9 +24,9 @@ jobs:
     env:
       MPLBACKEND: Agg
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -62,7 +62,7 @@ jobs:
           python -c "import json; data=json.load(open('outputs/electrothermal_mvp/comparison/comparison_summary.json')); assert data['decision']=='smoke_pass', data"
 
       - name: Upload verification evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: electrothermal-mvp-verification
           path: outputs/electrothermal_mvp
