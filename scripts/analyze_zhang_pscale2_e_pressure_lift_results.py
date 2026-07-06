@@ -44,6 +44,9 @@ def analyze_e_pressure_lift(
     metrics = group_metrics(rows)
     seed2 = next(row for row in rows if int(row["seed_index"]) == 2)
     seed2_delta = float(seed2["p95_mpa"]) - SOURCE_P95_MPA
+    proportional_intervals = pressure_window_emax_intervals(rows)
+    intersection_low = max(float(item["emax_low_gpa"]) for item in proportional_intervals)
+    intersection_high = min(float(item["emax_high_gpa"]) for item in proportional_intervals)
     decision = decide(metrics, seed2)
     summary = {
         "run_id": run_id,
@@ -65,6 +68,9 @@ def analyze_e_pressure_lift(
         "seed2_test_p95_mpa": float(seed2["p95_mpa"]),
         "seed2_p95_delta_mpa": seed2_delta,
         "seed2_test_status": seed2["status"],
+        "proportional_window_emax_intervals_gpa": proportional_intervals,
+        "proportional_common_emax_interval_gpa": [intersection_low, intersection_high],
+        "proportional_common_interval_feasible": intersection_low <= intersection_high,
         "decision": decision,
         "recommended_next_step": recommendation(decision),
     }
@@ -171,6 +177,22 @@ def decide(metrics: dict[str, object], seed2: dict[str, object]) -> str:
     return "e_pressure_lift_not_sufficient"
 
 
+def pressure_window_emax_intervals(
+    rows: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    intervals: list[dict[str, object]] = []
+    for row in sorted(rows, key=lambda item: int(item["seed_index"])):
+        pressure = float(row["p95_mpa"])
+        intervals.append(
+            {
+                "seed_index": int(row["seed_index"]),
+                "emax_low_gpa": TARGET_EMAX_GPA * ZHANG_WINDOW[0] / pressure,
+                "emax_high_gpa": TARGET_EMAX_GPA * ZHANG_WINDOW[1] / pressure,
+            }
+        )
+    return intervals
+
+
 def recommendation(decision: str) -> str:
     if decision == "e_pressure_lift_seed_robust":
         return "Freeze the E pscale=2 pressure candidate and move to D trend calibration."
@@ -244,6 +266,13 @@ def write_report(
         "| Mean P95 MPa | CV | Trend pass | Pressure window | Pass + window | Seed-2 delta MPa |",
         "|---:|---:|---:|---:|---:|---:|",
         f"| {float(test['p95_mean_mpa']):.3f} | {float(test['p95_cv']):.4f} | {test['trend_pass_count']}/5 | {test['pressure_window_count']}/5 | {test['pass_and_window_count']}/5 | {float(summary['seed2_p95_delta_mpa']):+.3f} |",
+        "",
+        "A proportional per-seed screening approximation gives a common Emax interval "
+        f"of `{float(summary['proportional_common_emax_interval_gpa'][0]):.3f}` to "
+        f"`{float(summary['proportional_common_emax_interval_gpa'][1]):.3f} GPa`. "
+        "Because the lower bound exceeds the upper bound, another Emax-only run is not "
+        "expected to place all five seeds inside the pressure window. This is a diagnostic "
+        "inference, not a substitute for DEM.",
         "",
         "## Seeds",
         "",

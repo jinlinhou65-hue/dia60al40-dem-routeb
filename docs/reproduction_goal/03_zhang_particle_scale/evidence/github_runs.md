@@ -220,3 +220,22 @@ The interpreted pscale=2 C particle-friction result is stored in:
 - `data/pscale2_c_particle_friction_summary.json`
 - `figures/pscale2_c_particle_friction_paired.png`
 - `pscale2_c_particle_friction_report.md`
+
+## pscale=2 E Pressure-Lift Recheck
+
+| Workflow | Run | Status | Commit | Meaning |
+|---|---:|---|---|---|
+| `zhang-pscale2-e-pressure-lift-recheck.yml` | [28790007125](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28790007125) | success | `e7e4eb1` | Validated and dispatched Emax=96.417 GPa over seeds 0..4 |
+| `dia60al40-dem.yml` | [28790012884](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28790012884) | success | `e7e4eb1` | Five size-E DEM jobs plus ensemble |
+
+| Valid DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [28790012884](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28790012884) | `8108372828` | `sha256:ab7b28baec2b5a0234aed11141ca76972b07e48734567449979072ad3d2fe77a` | `evidence/pscale2_e_pressure_lift_recheck_run_28790012884/` |
+
+The interpreted pscale=2 E pressure-lift result is stored in:
+
+- `data/pscale2_e_pressure_lift_candidates.csv`
+- `data/pscale2_e_pressure_lift_acceptance.csv`
+- `data/pscale2_e_pressure_lift_summary.json`
+- `figures/pscale2_e_pressure_lift_p95.png`
+- `pscale2_e_pressure_lift_report.md`

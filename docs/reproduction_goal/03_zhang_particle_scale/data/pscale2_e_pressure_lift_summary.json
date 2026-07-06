@@ -1,0 +1,67 @@
+{
+  "decision": "e_pressure_lift_not_sufficient",
+  "diamond_size_case": "E",
+  "liggghts_commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+  "mu_scale": 0.693,
+  "mu_wall_scale": 1.0,
+  "particle_count_scale": 2,
+  "pressure_lift_e_al_emax_gpa": 96.417,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "proportional_common_emax_interval_gpa": [
+    94.13214332136194,
+    87.59788719078075
+  ],
+  "proportional_common_interval_feasible": false,
+  "proportional_window_emax_intervals_gpa": [
+    {
+      "emax_high_gpa": 87.59788719078075,
+      "emax_low_gpa": 78.53603679173446,
+      "seed_index": 0
+    },
+    {
+      "emax_high_gpa": 97.28462576817775,
+      "emax_low_gpa": 87.22069896457315,
+      "seed_index": 1
+    },
+    {
+      "emax_high_gpa": 98.16992823962991,
+      "emax_low_gpa": 88.01441842173715,
+      "seed_index": 2
+    },
+    {
+      "emax_high_gpa": 104.99354447382677,
+      "emax_low_gpa": 94.13214332136194,
+      "seed_index": 3
+    },
+    {
+      "emax_high_gpa": 91.18336241099718,
+      "emax_low_gpa": 81.75060078227332,
+      "seed_index": 4
+    }
+  ],
+  "recommended_next_step": "Reject Emax=96.417 GPa as a robust E candidate and diagnose the pressure/trend tradeoff before another run.",
+  "run_id": "28790012884",
+  "seed2_p95_delta_mpa": 82.91838000000007,
+  "seed2_test_p95_mpa": 626.607833,
+  "seed2_test_status": "pass",
+  "seed_count": 5,
+  "source_e_al_emax_gpa": 87.368,
+  "source_run_id": "27883035658",
+  "source_seed2_p95_mpa": 543.689453,
+  "source_seed2_status": "pass",
+  "source_seed_index": 2,
+  "target_pressure_mpa": 600.0,
+  "test": {
+    "p95_cv": 0.07003178206078971,
+    "p95_max_mpa": 702.232074,
+    "p95_mean_mpa": 644.3306436,
+    "p95_min_mpa": 585.884078,
+    "p95_stdev_mpa": 45.12362320768357,
+    "pass_and_window_count": 3,
+    "pressure_window_count": 3,
+    "trend_pass_count": 4
+  }
+}

@@ -1,0 +1,2 @@
+artifact_imported,workflow_completed,solver_provenance_gate,mean_pressure_gate,trend_gate,combined_coverage_gate,seed2_pressure_direction_gate,seed2_trend_gate,decision
+True,True,pass,review,pass,pass,pass,pass,e_pressure_lift_not_sufficient

@@ -2,8 +2,8 @@ stage_id,folder,status,main_question,next_gate,primary_outputs
 00,00_project_control,in_progress,How do we control scope and evidence?,Keep every future stage mapped to a folder,README and status table
 01,01_pdf_algorithm_layer,baseline_done,Can each paper mechanism be represented as executable metrics?,Keep PDF anchors and algorithm outputs current,PDF map and paper algorithm artifacts
 02,02_dem_backend_light_demo,baseline_done,Can an open DEM backend produce real contact evidence?,Keep LIGGGHTS workflow green and evidence complete,DEM artifacts and evidence report
-03,03_zhang_particle_scale,review,Do Zhang C/D/E candidates survive particle-count refinement?,Run the preregistered E five-seed Emax pressure-lift recheck,2x calibration artifacts pinned solver provenance completed C friction results and E pressure-lift plan
-04,04_comsol_electrothermal_field,planned,Can COMSOL solve current and temperature fields from DEM contacts?,Build one-stage COMSOL electrothermal demo,COMSOL model and thermal field outputs
+03,03_zhang_particle_scale,review,Do Zhang C/D/E candidates survive particle-count refinement?,Require a contact-law or loading-model upgrade before more D/E tuning; do not run 4x,2x calibration artifacts pinned solver provenance completed C friction and E pressure-lift results
+04,04_comsol_electrothermal_field,in_progress,Can COMSOL solve current and temperature fields from DEM contacts?,Build and verify one-stage COMSOL electrothermal demo,COMSOL model Java builder and thermal field outputs
 05,05_yuan_shape_arch_bridge,planned,Can non-spherical particles reproduce arch-bridge trends?,Run shape-capable DEM or MPFEM pilot,Arch metrics by shape
 06,06_liu_sintering_coupling,planned,Can true thermal fields drive sintering neck growth?,Couple COMSOL temperature to Liu metrics,Thermal-sintering coupling report
 07,07_li_core_shell_fem,planned,Can core-shell FEM reproduce Cu@Fe densification trends?,Run single/few-particle core-shell FEM pilot,Cu@Fe FEM evidence

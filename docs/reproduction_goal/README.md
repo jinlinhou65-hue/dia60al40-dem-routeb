@@ -72,6 +72,7 @@ flowchart TD
 | Zhang C sidewall-friction recheck | 固定求解器的 10-job 配对试验已导入；`mu_w=0.001` 使均值跌出窗口、CV 增加 41.71%，故拒绝 |
 | Zhang C particle-friction recheck | 复用验证基线的 5-job test 已导入；平均 P95 降至 409.996 MPa、双门槛 0/5，故拒绝 |
 | Zhang E pressure-lift plan | 已预注册 5-seed 单变量 Emax 计划：`87.368 → 96.417 GPa` |
+| Zhang E pressure-lift result | 五 seed 已运行并导入；trend 4/5、双门槛 3/5，但均值 644.331 MPa，停止 Emax-only 分支 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 
 ## 仍未完成的边界
@@ -123,5 +124,7 @@ sidewall-only 试验也已完成：`mu_w=0.001` 使均值降至 `565.114 MPa`、
 预注册并完成：复用 run `28747847286` 的五种子 baseline，只新增 5 个
 `mu_p=0.001` test jobs。结果平均 P95 仅 `409.996 MPa`、双门槛 0/5，因此
 停止 C 低摩擦分支；论文阻尼 `0.2` 仍不直接映射。E 组五种子 Emax
-pressure-lift 已预注册为单一 `96.417 GPa` 测试点，下一步运行 5 个 GitHub
-DEM job，而不是继续重复 C 参数扫描。
+pressure-lift 已完成：五 seed trend 4/5、双门槛 3/5，但均值 `644.331 MPa`
+超过窗口上限，比例公共 Emax 区间为空。因此 Zhang 阶段保持 `review`，不再追加
+Emax-only 扫描，也不进入 4x/8x。下一项目小目标转入 COMSOL 单阶段电热场，
+把当前 DEM 接触网络映射为电流、焦耳热和温度场。

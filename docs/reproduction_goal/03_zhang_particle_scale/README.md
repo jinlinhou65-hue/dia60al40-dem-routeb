@@ -28,7 +28,7 @@
 | Zhang 接触模型与阻尼参数审计 | 已完成；论文阻尼系数 0.2 不等同于 LIGGGHTS 恢复系数 |
 | pscale=2 C sidewall-friction paired recheck | 已运行、核验并导入；低侧壁摩擦使 CV 增加 41.71%，故拒绝 |
 | pscale=2 C particle-friction recheck | 已运行、核验并导入；平均 P95 降至 409.996 MPa，故拒绝 |
-| pscale=2 E pressure-lift recheck | 已预注册 5-seed 单变量计划，待 GitHub Actions 实算 |
+| pscale=2 E pressure-lift recheck | 已运行、核验并导入；3/5 双门槛但均值超上限，故不充分 |
 
 ## 当前候选参数
 
@@ -358,6 +358,30 @@ P95=`543.689 MPa` 且 trend pass。它只能作为单 seed 起点，不能证明
 
 计划文件：`data/pscale2_e_pressure_lift_plan.json`。
 
+## E pressure-lift result
+
+dispatcher run `28790007125` 成功调度 child run `28790012884`；五个 size-E DEM
+seed 和 aggregate ensemble 全部成功。artifact `8108372828` 的本地 SHA-256 与
+GitHub digest `ab7b28baec2b5a0234aed11141ca76972b07e48734567449979072ad3d2fe77a`
+一致，求解器和全部冻结参数均通过分析器检查。
+
+| Metric | Result | Gate |
+|---|---:|---|
+| Mean P95 MPa | 644.331 | review：超过 638 MPa 上限 |
+| P95 CV | 0.0700 | 记录，不作为论文来源门槛 |
+| Trend pass | 4/5 | pass |
+| Pressure window | 3/5 | 部分通过 |
+| Pass + window | 3/5 | pass |
+| Seed-2 P95 | 626.608 MPa | pass：较来源提高 82.918 MPa 且 trend 保持 pass |
+
+结果说明一阶 pressure-lift 方向有效，但 `96.417 GPa` 不是稳健 E 候选。按每个
+seed 在该点的压力作比例筛查，五 seed 的公共窗口要求为
+`Emax >= 94.132 GPa` 且 `Emax <= 87.598 GPa`，区间为空；这是一项筛查推断，
+但已足以说明继续 Emax-only 扫描不太可能消除 seed 方差。因此停止 E 的
+Emax-only 分支，不追加中点试验。
+
+结果报告：`pscale2_e_pressure_lift_report.md`。
+
 ## 已归档产物
 
 ```text
@@ -410,6 +434,9 @@ P95=`543.689 MPa` 且 trend pass。它只能作为单 seed 起点，不能证明
     pscale2_c_particle_friction_paired.csv
     pscale2_c_particle_friction_summary.json
     pscale2_e_pressure_lift_plan.json
+    pscale2_e_pressure_lift_acceptance.csv
+    pscale2_e_pressure_lift_candidates.csv
+    pscale2_e_pressure_lift_summary.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -421,6 +448,7 @@ P95=`543.689 MPa` 且 trend pass。它只能作为单 seed 起点，不能证明
     pscale2_c_loading_rate_recheck_run_28729754426/
     pscale2_c_wall_friction_recheck_run_28747847286/
     pscale2_c_particle_friction_recheck_run_28789107809/
+    pscale2_e_pressure_lift_recheck_run_28790012884/
     pscale2_followup_run_27883033303/
     pscale2_followup_run_27883034434/
     pscale2_followup_run_27883035658/
@@ -442,6 +470,7 @@ P95=`543.689 MPa` 且 trend pass。它只能作为单 seed 起点，不能证明
     pscale2_c_loading_rate_paired.png
     pscale2_c_wall_friction_paired.png
     pscale2_c_particle_friction_paired.png
+    pscale2_e_pressure_lift_p95.png
   pscale2_c_pressure_lift_report.md
   pscale2_c_seed_recheck_report.md
   pscale2_c_settle_report.md
@@ -449,6 +478,7 @@ P95=`543.689 MPa` 且 trend pass。它只能作为单 seed 起点，不能证明
   pscale2_c_loading_rate_report.md
   pscale2_c_wall_friction_report.md
   pscale2_c_particle_friction_report.md
+  pscale2_e_pressure_lift_report.md
   zhang_contact_model_audit.md
   zhang_contact_terminology.md
   pscale2_followup_report.md
@@ -461,8 +491,8 @@ P95=`543.689 MPa` 且 trend pass。它只能作为单 seed 起点，不能证明
 1. 不启动 4x/8x。
 2. C：低侧壁和低粒间摩擦均被配对证据否决。冻结当前已验证 baseline，停止 C 的低摩擦、dwell 和 loading-rate 分支；不要把论文阻尼 `0.2` 当作恢复系数。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
-4. E：五种子 `Emax=96.417 GPa, mu=0.693` pressure-lift 已预注册；下一步运行 5 个 job，目标在不丢失 trend 的前提下进入 `572-638 MPa`。
-5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
+4. E：`96.417 GPa` 达到 trend 4/5、双门槛 3/5，但均值 644.331 MPa 且无共同 Emax 比例窗口；停止 Emax-only 分支。
+5. 张炜阶段保持 `review`，不启动 4x/8x。下一项目小目标转入 `04_comsol_electrothermal_field`，用当前 DEM 接触网络建立真实电热场闭环；D 的 trend 冲突留待接触律或加载模型升级后再处理。
 
 上一轮计划文件：`data/pscale2_recalibration_plan.json`。
 follow-up 计划文件：`data/pscale2_followup_plan.json`。
@@ -480,6 +510,7 @@ C sidewall-friction 结果：`pscale2_c_wall_friction_report.md`。
 C particle-friction 计划：`data/pscale2_c_particle_friction_plan.json`。
 C particle-friction 结果：`pscale2_c_particle_friction_report.md`。
 E pressure-lift 计划：`data/pscale2_e_pressure_lift_plan.json`。
+E pressure-lift 结果：`pscale2_e_pressure_lift_report.md`。
 
 ## 验收门槛
 
@@ -508,4 +539,5 @@ E pressure-lift 计划：`data/pscale2_e_pressure_lift_plan.json`。
 | C particle-friction 试验已预注册 | 通过：复用 run `28747847286` baseline，只新增 5 个相同 seed；粒壁/粒压头/求解器/加载路径全部冻结 |
 | C particle-friction 结果已导入 | review：artifact digest 和参数溯源通过；平均 P95=409.996 MPa、CV=0.0463、双门槛 0/5，故拒绝 `mu_p=0.001` |
 | E pressure-lift 试验已预注册 | 通过：只改变 Emax 至 96.417 GPa，固定 size/pscale/mu/接触参数/加载路径/求解器并运行 seeds 0..4 |
+| E pressure-lift 结果已导入 | review：求解与 artifact 通过，trend 4/5、双门槛 3/5，但均值 644.331 MPa；停止 Emax-only 分支 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

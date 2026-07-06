@@ -7,9 +7,6 @@ on:
         description: 'JSON list of DEM seeds for the E pressure-lift recheck'
         required: false
         default: '["0","1","2","3","4"]'
-  push:
-    paths:
-      - '.github/workflows/zhang-pscale2-e-pressure-lift-recheck.yml'
 
 permissions:
   actions: write
