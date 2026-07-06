@@ -1,0 +1,46 @@
+{
+  "baseline": {
+    "p95_cv": 0.03957423315053406,
+    "p95_max_mpa": 607.731725,
+    "p95_mean_mpa": 574.2111361999999,
+    "p95_min_mpa": 543.867388,
+    "p95_stdev_mpa": 22.723965381611865,
+    "pass_and_window_count": 2,
+    "pressure_window_count": 3,
+    "trend_pass_count": 4
+  },
+  "baseline_effective_particle_mu": {
+    "al_al": 0.1962,
+    "al_diamond": 0.1962,
+    "diamond_diamond": 0.0654
+  },
+  "baseline_run_id": "28747847286",
+  "decision": "c_particle_friction_not_better",
+  "diamond_size_case": "C",
+  "e_al_emax_gpa": 72.581,
+  "historical_baseline_cv": 0.03957423315,
+  "liggghts_commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+  "mu_scale": 0.654,
+  "mu_wall_scale": 1.0,
+  "p95_cv_change_percent": 16.958817884780796,
+  "p95_mean_delta_mpa": -164.2150514,
+  "particle_count_scale": 2,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "Reject mu_p=0.001 and retain the verified C baseline before another mechanism.",
+  "seed_count": 5,
+  "test": {
+    "p95_cv": 0.04628555527983168,
+    "p95_max_mpa": 434.123362,
+    "p95_mean_mpa": 409.99608479999995,
+    "p95_min_mpa": 385.385438,
+    "p95_stdev_mpa": 18.976896447524954,
+    "pass_and_window_count": 0,
+    "pressure_window_count": 0,
+    "trend_pass_count": 3
+  },
+  "test_effective_particle_mu": 0.001,
+  "test_run_id": "28789107809"
+}

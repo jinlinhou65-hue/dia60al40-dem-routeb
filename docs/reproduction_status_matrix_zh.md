@@ -27,6 +27,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 - Zhang 接触参数审计：用户提供的文件是 2024 年 10 页期刊论文，不是 2019 年学位论文全文。PDF p.3 的法/切向阻尼系数 `0.2` 缺少方程和单位，不能直接映射为 LIGGGHTS `coefficientRestitution`。当前全局 `mu_scale` 还混合了粒间和粒壁机制，因此已新增 sidewall-only scale、固定 LIGGGHTS 提交 `3d5c00f...e649d`，并完成 `wall scale=1/0.019113 x seeds 0..4` 的 10-job 成对试验。
 - Zhang C sidewall-friction recheck：dispatcher `28747844572` 调度 child run `28747847286`，10 个 DEM job 与 ensemble 全部成功；artifact `8093807720` 的 SHA-256 已本地复核。`mu_w=0.001` 使均值从 `574.211` 降到 `565.114 MPa`、CV 从 `0.0396` 升到 `0.0561`、双门槛从 2/5 降到 1/5，因此拒绝低侧壁摩擦并恢复 wall scale 1。
 - Zhang C particle-friction plan：复用 run `28747847286` 的 wall-scale 1 五种子基线，只新增 5 个相同 seed 的 `mu_p=0.001` test jobs；粒壁、粒压头、求解器、Emax、速度、时间步和 dwell 全部冻结。
+- Zhang C particle-friction recheck：dispatcher `28789102529` 调度 child run `28789107809`，5 个 DEM job 与 ensemble 全部成功；artifact `8108026788` 的 SHA-256 已本地复核。`mu_p=0.001` 使平均 P95 降至 `409.996 MPa`、CV 升至 `0.0463`、压力窗口和双门槛均为 0/5，因此拒绝并停止 C 低摩擦分支。
 - DEM evidence：`87 pass / 0 missing / 0 mismatch`
 - 真实 DEM artifact：`dia60al40-dem-artifacts-sizeC-Emax12-mu1.0-seed0`
 - 最终轻量 demo 结果：`rho_total=0.95`，`p_target=297.8374 MPa`
@@ -92,6 +93,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 | Zhang contact-model audit and next plan | The supplied PDF is the 2024 journal article, not the full 2019 thesis. Damping `0.2` has no reported equation/units and is not mapped to restitution. LIGGGHTS is now pinned to `3d5c00f...e649d`; the next registered workflow pairs wall scale `1/0.019113` over seeds `0..4` while holding all other C controls fixed. |
 | Zhang C sidewall-friction results | `zhang-pscale2-c-wall-friction-recheck.yml` dispatcher `28747844572` triggered child `28747847286`; all ten paired jobs and ensemble succeeded. The verified artifact shows low wall friction lowers mean P95 by `9.097 MPa`, raises CV by `41.71%`, and reduces combined coverage to 1/5, so `mu_w=0.001` is rejected. |
 | Zhang C particle-friction plan | `pscale2_c_particle_friction_plan.json` preregisters effective `mu_p=0.001` for all particle pairs and reuses the verified five-seed baseline, reducing the new run count from ten to five without weakening the paired comparison. |
+| Zhang C particle-friction results | Dispatcher `28789102529` triggered child `28789107809`; all five test jobs and ensemble succeeded. The verified artifact shows mean P95 `409.996 MPa`, CV `0.0463`, trend 3/5, and combined coverage 0/5, so `mu_p=0.001` is rejected. |
 | Zhang particle-scale feasibility diagnostic | `scripts/diagnose_particle_scale_feasibility.py` writes `outputs/zhang_particle_scale_feasibility.csv`. It shows D pscale=2 has 70 Al + 22 large-diamond particles, final DEM disk packing fraction `1.013`, insert-region disk packing `0.474`, and largest-diameter/final-height ratio `0.346`; these remain useful risk indicators for later 4x/8x scaling, but 2x no longer fails the DEM evidence gate after the verifier fix. |
 
 Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上更诚实的状态：完整直接接触力已经进入计算链，但轻量 demo 的粒子数、接触律和加载路径仍低于论文级。第二轮 6-job sweep 找到了 `Emax=41.686`、`mu=0.77` 这一可行候选；随后 9-job 稳健性 sweep 证明 workflow 可稳定运行，但一个全局 mu/E 参数不能同时覆盖 C/D/E 粒径 case 和三个随机 seed。最新 36-job 尺寸分组 sweep 进一步证明 C/D/E 需要不同的 endpoint modulus/friction bracket，并给出了下一轮高保真 Zhang DEM 的三个起始参数。
@@ -100,7 +102,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 
 1. 保持 GitHub Actions 为主运行环境，继续用 `runtime_profile=demo` 做快速回归。
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
-3. Zhang 下一步从尺寸分组候选升级到更高保真校准：低侧壁摩擦已被固定求解器配对试验否决，恢复 C settle scale 1、50 cm/s 和 wall scale 1。particle-only 单变量试验已预注册，下一步只运行 5 个新 test jobs 并复用验证基线；禁止把论文阻尼 `0.2` 直接当作恢复系数，D/E 和 4x/8x 暂不推进。
+3. Zhang 下一步从尺寸分组候选升级到更高保真校准：低侧壁和低粒间摩擦都已被固定求解器配对试验否决，冻结 C baseline，不再继续 C 低摩擦分支。下一小目标是 E 组五种子 Emax pressure-lift recheck；禁止把论文阻尼 `0.2` 直接当作恢复系数，4x/8x 暂不推进。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
 5. Liu 优先做热场：用接触 Joule heat 做源项，加入热传导边界，输出真实温度场。
 6. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。

@@ -148,6 +148,12 @@ particle-wall pairs stay at `0.05232`. This is one conceptual particle-friction
 variable, despite requiring three pair coefficients in the composite model.
 The preregistration is `data/pscale2_c_particle_friction_plan.json`.
 
+That successor experiment completed in run `28789107809`. Effective
+`mu_p=0.001` reduced mean P95 from `574.211` to `409.996 MPa`, increased CV
+from `0.0396` to `0.0463`, and produced 0/5 combined pressure/trend passes.
+It is therefore rejected. The C low-friction branch is closed; this result does
+not justify changing the still-undefined damping parameter.
+
 ## Confidence and missing evidence
 
 - High confidence: bibliographic identity, model family, reported numerical

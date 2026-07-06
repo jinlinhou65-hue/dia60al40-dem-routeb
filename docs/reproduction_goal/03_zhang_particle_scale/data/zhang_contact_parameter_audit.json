@@ -159,10 +159,16 @@
   },
   "successor_experiment": {
     "baseline_run_id": "28747847286",
+    "decision": "c_particle_friction_not_better",
     "estimated_new_run_count": 5,
+    "mean_p95_mpa": 409.9960848,
     "next_variable": "interparticle_friction_only",
+    "p95_cv": 0.04628555527983168,
+    "pass_and_window_count": 0,
     "plan": "pscale2_c_particle_friction_plan.json",
     "reuses_verified_baseline": true,
-    "test_effective_mu_particle": 0.001
+    "run_id": "28789107809",
+    "test_effective_mu_particle": 0.001,
+    "terminal_action": "stop_c_low_friction_branch"
   }
 }

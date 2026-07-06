@@ -70,7 +70,7 @@ flowchart TD
 | Zhang C 25 cm/s loading-rate recheck | 五 seed 与 ensemble 已成功；trend 5/5、双门槛 3/5，但 CV 增加 33.52%，故拒绝 |
 | Zhang contact-model audit | 已核清论文阻尼 0.2 与 LIGGGHTS 恢复系数语义不同；已固定求解器提交并注册 sidewall-only 10-job 计划 |
 | Zhang C sidewall-friction recheck | 固定求解器的 10-job 配对试验已导入；`mu_w=0.001` 使均值跌出窗口、CV 增加 41.71%，故拒绝 |
-| Zhang C particle-friction plan | 已预注册并复用验证基线，只新增 5 个 `mu_p=0.001` test jobs |
+| Zhang C particle-friction recheck | 复用验证基线的 5-job test 已导入；平均 P95 降至 409.996 MPa、双门槛 0/5，故拒绝 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 
 ## 仍未完成的边界
@@ -119,5 +119,7 @@ CV 提高到 `0.0911` 和 `0.1268`，双门槛覆盖降为 1/5 和 0/5。两个 
 提高到 5/5、双门槛提高到 3/5，却使 CV 增加 33.52%，也被拒绝。固定求解器的
 sidewall-only 试验也已完成：`mu_w=0.001` 使均值降至 `565.114 MPa`、CV 增加
 41.71%、双门槛降为 1/5，因此恢复 `mu_wall_scale=1`。particle-only 试验已
-预注册：复用 run `28747847286` 的五种子 baseline，只新增 5 个 `mu_p=0.001`
-test jobs；论文阻尼 `0.2` 仍不直接映射。
+预注册并完成：复用 run `28747847286` 的五种子 baseline，只新增 5 个
+`mu_p=0.001` test jobs。结果平均 P95 仅 `409.996 MPa`、双门槛 0/5，因此
+停止 C 低摩擦分支；论文阻尼 `0.2` 仍不直接映射。下一小目标转向 E 组五种子
+Emax pressure-lift，而不是继续重复 C 参数扫描。

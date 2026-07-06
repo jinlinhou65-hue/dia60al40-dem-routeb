@@ -27,7 +27,7 @@
 | pscale=2 C 25 cm/s loading-rate recheck | 已运行并导入；trend 与双门槛覆盖改善，但 CV 增加 33.52%，故拒绝 |
 | Zhang 接触模型与阻尼参数审计 | 已完成；论文阻尼系数 0.2 不等同于 LIGGGHTS 恢复系数 |
 | pscale=2 C sidewall-friction paired recheck | 已运行、核验并导入；低侧壁摩擦使 CV 增加 41.71%，故拒绝 |
-| pscale=2 C particle-friction recheck | 已预注册；复用已验证基线，仅需 5 个新 DEM job |
+| pscale=2 C particle-friction recheck | 已运行、核验并导入；平均 P95 降至 409.996 MPa，故拒绝 |
 
 ## 当前候选参数
 
@@ -320,6 +320,28 @@ seeds 的低粒间摩擦 job。接受条件仍为平均压力处于 `572-638 MPa
 
 计划文件：`data/pscale2_c_particle_friction_plan.json`。
 
+## C particle-friction result
+
+dispatcher run `28789102529` 成功调度 child run `28789107809`；5 个 test seed
+和 aggregate ensemble 全部成功。artifact `8108026788` 的本地 SHA-256 与 GitHub
+digest `92e9a6e4bf8b81e1e104b3e74b53e0bb5153b701eadcd67f949dd12e138da6f0`
+一致，CSV 直接记录了三个粒间系数均为 `0.001`，粒壁和粒压头系数均为
+`0.05232`，求解器仍为固定提交 `3d5c00f...e649d`。
+
+| Metric | Verified baseline | `mu_p=0.001` | Result |
+|---|---:|---:|---|
+| Mean P95 MPa | 574.211 | 409.996 | 降低 164.215 MPa，远离目标窗口 |
+| P95 CV | 0.0396 | 0.0463 | 增加 16.96% |
+| Trend pass | 4/5 | 3/5 | 恶化 1 seed |
+| Pressure window | 3/5 | 0/5 | 全部失败 |
+| Pass + window | 2/5 | 0/5 | 全部失败 |
+
+预注册的四个物理门槛全部失败，判定为 `c_particle_friction_not_better`。
+因此拒绝 `mu_p=0.001`，保留已验证 C baseline，并停止 C 的低摩擦分支。
+匹配 Zhang 铁粉论文最低摩擦点不能被解释为当前 Al-diamond 简化模型的材料标定。
+
+结果报告：`pscale2_c_particle_friction_report.md`。
+
 ## 已归档产物
 
 ```text
@@ -367,6 +389,10 @@ seeds 的低粒间摩擦 job。接受条件仍为平均压力处于 `572-638 MPa
     pscale2_c_wall_friction_paired.csv
     pscale2_c_wall_friction_summary.json
     pscale2_c_particle_friction_plan.json
+    pscale2_c_particle_friction_acceptance.csv
+    pscale2_c_particle_friction_candidates.csv
+    pscale2_c_particle_friction_paired.csv
+    pscale2_c_particle_friction_summary.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -377,6 +403,7 @@ seeds 的低粒间摩擦 job。接受条件仍为平均压力处于 `572-638 MPa
     pscale2_c_settle_midpoint_run_28729403153/
     pscale2_c_loading_rate_recheck_run_28729754426/
     pscale2_c_wall_friction_recheck_run_28747847286/
+    pscale2_c_particle_friction_recheck_run_28789107809/
     pscale2_followup_run_27883033303/
     pscale2_followup_run_27883034434/
     pscale2_followup_run_27883035658/
@@ -397,12 +424,14 @@ seeds 的低粒间摩擦 job。接受条件仍为平均压力处于 `572-638 MPa
     pscale2_c_settle_midpoint_paired.png
     pscale2_c_loading_rate_paired.png
     pscale2_c_wall_friction_paired.png
+    pscale2_c_particle_friction_paired.png
   pscale2_c_pressure_lift_report.md
   pscale2_c_seed_recheck_report.md
   pscale2_c_settle_report.md
   pscale2_c_settle_midpoint_report.md
   pscale2_c_loading_rate_report.md
   pscale2_c_wall_friction_report.md
+  pscale2_c_particle_friction_report.md
   zhang_contact_model_audit.md
   zhang_contact_terminology.md
   pscale2_followup_report.md
@@ -413,9 +442,9 @@ seeds 的低粒间摩擦 job。接受条件仍为平均压力处于 `572-638 MPa
 ## 下一步动作
 
 1. 不启动 4x/8x。
-2. C：低侧壁摩擦已被配对证据否决，恢复 `mu_wall_scale=1`。particle-only 单变量试验已预注册，下一步仅运行 5 个 `mu_p=0.001` test jobs 并复用既有 baseline；不要把论文阻尼 `0.2` 当作恢复系数。
+2. C：低侧壁和低粒间摩擦均被配对证据否决。冻结当前已验证 baseline，停止 C 的低摩擦、dwell 和 loading-rate 分支；不要把论文阻尼 `0.2` 当作恢复系数。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
-4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，继续提高压力或调整加载路径，目标先进入 `572-638 MPa`。
+4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，下一小目标预注册五种子 Emax pressure-lift recheck，目标在不丢失 trend 的前提下进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
 
 上一轮计划文件：`data/pscale2_recalibration_plan.json`。
@@ -432,6 +461,7 @@ Zhang 接触模型审计：`zhang_contact_model_audit.md`。
 C sidewall-friction 成对计划：`data/pscale2_c_wall_friction_plan.json`。
 C sidewall-friction 结果：`pscale2_c_wall_friction_report.md`。
 C particle-friction 计划：`data/pscale2_c_particle_friction_plan.json`。
+C particle-friction 结果：`pscale2_c_particle_friction_report.md`。
 
 ## 验收门槛
 
@@ -458,4 +488,5 @@ C particle-friction 计划：`data/pscale2_c_particle_friction_plan.json`。
 | C sidewall-friction 成对矩阵已生成 | 通过：2 个 wall scales x 5 个相同 seeds，只改变 `mu_wall_scale` |
 | C sidewall-friction 结果已导入 | review：求解器来源与 artifact digest 通过；低摩擦均值 565.114 MPa、CV=0.0561、双门槛 1/5，故拒绝 `mu_w=0.001` |
 | C particle-friction 试验已预注册 | 通过：复用 run `28747847286` baseline，只新增 5 个相同 seed；粒壁/粒压头/求解器/加载路径全部冻结 |
+| C particle-friction 结果已导入 | review：artifact digest 和参数溯源通过；平均 P95=409.996 MPa、CV=0.0463、双门槛 0/5，故拒绝 `mu_p=0.001` |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |

@@ -112,8 +112,21 @@ This file records the GitHub Actions evidence imported into this stage.
 Dispatcher [28789102644](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789102644)
 was unintentionally retriggered when the completed audit JSON was updated, creating child
 run [28789107272](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789107272).
-This duplicate was not preregistered, is excluded from all physical interpretation, and will
-not be imported. Push dispatch was removed from the completed sidewall workflow afterward.
+This duplicate completed successfully but was not preregistered, is excluded from all physical
+interpretation, and will not be imported. Push dispatch was removed from the completed sidewall
+workflow afterward.
+
+## pscale=2 C Particle-Friction Recheck
+
+| Workflow | Run | Status | Commit | Meaning |
+|---|---:|---|---|---|
+| `zhang-pscale2-c-particle-friction-recheck.yml` | [28789102529](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789102529) | success | `7c0d7b5` | Validated and dispatched five `mu_p=0.001` test seeds |
+| `dia60al40-dem.yml` | [28789107809](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789107809) | success | `7c0d7b5` | Five particle-friction test jobs plus ensemble |
+| `dia60al40-dem.yml` push regression | [28789102511](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789102511) | success | `7c0d7b5` | Default core regression; excluded from particle-friction physics |
+
+| Valid DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [28789107809](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789107809) | `8108026788` | `sha256:92e9a6e4bf8b81e1e104b3e74b53e0bb5153b701eadcd67f949dd12e138da6f0` | `evidence/pscale2_c_particle_friction_recheck_run_28789107809/` |
 
 ## Imported Artifact
 
@@ -198,3 +211,12 @@ The interpreted pscale=2 C sidewall-friction result is stored in:
 - `data/pscale2_c_wall_friction_summary.json`
 - `figures/pscale2_c_wall_friction_paired.png`
 - `pscale2_c_wall_friction_report.md`
+
+The interpreted pscale=2 C particle-friction result is stored in:
+
+- `data/pscale2_c_particle_friction_candidates.csv`
+- `data/pscale2_c_particle_friction_paired.csv`
+- `data/pscale2_c_particle_friction_acceptance.csv`
+- `data/pscale2_c_particle_friction_summary.json`
+- `figures/pscale2_c_particle_friction_paired.png`
+- `pscale2_c_particle_friction_report.md`
