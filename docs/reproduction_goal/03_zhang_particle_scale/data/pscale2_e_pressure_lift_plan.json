@@ -1,0 +1,50 @@
+{
+  "acceptance": {
+    "combined_pass_count_min": 3,
+    "mean_p95_mpa_max": 638.0,
+    "mean_p95_mpa_min": 572.0,
+    "seed2_pressure_must_increase": true,
+    "seed2_trend_must_remain_pass": true,
+    "trend_pass_count_min": 4
+  },
+  "fixed_controls": {
+    "demo_settle_scale": 1,
+    "diamond_size_case": "E",
+    "liggghts_commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+    "mu_scale": 0.693,
+    "mu_wall_scale": 1.0,
+    "particle_count_scale": 2,
+    "seeds": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "top_velocity_cm_s": 50.0
+  },
+  "hypothesis": "A first-order Emax lift toward 600 MPa raises the E ensemble into the Zhang endpoint window without losing the seed-2 force-chain trend.",
+  "mode": "zhang_pscale2_e_pressure_lift_recheck",
+  "scaling": {
+    "applied_ratio": 1.103568457,
+    "formula": "source_emax_gpa * target_pressure_mpa / source_p95_mpa",
+    "ols_target_572_gpa_context_only": 101.852447,
+    "source_emax_gpa": 87.368,
+    "source_p95_mpa": 543.689453,
+    "target_emax_gpa": 96.417,
+    "target_pressure_mpa": 600.0
+  },
+  "schema_version": "1.0",
+  "source_candidate": {
+    "d1_delta": -0.9423744710599662,
+    "diamond_size_case": "E",
+    "e_al_emax_gpa": 87.368,
+    "mu_scale": 0.693,
+    "p95_mpa": 543.689453,
+    "participation_delta": 0.019894247752086147,
+    "particle_count_scale": 2,
+    "run_id": "27883035658",
+    "seed_index": 2,
+    "status": "pass"
+  }
+}

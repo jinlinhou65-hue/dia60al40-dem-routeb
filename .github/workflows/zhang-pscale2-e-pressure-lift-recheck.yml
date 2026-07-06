@@ -1,0 +1,87 @@
+name: zhang-pscale2-e-pressure-lift-recheck
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_json:
+        description: 'JSON list of DEM seeds for the E pressure-lift recheck'
+        required: false
+        default: '["0","1","2","3","4"]'
+  push:
+    paths:
+      - '.github/workflows/zhang-pscale2-e-pressure-lift-recheck.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-e-pressure-lift:
+    name: dispatch Zhang pscale=2 E pressure-lift recheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build E pressure-lift plan
+        env:
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_e_pressure_lift_recheck.py \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --max-total-runs 5 \
+            > /tmp/zhang_pscale2_e_pressure_lift_plan.json
+          cat /tmp/zhang_pscale2_e_pressure_lift_plan.json
+
+      - name: Validate E pressure-lift plan
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+
+          plan = json.load(open(
+              "/tmp/zhang_pscale2_e_pressure_lift_plan.json",
+              encoding="utf-8",
+          ))
+          if plan["mode"] != "zhang_pscale2_e_pressure_lift_recheck":
+              raise SystemExit(f"unexpected mode: {plan['mode']}")
+          if plan["payload_count"] != 1 or plan["total_estimated_run_count"] != 5:
+              raise SystemExit("E pressure-lift plan must contain one five-seed payload")
+          item = plan["payloads"][0]
+          inputs = item["inputs"]
+          metadata = item["metadata"]
+          if metadata["changed_variable"] != "e_al_emax_gpa":
+              raise SystemExit("only Emax may change")
+          if metadata["source_run_id"] != "27883035658":
+              raise SystemExit("unexpected E source run")
+          if inputs["runtime_profile"] != "demo":
+              raise SystemExit("E pressure-lift recheck must use demo profile")
+          if inputs["demo_settle_scale"] != "1" or inputs["demo_top_velocity_cm_s"] != "50":
+              raise SystemExit("E pressure-lift recheck must hold settle1 and 50 cm/s")
+          if json.loads(inputs["e_al_emax_sweep_json"]) != ["96.417"]:
+              raise SystemExit("E pressure-lift recheck must use Emax=96.417 GPa")
+          if json.loads(inputs["mu_scale_json"]) != ["0.693"]:
+              raise SystemExit("E pressure-lift recheck must hold mu=0.693")
+          if json.loads(inputs["mu_wall_scale_json"]) != ["1"]:
+              raise SystemExit("E pressure-lift recheck must hold wall scale 1")
+          if json.loads(inputs["diamond_size_case_json"]) != ["E"]:
+              raise SystemExit("E pressure-lift recheck must run only size E")
+          if json.loads(inputs["particle_count_scale_json"]) != ["2"]:
+              raise SystemExit("E pressure-lift recheck must hold particle scale 2")
+          if json.loads(inputs["dem_seed_json"]) != ["0", "1", "2", "3", "4"]:
+              raise SystemExit("E pressure-lift recheck must preserve seeds 0..4")
+          PY
+
+      - name: Dispatch E pressure-lift DEM run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEED_JSON: ${{ github.event.inputs.seed_json || '["0","1","2","3","4"]' }}
+        run: |
+          set -euxo pipefail
+          python3 scripts/dispatch_zhang_pscale2_e_pressure_lift_recheck.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${GITHUB_REF_NAME}" \
+            --seed-json "${SEED_JSON}" \
+            --max-total-runs 5 \
+            --dispatch

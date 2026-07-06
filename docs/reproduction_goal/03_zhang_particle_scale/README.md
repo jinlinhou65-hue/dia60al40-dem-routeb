@@ -28,6 +28,7 @@
 | Zhang 接触模型与阻尼参数审计 | 已完成；论文阻尼系数 0.2 不等同于 LIGGGHTS 恢复系数 |
 | pscale=2 C sidewall-friction paired recheck | 已运行、核验并导入；低侧壁摩擦使 CV 增加 41.71%，故拒绝 |
 | pscale=2 C particle-friction recheck | 已运行、核验并导入；平均 P95 降至 409.996 MPa，故拒绝 |
+| pscale=2 E pressure-lift recheck | 已预注册 5-seed 单变量计划，待 GitHub Actions 实算 |
 
 ## 当前候选参数
 
@@ -342,6 +343,21 @@ digest `92e9a6e4bf8b81e1e104b3e74b53e0bb5153b701eadcd67f949dd12e138da6f0`
 
 结果报告：`pscale2_c_particle_friction_report.md`。
 
+## E pressure-lift preregistration
+
+E 组 follow-up 的三个 Emax 点都来自 seed 2；其中 `Emax=87.368 GPa` 时
+P95=`543.689 MPa` 且 trend pass。它只能作为单 seed 起点，不能证明多 seed
+稳健性。本轮用一阶比例假设
+`87.368 * 600 / 543.689 = 96.417 GPa` 得到唯一测试值，不做宽扫。
+
+新 workflow 固定 size E、`particle_count_scale=2`、`mu=0.693`、wall scale 1、
+50 cm/s、settle scale 1、时间步、接触参数和固定 LIGGGHTS 提交，只运行 seeds
+`0..4`。接受条件为五 seed 平均 P95 进入 `572-638 MPa`、trend 至少 4/5、
+双门槛至少 3/5，并且 seed 2 压力上升且 trend 继续 pass。比例关系只是假设，
+真实 DEM 结果决定是否保留 `96.417 GPa`。
+
+计划文件：`data/pscale2_e_pressure_lift_plan.json`。
+
 ## 已归档产物
 
 ```text
@@ -393,6 +409,7 @@ digest `92e9a6e4bf8b81e1e104b3e74b53e0bb5153b701eadcd67f949dd12e138da6f0`
     pscale2_c_particle_friction_candidates.csv
     pscale2_c_particle_friction_paired.csv
     pscale2_c_particle_friction_summary.json
+    pscale2_e_pressure_lift_plan.json
     zhang_particle_scale_acceptance.csv
     summary.json
   evidence/
@@ -444,7 +461,7 @@ digest `92e9a6e4bf8b81e1e104b3e74b53e0bb5153b701eadcd67f949dd12e138da6f0`
 1. 不启动 4x/8x。
 2. C：低侧壁和低粒间摩擦均被配对证据否决。冻结当前已验证 baseline，停止 C 的低摩擦、dwell 和 loading-rate 分支；不要把论文阻尼 `0.2` 当作恢复系数。
 3. D：保留 `Emax=57.173 GPa, mu=0.77` 的压力候选，但改调加载路径、接触律或力链阈值；单纯提高摩擦会让压力掉出窗口。
-4. E：以 `Emax=87.368 GPa, mu=0.693` 为趋势候选，下一小目标预注册五种子 Emax pressure-lift recheck，目标在不丢失 trend 的前提下进入 `572-638 MPa`。
+4. E：五种子 `Emax=96.417 GPa, mu=0.693` pressure-lift 已预注册；下一步运行 5 个 job，目标在不丢失 trend 的前提下进入 `572-638 MPa`。
 5. 只有 C/D/E 同时满足 pressure window 和 trend gate 后，才启动 4x 粒子数 pilot。
 
 上一轮计划文件：`data/pscale2_recalibration_plan.json`。
@@ -462,6 +479,7 @@ C sidewall-friction 成对计划：`data/pscale2_c_wall_friction_plan.json`。
 C sidewall-friction 结果：`pscale2_c_wall_friction_report.md`。
 C particle-friction 计划：`data/pscale2_c_particle_friction_plan.json`。
 C particle-friction 结果：`pscale2_c_particle_friction_report.md`。
+E pressure-lift 计划：`data/pscale2_e_pressure_lift_plan.json`。
 
 ## 验收门槛
 
@@ -489,4 +507,5 @@ C particle-friction 结果：`pscale2_c_particle_friction_report.md`。
 | C sidewall-friction 结果已导入 | review：求解器来源与 artifact digest 通过；低摩擦均值 565.114 MPa、CV=0.0561、双门槛 1/5，故拒绝 `mu_w=0.001` |
 | C particle-friction 试验已预注册 | 通过：复用 run `28747847286` baseline，只新增 5 个相同 seed；粒壁/粒压头/求解器/加载路径全部冻结 |
 | C particle-friction 结果已导入 | review：artifact digest 和参数溯源通过；平均 P95=409.996 MPa、CV=0.0463、双门槛 0/5，故拒绝 `mu_p=0.001` |
+| E pressure-lift 试验已预注册 | 通过：只改变 Emax 至 96.417 GPa，固定 size/pscale/mu/接触参数/加载路径/求解器并运行 seeds 0..4 |
 | 是否继续 4x/8x 或 WSL2 有明确建议 | 通过：暂不进入 4x/8x，继续 pscale=2 分 size 校准 |
