@@ -43,7 +43,7 @@ flowchart TD
 | 01 | [01_pdf_algorithm_layer](01_pdf_algorithm_layer/README.md) | 已完成基础层 | PDF 机制映射和四篇论文算法层复现 |
 | 02 | [02_dem_backend_light_demo](02_dem_backend_light_demo/README.md) | 已完成轻量层 | 开源 DEM 后端选择和 LIGGGHTS workflow demo |
 | 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | review | Zhang C/D/E 参数校准和 2x 粒子数升级 |
-| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 待启动 | COMSOL 电流场、温度场、Joule heat 主线 |
+| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | smoke 完成 | COMSOL 电流场、温度场、Joule heat 主线 |
 | 05 | [05_yuan_shape_arch_bridge](05_yuan_shape_arch_bridge/README.md) | 待启动 | Yuan 非球形颗粒、拱桥结构和 MPFEM 路线 |
 | 06 | [06_liu_sintering_coupling](06_liu_sintering_coupling/README.md) | 待启动 | Liu 压制-热场-烧结耦合 |
 | 07 | [07_li_core_shell_fem](07_li_core_shell_fem/README.md) | 待启动 | Li Cu@Fe 包覆颗粒 core-shell FEM/MPFEM |
@@ -74,6 +74,7 @@ flowchart TD
 | Zhang E pressure-lift plan | 已预注册 5-seed 单变量 Emax 计划：`87.368 → 96.417 GPa` |
 | Zhang E pressure-lift result | 五 seed 已运行并导入；trend 4/5、双门槛 3/5，但均值 644.331 MPa，停止 Emax-only 分支 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
+| COMSOL 电热 smoke | COMSOL 6.4 真实求解成功；与开源 FVM 的 Joule 功率差 1.202%、最大温升差 0.568%，九项门槛全通过 |
 
 ## 仍未完成的边界
 
@@ -81,7 +82,7 @@ flowchart TD
 
 - Zhang 还没有论文级 3000 颗粒、600 MPa、力链图像一比一复现。
 - Yuan 还没有真实非球形颗粒或 MPFEM 形状模型。
-- Liu 还没有 COMSOL 真实电流场、温度场和材料扩散参数标定。
+- Liu 已有 COMSOL 单阶段均匀化电流/温度场 smoke，但还没有材料参数标定、颗粒分辨接触和扩散/烧结闭环。
 - Li 还没有 Cu@Fe core-shell 多颗粒 FEM/MPFEM 模型。
 - 当前轻量 DEM 和温度/烧结代理模型只能证明路线可行，不能替代最终论文级复现。
 
@@ -109,22 +110,10 @@ stage_folder/
 
 ## 当前下一步
 
-下一步只做一件事：继续 Zhang 的 pscale=2 分支收敛。10-job
-`zhang-pscale2-followup.yml` 已成功运行并导入：C 已得到压力窗口内且
-trend pass 的候选，D 仍是压力窗口和力链趋势冲突，E 趋势可用但压力仍低于
-572 MPa。因此不能直接进入 4x/8x；C seed robustness recheck 和单变量 Emax
-pressure-lift recheck 均已成功运行并导入。后者把平均 P95 提高到 `574.211 MPa`
-并将 CV 降低约 50.8%，但仍只有 2/5 seed 同时满足压力窗口和 trend gate。
-随后 scale 4 与 scale 2 settle recheck 都使 trend 提高到 5/5，却分别把压力
-CV 提高到 `0.0911` 和 `0.1268`，双门槛覆盖降为 1/5 和 0/5。两个 dwell
-候选均被拒绝，C 恢复 settle scale 1。25 cm/s loading-rate recheck 虽把 trend
-提高到 5/5、双门槛提高到 3/5，却使 CV 增加 33.52%，也被拒绝。固定求解器的
-sidewall-only 试验也已完成：`mu_w=0.001` 使均值降至 `565.114 MPa`、CV 增加
-41.71%、双门槛降为 1/5，因此恢复 `mu_wall_scale=1`。particle-only 试验已
-预注册并完成：复用 run `28747847286` 的五种子 baseline，只新增 5 个
-`mu_p=0.001` test jobs。结果平均 P95 仅 `409.996 MPa`、双门槛 0/5，因此
-停止 C 低摩擦分支；论文阻尼 `0.2` 仍不直接映射。E 组五种子 Emax
-pressure-lift 已完成：五 seed trend 4/5、双门槛 3/5，但均值 `644.331 MPa`
-超过窗口上限，比例公共 Emax 区间为空。因此 Zhang 阶段保持 `review`，不再追加
-Emax-only 扫描，也不进入 4x/8x。下一项目小目标转入 COMSOL 单阶段电热场，
-把当前 DEM 接触网络映射为电流、焦耳热和温度场。
+COMSOL 单阶段电热 smoke 已完成：stage5 的 157 条 LIGGGHTS 直接接触被映射为
+空间电导率/热导率，COMSOL 6.4 和开源 FVM 均得到非空电势、电流、Joule heat
+和温度场，九项交叉门槛全部通过。该结果只证明软件与数据路线，不是实验标定。
+
+下一小目标进入参数可信度升级：为 Al、diamond 和接触电阻补充论文/材料来源，
+执行至少三档网格验证，再把粒子/空间温度输出接入阶段 06 的 Liu 烧结颈增长与
+致密化指标。Zhang 阶段继续保持 `review`，不恢复已被证据否决的单变量扫描。

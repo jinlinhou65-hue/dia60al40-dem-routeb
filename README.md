@@ -163,7 +163,7 @@ The curve is based on the top punch reaction recorded by `fix mesh/surface/stres
 pressure_MPa = |top_force_y_dyne| / (Wcm * Tcm) * 1e-7
 ```
 
-where `Wcm=0.04` and `Tcm=0.0090`. COMSOL is optional and secondary; the primary conclusion is the pressure needed to reach `rho_total ~= 0.95`.
+where `Wcm=0.04` and `Tcm=0.0090`. DEM remains primary for the pressure-density conclusion. COMSOL is the primary solver for the separate electrothermal-field stage.
 
 The staged workflow uses DEM for particle rearrangement, contact-network closure, and macro compaction pressure:
 
@@ -229,6 +229,10 @@ rotation_rad,vx_cm_s,vy_cm_s,contact_count
 
 Use `dem_fem_handoff_<stage>.csv` when you need the raw DEM state and contact network. Use `comsol_particles_<stage>.csv` when you need a COMSOL-importable geometry table.
 
-## 4. Optional COMSOL Stage Analysis
+## 4. COMSOL Electrothermal Stage
 
-COMSOL is no longer the primary route for the pressure-density conclusion. It can still consume selected `comsol_particles_<stage>.csv` files for secondary local-field visualization.
+The stage-5 homogenized electrothermal MVP is documented in
+`docs/reproduction_goal/04_comsol_electrothermal_field/`. It maps direct LIGGGHTS contacts
+to spatial electrical/thermal properties, solves Electric Currents and Heat Transfer in
+COMSOL 6.4, and compares the fields with an open finite-volume implementation. This does
+not replace DEM for compaction pressure and is not yet a particle-resolved contact model.

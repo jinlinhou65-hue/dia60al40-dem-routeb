@@ -1,0 +1,2 @@
+comsol_solve_gate,log_error_gate,finite_field_gate,voltage_boundary_gate,positive_temperature_rise_gate,joule_power_agreement_gate,temperature_rise_agreement_gate,potential_field_agreement_gate,temperature_field_agreement_gate,decision
+pass,pass,pass,pass,pass,pass,pass,pass,pass,smoke_pass

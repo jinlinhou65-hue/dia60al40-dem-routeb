@@ -1,0 +1,7 @@
+{
+  "solver": "COMSOL 6.4",
+  "model": "homogenized_contact_network_electrothermal_mvp",
+  "max_temperature_k": 293.789814445,
+  "integrated_joule_2d_w_per_m_depth": 396.328060919,
+  "solve_status": "success"
+}

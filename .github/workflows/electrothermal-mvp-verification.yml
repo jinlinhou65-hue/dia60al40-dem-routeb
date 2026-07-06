@@ -1,0 +1,58 @@
+name: Electrothermal MVP Verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  open-verifier:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install numerical dependencies
+        run: python -m pip install --disable-pip-version-check numpy==2.2.6 scipy==1.15.3 matplotlib==3.10.3
+
+      - name: Run focused tests
+        run: python -m unittest tests.test_comsol_electrothermal_mvp -v
+
+      - name: Rebuild direct-contact property grid
+        run: |
+          python scripts/prepare_comsol_electrothermal_input.py \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/dem_fem_handoff_stage5_rho095.csv \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/stage5_rho095_direct_contacts.csv \
+            outputs/electrothermal_mvp/prepared \
+            --width-um 400 --nx 81 --ny 43 --kernel-um 12
+
+      - name: Run open finite-volume verifier
+        run: |
+          python scripts/solve_electrothermal_fvm.py \
+            outputs/electrothermal_mvp/prepared/stage5_contact_property_grid.csv \
+            outputs/electrothermal_mvp/fvm
+
+      - name: Cross-check archived COMSOL fields
+        run: |
+          python scripts/analyze_electrothermal_mvp.py \
+            docs/reproduction_goal/04_comsol_electrothermal_field/evidence/comsol_smoke/comsol_summary.json \
+            docs/reproduction_goal/04_comsol_electrothermal_field/evidence/comsol_smoke/comsol_fields.csv \
+            docs/reproduction_goal/04_comsol_electrothermal_field/evidence/comsol_smoke/comsol_batch.log \
+            outputs/electrothermal_mvp/fvm/fvm_summary.json \
+            outputs/electrothermal_mvp/fvm/fvm_fields.csv \
+            outputs/electrothermal_mvp/comparison
+          python -c "import json; data=json.load(open('outputs/electrothermal_mvp/comparison/comparison_summary.json')); assert data['decision']=='smoke_pass', data"
+
+      - name: Upload verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrothermal-mvp-verification
+          path: outputs/electrothermal_mvp
+          if-no-files-found: error

@@ -1,0 +1,49 @@
+{
+  "model_class": "homogenized_contact_network_electrothermal_mvp",
+  "fidelity": "mesoscale_smoke_model_not_particle_resolved",
+  "stage_id": "stage5_rho095",
+  "domain": {
+    "width_um": 400.0,
+    "height_um": 208.698534,
+    "nx": 81,
+    "ny": 43
+  },
+  "contact_mapping": {
+    "source_required": "liggghts_pair_gran_local",
+    "contact_count": 157,
+    "force_input_unit": "dyne",
+    "force_internal_unit": "N",
+    "weight_law": "sqrt(normal_force_N / median_normal_force_N)",
+    "kernel": "isotropic_gaussian",
+    "kernel_um": 12.0,
+    "median_normal_force_n": 0.278878469,
+    "max_kernel_sum": 5.505385228299731,
+    "grid_dx_um": 5.0,
+    "grid_dy_um": 4.969012714285714
+  },
+  "material_field": {
+    "sigma_floor_s_m": 1000.0,
+    "sigma_peak_s_m": 100000.0,
+    "k_floor_w_mk": 20.0,
+    "k_peak_w_mk": 100.0,
+    "calibration_status": "numerical_smoke_values_not_experimentally_calibrated"
+  },
+  "particles": {
+    "count": 76
+  },
+  "source_files": {
+    "particles": {
+      "path": "docs\\reproduction_goal\\04_comsol_electrothermal_field\\data\\source\\dem_fem_handoff_stage5_rho095.csv",
+      "sha256": "21d133371167c860e628db6ef205b0a365f963137b83e993a3b878b95b7cb39c"
+    },
+    "contacts": {
+      "path": "docs\\reproduction_goal\\04_comsol_electrothermal_field\\data\\source\\stage5_rho095_direct_contacts.csv",
+      "sha256": "0be09c111c6ac9c8da5e952dc08550699d0fe105282dfdde21045729b5e9f55b"
+    }
+  },
+  "generated_files": {
+    "property_grid": "stage5_contact_property_grid.csv",
+    "comsol_interpolation": "stage5_comsol_interpolation.txt",
+    "contact_sources": "stage5_contact_sources.csv"
+  }
+}

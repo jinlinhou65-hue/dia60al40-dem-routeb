@@ -1,0 +1,59 @@
+{
+  "decision": "smoke_pass",
+  "model_fidelity": "mesoscale_smoke_model_not_particle_resolved",
+  "comsol": {
+    "solver": "COMSOL 6.4",
+    "model": "homogenized_contact_network_electrothermal_mvp",
+    "max_temperature_k": 293.789814445,
+    "integrated_joule_2d_w_per_m_depth": 396.328060919,
+    "solve_status": "success",
+    "field_node_count": 1735,
+    "voltage_min_v": 0.0,
+    "voltage_max_v": 0.10000000000000002,
+    "temperature_min_k": 293.15,
+    "temperature_max_export_k": 293.78882671316563,
+    "current_density_max_a_m2": 25858095.68249737,
+    "joule_max_w_m3": 117869107111.99213
+  },
+  "fvm": {
+    "solver": "structured_finite_volume_parallel_check",
+    "nx": 81,
+    "ny": 43,
+    "applied_voltage_v": 0.1,
+    "ambient_temperature_k": 293.15,
+    "top_current_a_per_m_depth": 3915.9337058487963,
+    "electric_power_w_per_m_depth": 391.59337058487995,
+    "electric_relative_balance_error": 7.257964910885398e-16,
+    "voltage_min_v": 0.0,
+    "voltage_max_v": 0.1,
+    "temperature_min_k": 293.15,
+    "temperature_max_k": 293.78619257146715,
+    "temperature_rise_max_k": 0.636192571467177,
+    "field_csv": "fvm_fields.csv"
+  },
+  "comparison": {
+    "joule_power_relative_difference": 0.012018178830554454,
+    "max_temperature_rise_relative_difference": 0.005676886547009502,
+    "potential_nrmse_by_applied_voltage": 0.0029301104584453105,
+    "temperature_nrmse_by_max_rise": 0.007652301308761018
+  },
+  "gates": {
+    "comsol_solve_gate": true,
+    "log_error_gate": true,
+    "finite_field_gate": true,
+    "voltage_boundary_gate": true,
+    "positive_temperature_rise_gate": true,
+    "joule_power_agreement_gate": true,
+    "temperature_rise_agreement_gate": true,
+    "potential_field_agreement_gate": true,
+    "temperature_field_agreement_gate": true
+  },
+  "evidence_sha256": {
+    "comsol_summary": "8898f73236f49bbf565933bf7bbb5d13f5981426e1e59482f979524fd0747ba2",
+    "comsol_fields": "cd366c41eb54978abed8589735e0ce5fe2526b20116cb4131f6c22d45c7f1300",
+    "comsol_log": "2220c07269bc03edb6eca219c07f0f0c43f8903cbdbee84c255e96162204488b",
+    "fvm_summary": "a5f8d99b20b4575f9a73ce454408f4fef983efdff607d746f784d203995c11ca",
+    "fvm_fields": "b5287c9615e3d7279c58dab3afafa7d8a4fc3b0af6999a09552b5a9d225977f3"
+  },
+  "interpretation_boundary": "This proves a reproducible DEM-contact-to-electrothermal smoke route. It does not validate experimental conductivity, contact resistance, or particle-resolved fields."
+}

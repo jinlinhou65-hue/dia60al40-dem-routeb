@@ -2,61 +2,64 @@
 
 ## 阶段目的
 
-用 COMSOL 作为电流场和温度场主线，替代当前 Python 中的 lumped temperature
-proxy。DEM 负责颗粒位置、接触力和接触网络；COMSOL 负责连续场求解。
+用 COMSOL 作为电流场和温度场主线。DEM 提供颗粒位置、直接接触力和接触网络；
+COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有限体积求解器负责
+守恒和跨求解器复核。
 
-## 为什么使用 COMSOL
+## 当前完成状态
 
-用户已有 COMSOL。热场、电流场和 Joule heating 正是 COMSOL 的强项，因此热场
-不需要绕开 COMSOL。开源 FEM 只作为平行验证和无授权环境下的轻量替代。
+单阶段均匀化电热 smoke model 已完成并通过九项门槛：
 
-## 输入数据
+| 项目 | 结果 |
+|---|---:|
+| DEM stage | `stage5_rho095` |
+| 颗粒数 | 76 |
+| LIGGGHTS 直接接触数 | 157 |
+| COMSOL 网格 | 3316 个三角形单元 |
+| COMSOL 自由度 | 13570 + 308 internal DOF |
+| COMSOL 最大温升 | 0.639814 K |
+| 开源 FVM 最大温升 | 0.636193 K |
+| Joule 功率相对差 | 1.202% |
+| 电势场归一化 RMSE | 0.293% |
+| 温度场归一化 RMSE | 0.765% |
+| 阶段判定 | `smoke_pass` |
 
-| 输入 | 来源 | 用途 |
-|---|---|---|
-| `dem_fem_handoff_stage*.csv` | DEM workflow | 颗粒位置、半径、材料 |
-| `contact_forces/*_contacts.csv` | DEM workflow | 接触关系、接触力、可换算接触电导/热源 |
-| 材料参数 | PDF/材料手册 | Al、diamond、Cu、Fe 的电导、热导、热容 |
-| 边界条件 | 论文/实验设定 | 电极、电压/电流、散热、环境温度 |
+## 代码入口
 
-## COMSOL 模块建议
+- `scripts/prepare_comsol_electrothermal_input.py`：验证直接接触来源、转换力单位、
+  生成空间电导率和热导率网格。
+- `comsol/Dia60Al40_ElectrothermalMVP.java`：COMSOL Electric Currents + Heat Transfer
+  + Electromagnetic Heat Source builder。
+- `scripts/solve_electrothermal_fvm.py`：开源有限体积平行求解器。
+- `scripts/analyze_electrothermal_mvp.py`：COMSOL/FVM 场和能量交叉验证。
+- `scripts/run_comsol_electrothermal_mvp.ps1`：Windows COMSOL 受控目录批处理入口。
+- `.github/workflows/electrothermal-mvp-verification.yml`：不依赖 COMSOL 许可证的
+  GitHub 轻量复核。
 
-| 物理场 | COMSOL 模块 |
-|---|---|
-| 电流分布 | Electric Currents |
-| 温度场 | Heat Transfer in Solids |
-| 电热耦合 | Joule Heating |
-| 后续热-力耦合 | Solid Mechanics + Thermal Expansion |
+详细公式、边界条件和验收条件见 [model_spec.md](model_spec.md)。阶段结果见
+[report.md](report.md)。
 
-## 最小可行模型
+## 证据位置
 
-第一步只做一个 DEM stage 的小模型：
+```text
+data/source/       # 最小 DEM 粒子、直接接触和模型参数输入
+data/prepared/     # 属性网格、COMSOL 插值文件、哈希 manifest
+evidence/comsol_smoke/  # MPH、原始 COMSOL CSV、图和 batch log
+evidence/fvm_smoke/     # 开源 FVM 场、摘要和图
+evidence/comparison/    # 九项验收、跨求解器报告和对比图
+```
 
-1. 导入 stage5 或中间 stage 的颗粒几何。
-2. 给 Al/diamond 或 Cu/Fe 分配材料参数。
-3. 对上下边界施加电压或电流。
-4. 接触处采用接触电阻/热阻，或把 DEM 接触热源映射为局部热源。
-5. 求解电势、电流密度、Joule heat、温度场。
-6. 导出粒子平均温度、热点位置、热通量和温度梯度。
+## 证据边界
 
-## 可视化目标
+当前 `smoke_pass` 证明真实 DEM 直接接触可以稳定映射到 COMSOL 电热连续场，且
+独立开源离散化得到一致结果。它不证明以下内容：
 
-阶段完成后应至少包含：
+- 颗粒分辨的 Al/diamond 几何与接触电阻；
+- 电导率、热导率和接触半径已经由论文或实验标定；
+- 网格独立性和电压/电流加载路径独立性；
+- 多压制阶段热历史、扩散和烧结颈增长已经闭环。
 
-- 颗粒几何图。
-- 电势场图。
-- 电流密度图。
-- 温度场图。
-- 颗粒温度分布直方图。
-- 接触力与温度热点的相关性图。
+## 下一门槛
 
-## 验收门槛
-
-| 验收项 | 判定 |
-|---|---|
-| COMSOL 能导入 DEM 颗粒几何 | 待完成 |
-| 电流场求解收敛 | 待完成 |
-| 温度场求解收敛 | 待完成 |
-| 输出能回写到 Python 后处理 | 待完成 |
-| 热源-温度-烧结指标链条可运行 | 待完成 |
-
+阶段 04 下一步不是重复 smoke run，而是引入论文/材料来源的电热参数和接触电阻，
+完成至少三档网格验证，再把粒子温度输出交给阶段 06 的 Liu 烧结模型。
