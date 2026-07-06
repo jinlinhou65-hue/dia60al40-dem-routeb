@@ -2,6 +2,17 @@ name: Electrothermal MVP Verification
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - codex/paper-reproduction-demo
+    paths:
+      - .github/workflows/electrothermal-mvp-verification.yml
+      - comsol/Dia60Al40_ElectrothermalMVP.java
+      - scripts/analyze_electrothermal_mvp.py
+      - scripts/prepare_comsol_electrothermal_input.py
+      - scripts/solve_electrothermal_fvm.py
+      - tests/test_comsol_electrothermal_mvp.py
+      - docs/reproduction_goal/04_comsol_electrothermal_field/data/source/**
 
 permissions:
   contents: read
