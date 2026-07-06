@@ -1,0 +1,2 @@
+artifact_imported,workflow_completed,solver_provenance_gate,baseline_regression_gate,mean_pressure_gate,cv_gate,trend_gate,combined_coverage_gate,decision
+True,True,pass,pass,review,review,review,review,c_wall_friction_not_better

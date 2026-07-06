@@ -97,6 +97,18 @@ This file records the GitHub Actions evidence imported into this stage.
 |---:|---:|---|---|
 | [28729754426](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28729754426) | `8088409305` | `sha256:2047d65c1a2823161075ed187c05da110163fc897cb3b1c080b5e4989f27060a` | `evidence/pscale2_c_loading_rate_recheck_run_28729754426/` |
 
+## pscale=2 C Sidewall-Friction Recheck
+
+| Workflow | Run | Status | Commit | Meaning |
+|---|---:|---|---|---|
+| `zhang-pscale2-c-wall-friction-recheck.yml` | [28747844572](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28747844572) | success | `7475cd5` | Validated and dispatched two wall scales over seeds 0..4 |
+| `dia60al40-dem.yml` | [28747847286](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28747847286) | success | `7475cd5` | Ten paired DEM jobs plus ensemble |
+| `dia60al40-dem.yml` push regression | [28747844565](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28747844565) | success | `7475cd5` | Default core regression; excluded from paired physics |
+
+| Valid DEM run | Artifact id | Artifact digest | Imported directory |
+|---:|---:|---|---|
+| [28747847286](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28747847286) | `8093807720` | `sha256:dd568fbdb5f307c756230a6597ed3cba6377a3fbfb8d00b27d7ded6c513cc3b8` | `evidence/pscale2_c_wall_friction_recheck_run_28747847286/` |
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through
@@ -171,3 +183,12 @@ The interpreted pscale=2 C loading-rate result is stored in:
 - `data/pscale2_c_loading_rate_summary.json`
 - `figures/pscale2_c_loading_rate_paired.png`
 - `pscale2_c_loading_rate_report.md`
+
+The interpreted pscale=2 C sidewall-friction result is stored in:
+
+- `data/pscale2_c_wall_friction_candidates.csv`
+- `data/pscale2_c_wall_friction_paired.csv`
+- `data/pscale2_c_wall_friction_acceptance.csv`
+- `data/pscale2_c_wall_friction_summary.json`
+- `figures/pscale2_c_wall_friction_paired.png`
+- `pscale2_c_wall_friction_report.md`

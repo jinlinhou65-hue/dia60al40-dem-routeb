@@ -1,0 +1,42 @@
+{
+  "baseline": {
+    "p95_cv": 0.03957423315053406,
+    "p95_max_mpa": 607.731725,
+    "p95_mean_mpa": 574.2111361999999,
+    "p95_min_mpa": 543.867388,
+    "p95_stdev_mpa": 22.723965381611865,
+    "pass_and_window_count": 2,
+    "pressure_window_count": 3,
+    "trend_pass_count": 4
+  },
+  "baseline_effective_mu_wall": 0.05232,
+  "baseline_mu_wall_scale": 1.0,
+  "decision": "c_wall_friction_not_better",
+  "diamond_size_case": "C",
+  "e_al_emax_gpa": 72.581,
+  "historical_baseline_cv": 0.03957423315,
+  "liggghts_commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+  "mu_scale": 0.654,
+  "p95_cv_change_percent": 41.70991130976043,
+  "p95_mean_delta_mpa": -9.097280199999886,
+  "particle_count_scale": 2,
+  "pressure_window_mpa": [
+    572.0,
+    638.0
+  ],
+  "recommended_next_step": "Reject mu_w=0.001, restore wall scale 1, and return to the contact-model audit before another variable.",
+  "run_id": "28747847286",
+  "seed_count_per_group": 5,
+  "test": {
+    "p95_cv": 0.056080610699139624,
+    "p95_max_mpa": 608.187754,
+    "p95_mean_mpa": 565.113856,
+    "p95_min_mpa": 522.993821,
+    "p95_stdev_mpa": 31.691930159025652,
+    "pass_and_window_count": 1,
+    "pressure_window_count": 2,
+    "trend_pass_count": 3
+  },
+  "test_effective_mu_wall": 0.000999992,
+  "test_mu_wall_scale": 0.019113
+}
