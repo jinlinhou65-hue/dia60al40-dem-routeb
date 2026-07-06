@@ -109,6 +109,12 @@ This file records the GitHub Actions evidence imported into this stage.
 |---:|---:|---|---|
 | [28747847286](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28747847286) | `8093807720` | `sha256:dd568fbdb5f307c756230a6597ed3cba6377a3fbfb8d00b27d7ded6c513cc3b8` | `evidence/pscale2_c_wall_friction_recheck_run_28747847286/` |
 
+Dispatcher [28789102644](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789102644)
+was unintentionally retriggered when the completed audit JSON was updated, creating child
+run [28789107272](https://github.com/jinlinhou65-hue/dia60al40-dem-routeb/actions/runs/28789107272).
+This duplicate was not preregistered, is excluded from all physical interpretation, and will
+not be imported. Push dispatch was removed from the completed sidewall workflow afterward.
+
 ## Imported Artifact
 
 Each run imported the `dia60al40-dem-ensemble-summary` artifact through

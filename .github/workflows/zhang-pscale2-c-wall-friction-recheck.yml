@@ -7,11 +7,6 @@ on:
         description: 'JSON list of paired DEM seeds for the C sidewall-friction recheck'
         required: false
         default: '["0","1","2","3","4"]'
-  push:
-    paths:
-      - '.github/workflows/zhang-pscale2-c-wall-friction-recheck.yml'
-      - 'scripts/dispatch_zhang_pscale2_c_wall_friction_recheck.py'
-      - 'docs/reproduction_goal/03_zhang_particle_scale/data/zhang_contact_parameter_audit.json'
 
 permissions:
   actions: write
