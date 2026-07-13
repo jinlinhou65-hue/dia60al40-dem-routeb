@@ -1,0 +1,16 @@
+{
+  "solver": "structured_finite_volume_parallel_check",
+  "nx": 161,
+  "ny": 85,
+  "applied_voltage_v": 0.1,
+  "ambient_temperature_k": 293.15,
+  "top_current_a_per_m_depth": 2176.4196406692186,
+  "electric_power_w_per_m_depth": 217.64196406715928,
+  "electric_relative_balance_error": 1.0908123343295437e-12,
+  "voltage_min_v": 0.0,
+  "voltage_max_v": 0.1,
+  "temperature_min_k": 293.15,
+  "temperature_max_k": 294.03911679550794,
+  "temperature_rise_max_k": 0.8891167955079595,
+  "field_csv": "fvm_fields.csv"
+}

@@ -99,6 +99,15 @@ class ComsolElectrothermalMvpTest(unittest.TestCase):
         self.assertIn("meshHminUm", source)
         self.assertIn("mesh_hmax_um", source)
 
+    def test_comsol_builder_and_wrapper_accept_parameterized_voltage(self) -> None:
+        source = (ROOT / "comsol" / "Dia60Al40_ElectrothermalMVP.java").read_text(encoding="utf-8")
+        wrapper = (ROOT / "scripts" / "run_comsol_electrothermal_mvp.ps1").read_text(encoding="utf-8")
+        self.assertIn("appliedVoltageV", source)
+        self.assertIn('model.param().set("Vapp", appliedVoltageV + "[V]")', source)
+        self.assertIn("top_current_a_per_m_depth", source)
+        self.assertIn("$AppliedVoltageV", wrapper)
+        self.assertIn("$InputSubpath", wrapper)
+
     def test_mesh_analyzer_parses_chinese_comsol_log_and_passes_refinement(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

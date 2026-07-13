@@ -134,3 +134,76 @@ thermal bounds remain numerical regularization values, not measured effective pr
 
 Passing the last two gates is named `conditional_sensitivity_pass`. It does not override a
 failed particle-network percolation gate and therefore is not a calibrated electrothermal pass.
+
+## Loading-Mode Extension
+
+The audited Liu PDF does not define an applied-current or applied-voltage boundary for the
+reproduced model. The two loading modes are therefore a project mechanism extension and are
+not labeled as a paper boundary condition.
+
+The Al-Al resistance multipliers remain `1/10/100`. The fixed-voltage family uses
+`V=0.1 V`. The fixed-current family uses the multiplier-10, `0.1 V` open-solver current as
+the frozen target:
+
+```text
+I_target = 325.1069953718656 A/m depth
+V_case = 0.1 V * I_target / I_case_at_0.1V
+```
+
+The model remains linear in voltage for each frozen property field. This makes the fixed-current
+voltage calculation exact for the discretized linear electrical problem and avoids iterative
+retuning. The expected limiting trends are
+
+```text
+fixed voltage: P = V^2 / R -> decreases as R increases
+fixed current: P = I^2 R   -> increases as R increases
+```
+
+All six licensed runs use the accepted medium COMSOL mesh (`hmax=8 um`, `hmin=1 um`, 3316
+elements). The mesh study must not be repeated. Each case must have a successful finite summary,
+a clean COMSOL log, the requested voltage, and COMSOL/FVM power, current, and maximum-rise
+differences no greater than the preregistered `5%` threshold. Trends, fixed element count, and
+same-scenario cross-mode COMSOL hotspot positions are additional gates.
+
+The archived six-case decision is `review`, not pass: both multiplier-1 cases have a symmetric
+COMSOL/FVM power and current difference of `5.0736553%`. All other case and global trend gates
+pass. This immutable result is stored in
+`evidence/loading_mode_sensitivity/comparison/loading_mode_comparison.json`.
+
+## Open-Solver Refinement Diagnostic
+
+After the original review, a separate preregistration froze the multiplier-1 fixed-voltage
+COMSOL fields and property grid. Only the structured FVM resolution changes:
+
+| Factor | Nodes | Grid |
+|---:|---:|---:|
+| 1 | 3483 | `81 x 43` |
+| 2 | 13685 | `161 x 85` |
+| 3 | 30607 | `241 x 127` |
+
+The factor-2/factor-3 power and maximum-rise differences must each be at most `1%`. Factor 3
+must differ from COMSOL by at most `5%` in power, current, and maximum temperature rise. To avoid
+using a single boundary maximum as a fragile hotspot test, COMSOL and FVM fields are bilinearly
+sampled on the common `241 x 127` grid; the weighted centroid of the top 1% Joule and temperature
+values must be within `24 um` (two original kernel lengths).
+
+All eight refinement gates pass. Factor 3 differs from COMSOL by `0.6823%` in power/current and
+`0.4508%` in maximum rise; the Joule and temperature centroid distances are `6.156 um` and
+`0.277 um`. This diagnoses the coarse open-verifier discretization. It does not alter the
+original six-case review and does not resolve particle-network percolation or experimental
+contact-resistance calibration.
+
+## Evidence Integrity Contract
+
+`scripts/build_electrothermal_loading_manifest.py` hashes the source inputs, preregistrations,
+implementation, workflow, tests, prepared grids, six COMSOL models/logs/fields, six base FVM
+cases, the preserved wrapper failure, and the three refinement levels. Verification requires:
+
+1. six successful COMSOL summaries, logs, and `.mph` models;
+2. six open loading summaries and three refinement summaries;
+3. exactly the two multiplier-1 cases failing the original gate;
+4. every non-case global loading gate passing;
+5. `fvm_refinement_pass` while `original_loading_decision` remains `review`;
+6. every recorded byte count and SHA-256 matching the repository file.
+
+This contract proves provenance and file integrity, not physical calibration.

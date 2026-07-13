@@ -278,3 +278,16 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
+
+
+def write_comsol_interpolation(path: Path, rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        raise ValueError("cannot write an empty COMSOL interpolation table")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="ascii") as handle:
+        handle.write("% x_um y_um sigma_s_m k_w_mk\n")
+        for row in rows:
+            handle.write(
+                f"{float(row['x_um']):.12g} {float(row['y_um']):.12g} "
+                f"{float(row['sigma_s_m']):.12g} {float(row['k_w_mk']):.12g}\n"
+            )

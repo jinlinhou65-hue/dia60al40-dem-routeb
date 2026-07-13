@@ -46,7 +46,7 @@ flowchart TD
 | 01 | [01_pdf_algorithm_layer](01_pdf_algorithm_layer/README.md) | 已完成基础层 | PDF 机制映射和四篇论文算法层复现 |
 | 02 | [02_dem_backend_light_demo](02_dem_backend_light_demo/README.md) | 已完成轻量层 | 开源 DEM 后端选择和 LIGGGHTS workflow demo |
 | 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | review | Zhang C/D/E 参数校准和 2x 粒子数升级 |
-| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | smoke + 网格 + 接触筛查完成 | COMSOL 电流场、温度场、Joule heat 主线 |
+| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 恒压/恒流机制已验证，物理标定 review | COMSOL 电流场、温度场、Joule heat 主线 |
 | 05 | [05_yuan_shape_arch_bridge](05_yuan_shape_arch_bridge/README.md) | 待启动 | Yuan 非球形颗粒、拱桥结构和 MPFEM 路线 |
 | 06 | [06_liu_sintering_coupling](06_liu_sintering_coupling/README.md) | 待启动 | Liu 压制-热场-烧结耦合 |
 | 07 | [07_li_core_shell_fem](07_li_core_shell_fem/README.md) | 待启动 | Li Cu@Fe 包覆颗粒 core-shell FEM/MPFEM |
@@ -80,6 +80,7 @@ flowchart TD
 | COMSOL 电热 smoke | COMSOL 6.4 真实求解成功；与开源 FVM 的 Joule 功率差 1.202%、最大温升差 0.568%，九项门槛全通过；GitHub verifier run `28793218330` success |
 | COMSOL 网格无关性 | 1512/3316/8390 三档真实求解通过；中/细网格 Joule 功率差 0.0277%、最大温升差 0.0187%，十项门槛全通过 |
 | 材料感知接触筛查 | 157 条接触完成 Hertz/电热阻分类；活跃 Al-Al 网络不贯通；电阻倍率 1/10/100 的条件 FVM 功率和温升单调下降 |
+| 恒压/恒流机制 | 六组固定 3316 单元 COMSOL 与 FVM 趋势一致；原比较保留 `review`，预注册 FVM 加密 `pass`；恒压降热、恒流升热 |
 | 接触筛查 GitHub demo | workflow run `29240835995` success，41 s，artifact digest `sha256:8e3a90b0...8470f885` |
 
 ## 仍未完成的边界
@@ -88,7 +89,7 @@ flowchart TD
 
 - Zhang 还没有论文级 3000 颗粒、600 MPa、力链图像一比一复现。
 - Yuan 还没有真实非球形颗粒或 MPFEM 形状模型。
-- Liu 已有 COMSOL 单阶段均匀化电流/温度场和材料感知接触筛查，但二维活跃网络不贯通，尚无 Al 氧化膜标定、三维接触和扩散/烧结闭环。
+- Liu 已有 COMSOL 单阶段均匀化电流/温度场、材料感知接触筛查和恒压/恒流机制验证，但二维活跃网络不贯通，尚无 Al 氧化膜标定、三维接触和扩散/烧结闭环。
 - Li 还没有 Cu@Fe core-shell 多颗粒 FEM/MPFEM 模型。
 - 当前轻量 DEM 和温度/烧结代理模型只能证明路线可行，不能替代最终论文级复现。
 
@@ -116,13 +117,12 @@ stage_folder/
 
 ## 当前下一步
 
-COMSOL 单阶段电热 smoke 已完成：stage5 的 157 条 LIGGGHTS 直接接触被映射为
-空间电导率/热导率，COMSOL 6.4 和开源 FVM 均得到非空电势、电流、Joule heat
-和温度场，九项交叉门槛全部通过。该结果只证明软件与数据路线，不是实验标定。
+Stage 04 已完成 smoke、三档网格、材料感知接触筛查和六组恒压/恒流固定网格计算。
+恒压下电阻倍率升高使功率/温升下降，恒流下则上升。原六组 COMSOL/FVM 比较因
+倍率 1 的 `5.0737%` 功率/电流差保留为 `review`；预注册 FVM 1x/2x/3x 加密把
+同一 case 的功率差降至 `0.6823%`，判定 `fvm_refinement_pass`，但不覆盖原 review。
 
-三档 COMSOL 网格验证已经完成，原 3316 单元网格对 Joule 功率和最大温升已收敛。
-材料感知筛查还证明当前二维 Al-Al 活跃网络不贯通，且 82.8% 接触超过 Hertz
-小变形警戒线；因此后续优先补三维贯通性或实测接触电阻，不再重复网格加密。
-下一小目标进入参数可信度升级：为 Al、diamond 和接触电阻补充论文/材料来源，
-完成参数与加载敏感性，再把粒子/空间温度输出接入阶段 06 的 Liu 烧结颈增长与
-致密化指标。Zhang 阶段继续保持 `review`，不恢复已被证据否决的单变量扫描。
+当前唯一小目标是让 GitHub 在无 COMSOL 许可证环境中重跑六组开源 FVM、解析已归档
+COMSOL、复现原 review 和加密 pass，并核验 116 个证据哈希。归档 workflow 后，
+Stage 04 只在三维贯通性和 Al 氧化膜接触电阻标定中选择一个主风险；未通过可信度
+评估前不把绝对温升送入 Stage 06 作实验预测。Zhang 继续保持 `review`。

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "base_parameter_set": {
+    "path": "data/source/electrothermal_parameter_set.json",
+    "sha256": "bad8c513dcf63f1b8df7fe365d88c88f551156b8bc68794a6ee8b6ec044f27f7"
+  },
+  "paper_loading_evidence": {
+    "paper": "Liu Chang compaction-sintering coupling PDF",
+    "pdf_sha256": "023fda662b186f8be43255c115bfe68fc34bb832b05719b6b3759b27f3cabfa9",
+    "pdf_page_count": 20,
+    "audit": "No applied voltage or current boundary is specified for the reproduced model. PDF page 13 mentions current-assisted sintering literature and PDF page 14 cites SPS literature only.",
+    "classification": "project_mechanism_extension_not_paper_boundary_condition"
+  },
+  "contact_resistance_multipliers": [1.0, 10.0, 100.0],
+  "reference_case": {
+    "multiplier": 10.0,
+    "applied_voltage_v": 0.1,
+    "fixed_current_rule": "use_reference_fvm_top_current_a_per_m_depth"
+  },
+  "loading_modes": ["fixed_voltage", "fixed_current"],
+  "ambient_temperature_k": 293.15,
+  "comsol_mesh": {
+    "hmax_um": 8.0,
+    "hmin_um": 1.0,
+    "expected_element_count": 3316,
+    "repeat_mesh_study": false
+  },
+  "acceptance": {
+    "fvm_power_balance_relative_max": 1e-8,
+    "fixed_current_relative_error_max": 1e-10,
+    "comsol_fvm_power_relative_difference_max": 0.05,
+    "comsol_fvm_temperature_rise_relative_difference_max": 0.05,
+    "comsol_fvm_current_relative_difference_max": 0.05,
+    "same_scenario_cross_mode_hotspot_distance_um_max": 1e-6
+  }
+}

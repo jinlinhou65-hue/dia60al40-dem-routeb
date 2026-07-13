@@ -1,0 +1,106 @@
+{
+  "decision": "fvm_refinement_pass",
+  "original_loading_decision": "review",
+  "levels": [
+    {
+      "factor": 1,
+      "node_count": 3483,
+      "solver": "structured_finite_volume_parallel_check",
+      "nx": 81,
+      "ny": 43,
+      "applied_voltage_v": 0.1,
+      "ambient_temperature_k": 293.15,
+      "top_current_a_per_m_depth": 2097.702040460907,
+      "electric_power_w_per_m_depth": 209.77020404614348,
+      "electric_relative_balance_error": 2.5146894880850756e-13,
+      "voltage_min_v": 0.0,
+      "voltage_max_v": 0.1,
+      "temperature_min_k": 293.15,
+      "temperature_max_k": 294.01135513233686,
+      "temperature_rise_max_k": 0.8613551323368824,
+      "field_csv": "fvm_fields.csv"
+    },
+    {
+      "factor": 2,
+      "node_count": 13685,
+      "solver": "structured_finite_volume_parallel_check",
+      "nx": 161,
+      "ny": 85,
+      "applied_voltage_v": 0.1,
+      "ambient_temperature_k": 293.15,
+      "top_current_a_per_m_depth": 2176.4196406692186,
+      "electric_power_w_per_m_depth": 217.64196406715928,
+      "electric_relative_balance_error": 1.0908123343295437e-12,
+      "voltage_min_v": 0.0,
+      "voltage_max_v": 0.1,
+      "temperature_min_k": 293.15,
+      "temperature_max_k": 294.03911679550794,
+      "temperature_rise_max_k": 0.8891167955079595,
+      "field_csv": "fvm_fields.csv"
+    },
+    {
+      "factor": 3,
+      "node_count": 30607,
+      "solver": "structured_finite_volume_parallel_check",
+      "nx": 241,
+      "ny": 127,
+      "applied_voltage_v": 0.1,
+      "ambient_temperature_k": 293.15,
+      "top_current_a_per_m_depth": 2191.896168393302,
+      "electric_power_w_per_m_depth": 219.18961683908677,
+      "electric_relative_balance_error": 1.1107294519306605e-12,
+      "voltage_min_v": 0.0,
+      "voltage_max_v": 0.1,
+      "temperature_min_k": 293.15,
+      "temperature_max_k": 294.0438949615462,
+      "temperature_rise_max_k": 0.8938949615462093,
+      "field_csv": "fvm_fields.csv"
+    }
+  ],
+  "comparison": {
+    "factor2_factor3_power_difference": 0.00708580990740983,
+    "factor2_factor3_rise_difference": 0.005359657354300443,
+    "factor3_comsol_power_difference": 0.006822894137841016,
+    "factor3_comsol_rise_difference": 0.0045080217751720915,
+    "factor3_comsol_current_difference": 0.00682289413673048,
+    "joule_centroid_distance_um": 6.156423999904691,
+    "temperature_centroid_distance_um": 0.2768127054134113
+  },
+  "centroids": {
+    "comsol_joule": {
+      "x_um": 92.67366714999521,
+      "y_um": 135.16430116210958,
+      "threshold": 31285316747.268143,
+      "point_count": 307
+    },
+    "fvm_joule": {
+      "x_um": 93.0151079464761,
+      "y_um": 141.31124956347924,
+      "threshold": 32275901211.79953,
+      "point_count": 307
+    },
+    "comsol_temperature": {
+      "x_um": 82.5477774408459,
+      "y_um": 98.79592905645558,
+      "threshold": 0.8316047591893038,
+      "point_count": 307
+    },
+    "fvm_temperature": {
+      "x_um": 82.80135411739103,
+      "y_um": 98.68491489974292,
+      "threshold": 0.828489854249552,
+      "point_count": 307
+    }
+  },
+  "gates": {
+    "all_balance_gate": true,
+    "factor2_factor3_power_convergence_gate": true,
+    "factor2_factor3_rise_convergence_gate": true,
+    "factor3_comsol_power_gate": true,
+    "factor3_comsol_rise_gate": true,
+    "factor3_comsol_current_gate": true,
+    "joule_centroid_gate": true,
+    "temperature_centroid_gate": true
+  },
+  "interpretation_boundary": "This diagnostic refines only the open verifier against the frozen COMSOL/property inputs. It does not change the original preregistered loading-mode review decision."
+}

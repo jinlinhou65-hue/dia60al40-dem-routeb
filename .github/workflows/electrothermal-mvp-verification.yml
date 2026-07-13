@@ -13,11 +13,20 @@ on:
       - scripts/prepare_comsol_electrothermal_input.py
       - scripts/electrothermal_contact_model.py
       - scripts/run_electrothermal_contact_sensitivity.py
+      - scripts/run_electrothermal_loading_sensitivity.py
+      - scripts/analyze_electrothermal_loading_comsol.py
+      - scripts/analyze_electrothermal_fvm_refinement.py
+      - scripts/build_electrothermal_loading_manifest.py
       - scripts/solve_electrothermal_fvm.py
       - tests/test_comsol_electrothermal_mvp.py
       - tests/test_electrothermal_contact_model.py
+      - tests/test_electrothermal_loading_sensitivity.py
+      - tests/test_electrothermal_loading_comsol.py
+      - tests/test_electrothermal_fvm_refinement.py
+      - tests/test_electrothermal_loading_manifest.py
       - docs/reproduction_goal/04_comsol_electrothermal_field/data/source/**
       - docs/reproduction_goal/04_comsol_electrothermal_field/evidence/contact_sensitivity/**
+      - docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/**
       - docs/reproduction_goal/04_comsol_electrothermal_field/evidence/mesh_convergence/**
 
 permissions:
@@ -40,7 +49,14 @@ jobs:
         run: python -m pip install --disable-pip-version-check numpy==2.2.6 scipy==1.15.3 matplotlib==3.10.3
 
       - name: Run focused tests
-        run: python -m unittest tests.test_comsol_electrothermal_mvp tests.test_electrothermal_contact_model -v
+        run: |
+          python -m unittest \
+            tests.test_comsol_electrothermal_mvp \
+            tests.test_electrothermal_contact_model \
+            tests.test_electrothermal_loading_sensitivity \
+            tests.test_electrothermal_loading_comsol \
+            tests.test_electrothermal_fvm_refinement \
+            tests.test_electrothermal_loading_manifest -v
 
       - name: Rebuild direct-contact property grid
         run: |
@@ -82,6 +98,41 @@ jobs:
             docs/reproduction_goal/04_comsol_electrothermal_field/data/source/electrothermal_parameter_set.json \
             outputs/electrothermal_mvp/contact_sensitivity
           python -c "import json; data=json.load(open('outputs/electrothermal_mvp/contact_sensitivity/sensitivity_summary.json')); assert data['decision']=='conditional_sensitivity_pass', data; assert data['electrical_network_percolates'] is False, data"
+
+      - name: Rebuild fixed-voltage and fixed-current open cases
+        run: |
+          python scripts/run_electrothermal_loading_sensitivity.py \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/dem_fem_handoff_stage5_rho095.csv \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/stage5_rho095_direct_contacts.csv \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/electrothermal_parameter_set.json \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/loading_mode_parameter_set.json \
+            outputs/electrothermal_mvp/loading_mode/prepared \
+            outputs/electrothermal_mvp/loading_mode/evidence
+          python -c "import json; data=json.load(open('outputs/electrothermal_mvp/loading_mode/evidence/loading_mode_summary.json')); assert data['decision']=='loading_mode_fvm_pass', data"
+
+      - name: Recheck archived COMSOL loading evidence
+        run: |
+          python scripts/analyze_electrothermal_loading_comsol.py \
+            outputs/electrothermal_mvp/loading_mode/evidence \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/loading_mode_parameter_set.json \
+            --comsol-evidence-dir docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity
+          python -c "import json; data=json.load(open('outputs/electrothermal_mvp/loading_mode/evidence/comparison/loading_mode_comparison.json')); assert data['decision']=='review', data; assert data['failed_case_ids']==['fixed_current_multiplier_1','fixed_voltage_multiplier_1'], data; assert data['gates']['all_case_gates'] is False, data; assert all(value for key,value in data['gates'].items() if key!='all_case_gates'), data"
+
+      - name: Refine the failing open-verifier case
+        run: |
+          python scripts/analyze_electrothermal_fvm_refinement.py \
+            outputs/electrothermal_mvp/loading_mode/prepared/multiplier_1/stage5_contact_property_grid.csv \
+            outputs/electrothermal_mvp/loading_mode/refinement/prepared \
+            outputs/electrothermal_mvp/loading_mode/refinement/evidence \
+            docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_summary.json \
+            docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_fields.csv
+          python -c "import json; data=json.load(open('outputs/electrothermal_mvp/loading_mode/refinement/evidence/comparison/fvm_refinement_summary.json')); assert data['decision']=='fvm_refinement_pass', data; assert data['original_loading_decision']=='review', data; assert all(data['gates'].values()), data"
+
+      - name: Verify archived loading evidence hashes
+        run: |
+          python scripts/build_electrothermal_loading_manifest.py \
+            --verify docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/evidence_manifest.json \
+            --verification-output outputs/electrothermal_mvp/loading_mode/manifest_verification.json
 
       - name: Upload verification evidence
         uses: actions/upload-artifact@v7

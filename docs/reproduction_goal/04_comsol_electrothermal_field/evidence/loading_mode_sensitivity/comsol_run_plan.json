@@ -1,0 +1,65 @@
+{
+  "fvm_decision_required": "loading_mode_fvm_pass",
+  "fixed_mesh": {
+    "hmax_um": 8.0,
+    "hmin_um": 1.0,
+    "expected_element_count": 3316,
+    "repeat_mesh_study": false
+  },
+  "cases": [
+    {
+      "case_id": "fixed_current_multiplier_1",
+      "loading_mode": "fixed_current",
+      "al_al_resistance_multiplier": 1.0,
+      "applied_voltage_v": 0.015498244703062427,
+      "input_subpath": "data/prepared/loading_mode_sensitivity/multiplier_1",
+      "evidence_subpath": "loading_mode_sensitivity/comsol/fixed_current/multiplier_1",
+      "fvm_summary_path": "evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_1/fvm_summary.json"
+    },
+    {
+      "case_id": "fixed_current_multiplier_10",
+      "loading_mode": "fixed_current",
+      "al_al_resistance_multiplier": 10.0,
+      "applied_voltage_v": 0.1,
+      "input_subpath": "data/prepared/loading_mode_sensitivity/multiplier_10",
+      "evidence_subpath": "loading_mode_sensitivity/comsol/fixed_current/multiplier_10",
+      "fvm_summary_path": "evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_10/fvm_summary.json"
+    },
+    {
+      "case_id": "fixed_current_multiplier_100",
+      "loading_mode": "fixed_current",
+      "al_al_resistance_multiplier": 100.0,
+      "applied_voltage_v": 0.41586338880600565,
+      "input_subpath": "data/prepared/loading_mode_sensitivity/multiplier_100",
+      "evidence_subpath": "loading_mode_sensitivity/comsol/fixed_current/multiplier_100",
+      "fvm_summary_path": "evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_100/fvm_summary.json"
+    },
+    {
+      "case_id": "fixed_voltage_multiplier_1",
+      "loading_mode": "fixed_voltage",
+      "al_al_resistance_multiplier": 1.0,
+      "applied_voltage_v": 0.1,
+      "input_subpath": "data/prepared/loading_mode_sensitivity/multiplier_1",
+      "evidence_subpath": "loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1",
+      "fvm_summary_path": "evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_1/fvm_summary.json"
+    },
+    {
+      "case_id": "fixed_voltage_multiplier_10",
+      "loading_mode": "fixed_voltage",
+      "al_al_resistance_multiplier": 10.0,
+      "applied_voltage_v": 0.1,
+      "input_subpath": "data/prepared/loading_mode_sensitivity/multiplier_10",
+      "evidence_subpath": "loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10",
+      "fvm_summary_path": "evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_10/fvm_summary.json"
+    },
+    {
+      "case_id": "fixed_voltage_multiplier_100",
+      "loading_mode": "fixed_voltage",
+      "al_al_resistance_multiplier": 100.0,
+      "applied_voltage_v": 0.1,
+      "input_subpath": "data/prepared/loading_mode_sensitivity/multiplier_100",
+      "evidence_subpath": "loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100",
+      "fvm_summary_path": "evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_100/fvm_summary.json"
+    }
+  ]
+}

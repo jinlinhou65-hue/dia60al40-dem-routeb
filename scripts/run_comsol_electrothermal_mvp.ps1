@@ -5,13 +5,16 @@ param(
     [double]$MeshHmaxUm = 8.0,
     [ValidateRange(0.000001, 1000000.0)]
     [double]$MeshHminUm = 1.0,
+    [ValidateRange(0.000000001, 1000000.0)]
+    [double]$AppliedVoltageV = 0.1,
+    [string]$InputSubpath = 'data\prepared',
     [string]$EvidenceSubpath = 'comsol_smoke'
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $stage = Join-Path $repo 'docs\reproduction_goal\04_comsol_electrothermal_field'
-$prepared = Join-Path $stage 'data\prepared'
+$inputRoot = [System.IO.Path]::GetFullPath((Join-Path $stage $InputSubpath))
 $evidenceRoot = [System.IO.Path]::GetFullPath((Join-Path $stage 'evidence'))
 $evidence = [System.IO.Path]::GetFullPath((Join-Path $evidenceRoot $EvidenceSubpath))
 $javaSource = Join-Path $repo 'comsol\Dia60Al40_ElectrothermalMVP.java'
@@ -25,8 +28,12 @@ $evidencePrefix = $evidenceRoot.TrimEnd([System.IO.Path]::DirectorySeparatorChar
 if (-not $evidence.StartsWith($evidencePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'EvidenceSubpath must resolve inside the stage evidence directory'
 }
+$stagePrefix = $stage.TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+if (-not $inputRoot.StartsWith($stagePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'InputSubpath must resolve inside the Stage 04 directory'
+}
 
-foreach ($required in @($javaSource, $compile, $batch, (Join-Path $prepared 'stage5_contact_property_grid.csv'), (Join-Path $prepared 'stage5_comsol_interpolation.txt'))) {
+foreach ($required in @($javaSource, $compile, $batch, (Join-Path $inputRoot 'stage5_contact_property_grid.csv'), (Join-Path $inputRoot 'stage5_comsol_interpolation.txt'))) {
     if (-not (Test-Path -LiteralPath $required)) {
         throw "Required file not found: $required"
     }
@@ -36,8 +43,8 @@ New-Item -ItemType Directory -Force -Path $ApplicationDir, $evidence | Out-Null
 $resultDir = Join-Path $ApplicationDir 'result'
 New-Item -ItemType Directory -Force -Path $resultDir | Out-Null
 Copy-Item -LiteralPath $javaSource -Destination (Join-Path $ApplicationDir 'Dia60Al40_ElectrothermalMVP.java') -Force
-Copy-Item -LiteralPath (Join-Path $prepared 'stage5_contact_property_grid.csv') -Destination (Join-Path $ApplicationDir 'stage5_contact_property_grid.csv') -Force
-Copy-Item -LiteralPath (Join-Path $prepared 'stage5_comsol_interpolation.txt') -Destination (Join-Path $ApplicationDir 'stage5_comsol_interpolation.txt') -Force
+Copy-Item -LiteralPath (Join-Path $inputRoot 'stage5_contact_property_grid.csv') -Destination (Join-Path $ApplicationDir 'stage5_contact_property_grid.csv') -Force
+Copy-Item -LiteralPath (Join-Path $inputRoot 'stage5_comsol_interpolation.txt') -Destination (Join-Path $ApplicationDir 'stage5_comsol_interpolation.txt') -Force
 
 Push-Location $ApplicationDir
 try {
@@ -54,9 +61,6 @@ $classFile = Join-Path $ApplicationDir 'Dia60Al40_ElectrothermalMVP.class'
 $gridFile = Join-Path $ApplicationDir 'stage5_contact_property_grid.csv'
 $logFile = Join-Path $ApplicationDir 'comsol_batch.log'
 $runStarted = Get-Date
-$preexistingBatchIds = @(
-    Get-Process -Name 'comsolbatch' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id
-)
 $batchProcess = Start-Process -FilePath $batch -ArgumentList @(
     '-inputfile', $classFile,
     '-batchlog', $logFile,
@@ -64,7 +68,8 @@ $batchProcess = Start-Process -FilePath $batch -ArgumentList @(
     $gridFile,
     $resultDir,
     $MeshHmaxUm.ToString([System.Globalization.CultureInfo]::InvariantCulture),
-    $MeshHminUm.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+    $MeshHminUm.ToString([System.Globalization.CultureInfo]::InvariantCulture),
+    $AppliedVoltageV.ToString([System.Globalization.CultureInfo]::InvariantCulture)
 ) -WindowStyle Hidden -Wait -PassThru
 if ($batchProcess.ExitCode -ne 0) {
     throw "comsolbatch launcher failed with exit code $($batchProcess.ExitCode)"
@@ -74,22 +79,21 @@ if ($batchProcess.ExitCode -ne 0) {
 $summaryPath = Join-Path $resultDir 'comsol_summary.json'
 $deadline = $runStarted.AddSeconds(210)
 do {
-    $newBatchProcesses = @(
-        Get-Process -Name 'comsolbatch' -ErrorAction SilentlyContinue |
-            Where-Object { $preexistingBatchIds -notcontains $_.Id }
-    )
     $summaryIsFresh = (Test-Path -LiteralPath $summaryPath) -and
         ((Get-Item -LiteralPath $summaryPath).LastWriteTime -ge $runStarted)
-    $logIsComplete = (Test-Path -LiteralPath $logFile) -and
-        ((Get-Content -LiteralPath $logFile -Raw) -match '总时间:|Total time:')
-    if ($newBatchProcesses.Count -eq 0 -and $summaryIsFresh -and $logIsComplete) {
+    $lastLogLine = if (Test-Path -LiteralPath $logFile) {
+        Get-Content -LiteralPath $logFile | Where-Object { $_.Trim() } | Select-Object -Last 1
+    }
+    # COMSOL ends localized batch logs with "<label>: <seconds> s.".
+    $logIsComplete = $lastLogLine -match ':\s*\d+\s*s\.\s*$'
+    if ($summaryIsFresh -and $logIsComplete) {
         break
     }
     Start-Sleep -Seconds 2
 } while ((Get-Date) -lt $deadline)
 
-if (-not $summaryIsFresh -or -not $logIsComplete -or $newBatchProcesses.Count -ne 0) {
-    throw 'COMSOL batch did not produce fresh completed evidence within 210 seconds'
+if (-not $summaryIsFresh -or -not $logIsComplete) {
+    throw "COMSOL batch evidence timeout: summaryFresh=$summaryIsFresh logComplete=$logIsComplete"
 }
 
 $logText = Get-Content -LiteralPath $logFile -Raw
@@ -101,10 +105,15 @@ if (-not (Test-Path -LiteralPath $summaryPath)) {
 }
 $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
 $maxTemperature = [double]$summary.max_temperature_k
+$summaryVoltage = [double]$summary.applied_voltage_v
+$summaryCurrent = [double]$summary.top_current_a_per_m_depth
 if (
     $summary.solve_status -ne 'success' -or
     [double]::IsNaN($maxTemperature) -or
-    [double]::IsInfinity($maxTemperature)
+    [double]::IsInfinity($maxTemperature) -or
+    [double]::IsNaN($summaryCurrent) -or
+    [double]::IsInfinity($summaryCurrent) -or
+    [math]::Abs($summaryVoltage - $AppliedVoltageV) -gt 1.0e-10
 ) {
     throw 'COMSOL summary did not pass the finite successful-solve gate'
 }
@@ -121,4 +130,4 @@ foreach ($name in @(
     Copy-Item -LiteralPath (Join-Path $resultDir $name) -Destination (Join-Path $evidence $name) -Force
 }
 
-Write-Host "COMSOL electrothermal MVP passed and was archived to $evidence"
+Write-Host "COMSOL electrothermal MVP passed at $AppliedVoltageV V and was archived to $evidence"

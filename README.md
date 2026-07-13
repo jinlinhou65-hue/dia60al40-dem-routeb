@@ -236,3 +236,8 @@ The stage-5 homogenized electrothermal MVP is documented in
 to spatial electrical/thermal properties, solves Electric Currents and Heat Transfer in
 COMSOL 6.4, and compares the fields with an open finite-volume implementation. This does
 not replace DEM for compaction pressure and is not yet a particle-resolved contact model.
+The fixed 3316-element model also has six archived fixed-voltage/fixed-current cases. Their
+opposite Joule-power trends are verified by the open solver; the original multiplier-1
+cross-solver comparison remains `review` at 5.0737%, while a separately preregistered FVM
+refinement passes at 0.6823%. See the Stage 04 report and evidence manifest for the preserved
+decisions, model files, logs, hashes, and physical limits.

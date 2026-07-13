@@ -8,7 +8,8 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 
 ## 当前完成状态
 
-单阶段均匀化电热 smoke model 已完成，并通过跨求解器和三档网格门槛：
+单阶段均匀化电热 smoke、跨求解器、三档网格、材料感知接触筛查和恒压/恒流
+机制验证均已完成。恒压/恒流结果保留“原比较 review、加密诊断 pass”两层判定：
 
 | 项目 | 结果 |
 |---|---:|
@@ -28,7 +29,13 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | 中/细网格最大温升差 | `0.0187%` |
 | GitHub mesh verifier | run `29236808994`, success, 29 s |
 | GitHub contact verifier | run `29240835995`, success, 41 s |
-| 阶段判定 | `smoke_pass + mesh_pass + contact_screened` |
+| 恒压/恒流 COMSOL | 6 组，均为固定 3316 单元网格 |
+| 原六组 COMSOL/FVM 判定 | `review`，倍率 1 功率/电流差 `5.0737% > 5%` |
+| 预注册 FVM 加密判定 | `fvm_refinement_pass` |
+| 3x FVM/COMSOL 功率差 | `0.6823%` |
+| 3x FVM/COMSOL温升差 | `0.4508%` |
+| Joule 热 top-1% 质心距离 | `6.156 um < 24 um` |
+| 阶段判定 | `loading_mode_verified_with_refined_open_solver`，物理标定仍为 `review` |
 
 ## 代码入口
 
@@ -47,6 +54,14 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
   热收缩/界面热阻和电网络贯通性。
 - `scripts/run_electrothermal_contact_sensitivity.py`：冻结归一化下的 `1/10/100`
   Al-Al 接触电阻倍率重跑、热点和趋势判定。
+- `scripts/run_electrothermal_loading_sensitivity.py`：在同一属性场上生成恒压和恒流
+  六组开源算例，并固定恒流目标与 COMSOL 运行计划。
+- `scripts/analyze_electrothermal_loading_comsol.py`：比较六组归档 COMSOL 与 FVM，
+  保留原 5% 门槛和 `review` 判定。
+- `scripts/analyze_electrothermal_fvm_refinement.py`：只对失败的倍率 1 恒压 case 做
+  预注册 1x/2x/3x 开源网格诊断，不重跑 COMSOL。
+- `scripts/build_electrothermal_loading_manifest.py`：验证 116 个输入、实现、模型、
+  日志和结果文件的大小、SHA-256、结构与三层判定。
 
 详细公式、边界条件和验收条件见 [model_spec.md](model_spec.md)。阶段结果见
 [report.md](report.md)。
@@ -61,6 +76,7 @@ evidence/fvm_smoke/     # 开源 FVM 场、摘要和图
 evidence/comparison/    # 九项验收、跨求解器报告和对比图
 evidence/mesh_convergence/  # 三档网格场、日志、摘要和收敛图
 evidence/contact_sensitivity/  # 接触物理表、网络图、三档 FVM 场和敏感性判定
+evidence/loading_mode_sensitivity/  # 六组 COMSOL/FVM、原 review、加密 pass、失败证据和 manifest
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
 evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 artifact digest
@@ -81,8 +97,21 @@ evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 
 Al-Al 边活跃，当前二维截面不形成上下电极贯通路径。`130/157` 个接触还超过
 Hertz 小变形警戒线。因此三档 FVM 的趋势是条件性响应，不是实际电阻烧结温升预测。
 
+恒压/恒流研究进一步证明，电源控制方式会改变接触电阻对发热的方向：固定 `0.1 V`
+时倍率 `1/10/100` 的 FVM 功率为 `209.770/32.511/7.818 W/m`，随电阻上升而下降；
+固定约 `325.107 A/m` 时对应功率为 `5.039/32.511/135.200 W/m`，随电阻上升而
+上升。COMSOL 得到相同方向。该结果是项目机制扩展；刘畅 PDF 没有给出复现模型的
+电压或电流边界，不能把该边界写成论文原设定。
+
+原六组比较仍为 `review`，因为倍率 1 的恒压与恒流 case 都有 `5.0737%` 的
+COMSOL/FVM 功率和电流差，略超预注册 5% 门槛。后续预注册的 FVM 网格加密把同一
+恒压倍率 1 case 的功率差降至 `0.6823%`、温升差降至 `0.4508%`，并使 top-1%
+Joule 热质心距离达到 `6.156 um`，说明原超限来自粗开源网格离散误差；该诊断不
+覆盖原判定。完整哈希证据见 `evidence/loading_mode_sensitivity/evidence_manifest.json`。
+
 ## 下一门槛
 
-三档网格和接触倍率筛查已经通过。阶段 04 下一步不是重复 smoke 或继续加密网格，
-而是获得 Al 粉氧化膜/压制电阻标定，或建立能确认贯通性的三维接触网络；随后只在
-已接受的 3316 单元网格上跑选定参数的 COMSOL 场，再把粒子温度输出交给阶段 06。
+本轮先完成 GitHub 无许可证重放并归档 run ID 和 artifact digest。之后只在“Al 粉
+氧化膜/压制电阻标定”和“三维接触网络贯通性”中选择一个主风险，不重复 smoke、
+六组恒压/恒流或 COMSOL 网格。两项物理风险至少解决一项并重新评估 Stage 06 输入
+可信度前，不把当前温度绝对值交给烧结闭环作实验预测。

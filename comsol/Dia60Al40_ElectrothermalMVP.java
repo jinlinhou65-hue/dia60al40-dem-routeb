@@ -14,13 +14,15 @@ public class Dia60Al40_ElectrothermalMVP {
     private double heightUm;
     private double meshHmaxUm = 8.0;
     private double meshHminUm = 1.0;
+    private double appliedVoltageV = 0.1;
     private String interpolationPath;
     private String outputDir;
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 2 && args.length != 4) {
+        if (args.length != 2 && args.length != 4 && args.length != 5) {
             throw new IllegalArgumentException(
-                "usage: <property-grid.csv> <output-directory> [mesh-hmax-um mesh-hmin-um]"
+                "usage: <property-grid.csv> <output-directory> "
+                + "[mesh-hmax-um mesh-hmin-um [applied-voltage-v]]"
             );
         }
         Dia60Al40_ElectrothermalMVP app = new Dia60Al40_ElectrothermalMVP();
@@ -29,8 +31,16 @@ public class Dia60Al40_ElectrothermalMVP {
             app.meshHmaxUm = Double.parseDouble(args[2]);
             app.meshHminUm = Double.parseDouble(args[3]);
         }
+        if (args.length == 5) {
+            app.meshHmaxUm = Double.parseDouble(args[2]);
+            app.meshHminUm = Double.parseDouble(args[3]);
+            app.appliedVoltageV = Double.parseDouble(args[4]);
+        }
         if (app.meshHmaxUm <= 0.0 || app.meshHminUm <= 0.0 || app.meshHminUm > app.meshHmaxUm) {
             throw new IllegalArgumentException("mesh sizes must satisfy 0 < hmin <= hmax");
+        }
+        if (!Double.isFinite(app.appliedVoltageV) || app.appliedVoltageV <= 0.0) {
+            throw new IllegalArgumentException("applied voltage must be finite and positive");
         }
         app.readGrid(args[0]);
         app.buildAndSolve();
@@ -110,7 +120,7 @@ public class Dia60Al40_ElectrothermalMVP {
     private void defineParameters() {
         model.param().set("W", widthUm + "[um]");
         model.param().set("H", heightUm + "[um]");
-        model.param().set("Vapp", "0.1[V]");
+        model.param().set("Vapp", appliedVoltageV + "[V]");
         model.param().set("Tamb", "293.15[K]");
         model.param().set("rho_eff", "2700[kg/m^3]");
         model.param().set("Cp_eff", "900[J/(kg*K)]");
@@ -217,12 +227,16 @@ public class Dia60Al40_ElectrothermalMVP {
         model.result().numerical("intQ").set("expr", "ec.Qh");
         model.result().numerical("intQ").selection().all();
         double integratedJoule = model.result().numerical("intQ").getReal()[0][0];
+        double inferredTopCurrent = integratedJoule / appliedVoltageV;
         FileWriter writer = new FileWriter(new File(directory, "comsol_summary.json"));
         writer.write(String.format(Locale.US,
-            "{\n  \"solver\": \"COMSOL 6.4\",\n  \"model\": \"homogenized_contact_network_electrothermal_mvp\",\n  \"mesh_hmax_um\": %.12g,\n  \"mesh_hmin_um\": %.12g,\n  \"ambient_temperature_k\": 293.15,\n  \"max_temperature_k\": %.12g,\n  \"integrated_joule_2d_w_per_m_depth\": %.12g,\n  \"solve_status\": \"success\"\n}\n",
-            meshHmaxUm, meshHminUm, maxTemperature, integratedJoule));
+            "{\n  \"solver\": \"COMSOL 6.4\",\n  \"model\": \"homogenized_contact_network_electrothermal_mvp\",\n  \"mesh_hmax_um\": %.12g,\n  \"mesh_hmin_um\": %.12g,\n  \"applied_voltage_v\": %.12g,\n  \"ambient_temperature_k\": 293.15,\n  \"max_temperature_k\": %.12g,\n  \"integrated_joule_2d_w_per_m_depth\": %.12g,\n  \"top_current_a_per_m_depth\": %.12g,\n  \"current_inference\": \"integrated_joule_divided_by_applied_voltage\",\n  \"solve_status\": \"success\"\n}\n",
+            meshHmaxUm, meshHminUm, appliedVoltageV, maxTemperature, integratedJoule,
+            inferredTopCurrent));
         writer.close();
-        log(String.format(Locale.US, "[RESULT] maxT_K=%.9g intQ_W_per_m=%.9g", maxTemperature, integratedJoule));
+        log(String.format(Locale.US,
+            "[RESULT] Vapp_V=%.9g maxT_K=%.9g intQ_W_per_m=%.9g current_A_per_m=%.9g",
+            appliedVoltageV, maxTemperature, integratedJoule, inferredTopCurrent));
     }
 
     private void exportImage(String tag, String plotGroup, String filename) {
