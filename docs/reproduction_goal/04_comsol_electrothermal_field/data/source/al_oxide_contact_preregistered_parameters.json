@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "status": "preregistered_not_calibrated",
+  "frozen_date": "2026-07-13",
+  "scientific_question": "On the archived 50-edge Al-Al direct-contact graph, do intact native oxide films suppress conduction, or can a small metallic bridge fraction dominate current and Joule localization?",
+  "input_contract": {
+    "archive_run": 29246532552,
+    "particle_count": 96,
+    "direct_contact_count": 115,
+    "al_al_edge_count": 50,
+    "source": "liggghts_pair_gran_local",
+    "files": {
+      "pilot_final_particles.csv": "a65ce68b8f407b15a28fa4b307ddf76f655b4811fb4ad3d7696cb580eb5deaf2",
+      "pilot_final_direct_contacts.csv": "c14f72b320f5a26749b9f82591bd9baab4cd9a641c5c72252d373a0e0d2bbfbb",
+      "contact_physics.csv": "20a17cae4d89f15f7095aa1b783bc60b3d46a7d7f5165d49f2e19936b44cf49f"
+    }
+  },
+  "frozen_quantities": {
+    "al_resistivity_ohm_m": 2.65e-8,
+    "particle_film_thickness_m": [5e-9, 6e-9, 8e-9],
+    "pair_film_thickness_multiplier": 2.0,
+    "film_effective_resistivity_ohm_m": [1e6, 1e9, 1e12],
+    "metallic_bridge_area_fraction": [0.0, 1e-12, 1e-10, 1e-8, 1e-6, 1e-4, 1e-2, 1.0],
+    "fixed_voltage_v": 0.1,
+    "fixed_current_a": 1.0,
+    "dielectric_breakdown_field_v_m": [4e8, 5e8]
+  },
+  "models": {
+    "clean_lower_bound": {
+      "equation": "R_clean = rho_Al / (2*a)",
+      "role": "clean Holm constriction lower-resistance boundary"
+    },
+    "intact_oxide_upper_family": {
+      "equations": [
+        "A = pi*a^2",
+        "d_pair = 2*d_particle",
+        "R_film = rho_f*d_pair/A",
+        "R_edge = R_clean + R_film"
+      ],
+      "role": "complete-film ohmic screening family"
+    },
+    "partial_rupture_primary": {
+      "equations": [
+        "G_metal = sqrt(f_m)/R_clean",
+        "G_film = (1-f_m)/R_film",
+        "R_edge = 1/(G_metal + G_film)"
+      ],
+      "central_film_thickness_m": 6e-9,
+      "central_film_resistivity_ohm_m": 1e6,
+      "role": "effective single-metallic-bridge area-fraction hypothesis"
+    }
+  },
+  "network_boundary_contract": {
+    "bottom_electrodes": "reuse archived surface-intersection particle IDs at 0 V",
+    "top_electrodes": "reuse archived surface-intersection particle IDs at fixed voltage",
+    "solve": "full resistor network with Dirichlet electrodes and KCL at internal nodes",
+    "fixed_current": "scale the same linear network solution to total current 1 A",
+    "shortest_path": "report separately; never substitute for full-network equivalent resistance"
+  },
+  "acceptance_gates": {
+    "input_hash_match": true,
+    "preserve_counts": [96, 115, 50],
+    "allow_inferred_edges": false,
+    "relative_kcl_residual_max": 1e-10,
+    "relative_power_balance_error_max": 1e-10,
+    "require_intact_edge_resistance_not_below_clean": true,
+    "require_fixed_voltage_power_nondecreasing_with_bridge_fraction": true,
+    "require_fixed_current_power_nonincreasing_with_bridge_fraction": true,
+    "report_top_edge_hotspots": 5,
+    "report_electric_field_boundary_exceedance": true
+  },
+  "stop_conditions": [
+    "Do not rerun DEM or COMSOL for this gate.",
+    "Do not fit metallic bridge fraction to an expected temperature.",
+    "If KCL or power balance fails, stop before interpretation.",
+    "If source applicability is insufficient, retain review and specify the minimum experiment instead of widening claims."
+  ]
+}

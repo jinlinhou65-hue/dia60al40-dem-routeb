@@ -208,3 +208,48 @@ cases, the preserved wrapper failure, and the three refinement levels. Verificat
    LF-normalized bytes for Windows/Linux portability; binary `.mph` and images use raw bytes.
 
 This contract proves provenance and file integrity, not physical calibration.
+
+## Al Native-Oxide Contact Preregistration
+
+The archived true-3D run supplies 96 particles, 115 direct `pair/gran/local` contacts, and
+50 Al-Al edges. Its graph, electrode nodes, Hertz radii, material labels, and hashes are frozen.
+No DEM or COMSOL solve is part of this gate.
+
+The source ledger is `data/source/al_oxide_contact_parameter_sources.csv`. Aluminum powder
+measurements support a per-particle passivation thickness sweep of `5/6/8 nm`. Effective-film
+resistivities `1e6/1e9/1e12 ohm m` are deliberately broad screening values: the endpoints are
+literature discussion values for thin-film tunneling and bulk alumina, while `1e9` is only their
+logarithmic midpoint. None is a compacted-powder calibration.
+
+For archived Hertz radius `a`, the preregistered bounds are
+
+```text
+R_clean = rho_Al / (2a)
+A = pi a^2
+R_film = rho_f (2 d_particle) / A
+R_intact = R_clean + R_film
+```
+
+The primary effective rupture hypothesis uses metallic area fraction `f_m`:
+
+```text
+G_metal = sqrt(f_m) / R_clean
+G_film = (1-f_m) / R_film
+R_edge = 1 / (G_metal + G_film)
+```
+
+The frozen identifiability grid is
+`f_m={0,1e-12,1e-10,1e-8,1e-6,1e-4,1e-2,1}` with `d_particle=6 nm` and
+`rho_f=1e6 ohm m`. It is a numerical sweep, not a rupture-probability prior.
+
+The next implementation must solve the full Dirichlet/KCL resistor network, report equivalent
+resistance separately from weighted shortest-path resistance, and verify relative KCL and power
+balance errors at `1e-10`. Fixed `0.1 V` and normalized fixed `1 A` cases must show the expected
+opposite power monotonicity as bridge fraction increases. Per-edge voltage divided by the two-film
+thickness is compared with a `4-5e8 V/m` device-film breakdown boundary only as a diagnostic; it
+must not be interpreted as a powder mechanical-rupture threshold.
+
+The immutable preregistration is `al_oxide_contact_preregistration.md`, and the machine-readable
+contract is `data/source/al_oxide_contact_preregistered_parameters.json`. Passing the future
+calculation can establish only bounded network sensitivity. Experimental calibration still requires
+oxide-thickness characterization and pressure-resistance-loading histories for the same powder.

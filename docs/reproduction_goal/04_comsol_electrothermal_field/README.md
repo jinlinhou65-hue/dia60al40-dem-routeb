@@ -9,8 +9,9 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 ## 当前完成状态
 
 单阶段均匀化电热 smoke、跨求解器、三档网格、材料感知接触筛查、恒压/恒流机制
-验证和真三维直接接触贯通 pilot 均已完成。恒压/恒流结果保留“原比较 review、加密
-诊断 pass”两层判定；三维结果保留“贯通 smoke pass、氧化膜物理标定 review”：
+验证和真三维直接接触贯通 pilot 均已完成。Al 原生氧化膜来源矩阵、三模型方程、
+参数网格和离线网络验收门槛也已在计算前冻结。恒压/恒流结果保留“原比较 review、
+加密诊断 pass”两层判定；三维结果保留“贯通 smoke pass、氧化膜预注册 review”：
 
 | 项目 | 结果 |
 |---|---:|
@@ -40,7 +41,8 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | 真三维活跃网络 | 50 条 Al-Al 边；三档阈值均贯通 |
 | 最短贯通路径 | 5 个 Al 颗粒，clean-contact `0.0353279646 ohm` |
 | GitHub 3D pilot | run `29246532552`, success, 140 s |
-| 阶段判定 | `3d_percolation_smoke_pass`，氧化膜/实验标定仍为 `review` |
+| 氧化膜预注册 | `5/6/8 nm`、`1e6/1e9/1e12 ohm m`、8 档金属微桥比例 |
+| 阶段判定 | `oxide_model_preregistered_review`，离线网络计算和实验标定仍未完成 |
 
 ## 代码入口
 
@@ -73,6 +75,12 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
   数量守恒、电极、三档阈值、最短电阻路径和瓶颈 gate。
 - `.github/workflows/dem-3d-percolation-pilot.yml`：固定 10 分钟预算的无许可证真三维
   GitHub 运行入口。
+- `al_oxide_contact_preregistration.md`：冻结 clean、完整氧化膜、部分破膜三个模型，
+  输入哈希、参数网格、网络边界、验收门槛和停止条件。
+- `data/source/al_oxide_contact_parameter_sources.csv`：区分粉末实测、方法来源、器件
+  边界、数值辨识扫描和待实验标定参数。
+- `data/source/al_oxide_contact_preregistered_parameters.json`：供下一步离线网络脚本直接
+  读取的机器可读参数合同。
 
 详细公式、边界条件和验收条件见 [model_spec.md](model_spec.md)。阶段结果见
 [report.md](report.md)。
@@ -136,7 +144,8 @@ clean-contact Hertz/Holm 路径电阻为 `0.0353279646 ohm`。该值没有包含
 
 ## 下一门槛
 
-唯一下一门槛是基于已归档的真三维图预注册 Al 氧化膜/压制接触电阻模型。先建立
-可追溯的膜厚、电阻率/隧穿或击穿参数范围和电阻方程，再离线评估 50 条 Al-Al 边的
-路径稳定性与 Joule 功率分配；本门槛不重跑 DEM、COMSOL 网格或六组恒压/恒流。
-氧化膜参数未标定且尚未接入烧结反馈前，不把当前温度绝对值交给 Stage 06 作实验预测。
+Al 氧化膜模型已预注册。唯一下一门槛是只读取归档图和机器参数合同，对 50 条 Al-Al
+边求完整 KCL 电阻网络，输出 clean、完整膜和部分破膜场景的等效电阻、最短路径、
+逐边电流/Joule 功率、top-5 热点、单调性和电源功率守恒。本门槛不重跑 DEM、
+COMSOL 网格或六组恒压/恒流。没有压片电阻实验前，结果最高只能是
+`bounded_oxide_network_sensitivity_pass`，不能称为氧化膜标定。

@@ -46,7 +46,7 @@ flowchart TD
 | 01 | [01_pdf_algorithm_layer](01_pdf_algorithm_layer/README.md) | 已完成基础层 | PDF 机制映射和四篇论文算法层复现 |
 | 02 | [02_dem_backend_light_demo](02_dem_backend_light_demo/README.md) | 已完成轻量层 | 开源 DEM 后端选择和 LIGGGHTS workflow demo |
 | 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | review | Zhang C/D/E 参数校准和 2x 粒子数升级 |
-| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 真三维贯通 smoke pass，氧化膜标定 review | COMSOL 电流场、温度场、Joule heat 主线 |
+| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 氧化膜模型已预注册，实验标定 review | COMSOL 电流场、温度场、Joule heat 主线 |
 | 05 | [05_yuan_shape_arch_bridge](05_yuan_shape_arch_bridge/README.md) | 待启动 | Yuan 非球形颗粒、拱桥结构和 MPFEM 路线 |
 | 06 | [06_liu_sintering_coupling](06_liu_sintering_coupling/README.md) | 待启动 | Liu 压制-热场-烧结耦合 |
 | 07 | [07_li_core_shell_fem](07_li_core_shell_fem/README.md) | 待启动 | Li Cu@Fe 包覆颗粒 core-shell FEM/MPFEM |
@@ -133,6 +133,7 @@ GitHub run `29244185796` 已在无 COMSOL 许可证的 Ubuntu runner 上重跑�
 直接接触，颗粒/接触点 z span 均为正；三档导纳阈值均得到同一条五节点 Al 贯通路径。
 首次插入失败 run `29246371198`、修复理由、接受日志、3D 图和哈希已并列归档。
 
-下一唯一小目标是在该归档接触图上预注册 Al 氧化膜接触电阻：检索权威参数来源，
-冻结膜厚/电阻模型与范围，离线评估路径稳定性和 Joule 分配。不重跑 DEM、COMSOL
-网格或六组恒压/恒流，也不把未标定绝对温升送入 Stage 06。Zhang 保持 `review`。
+Al 氧化膜来源表、三模型方程、参数网格和验收门槛已经在结果计算前冻结。下一唯一
+小目标是实现并运行归档图的完整 KCL 电阻网络，离线输出等效电阻、路径、瓶颈和
+Joule 热点敏感性。不重跑 DEM、COMSOL 网格或六组恒压/恒流，也不把未标定绝对
+温升送入 Stage 06。Zhang 保持 `review`。
