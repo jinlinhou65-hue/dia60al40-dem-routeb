@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-07-13T10:46:06.425409+00:00",
+  "generated_at_utc": "2026-07-13T10:50:19.462898+00:00",
   "stage": "docs/reproduction_goal/04_comsol_electrothermal_field",
-  "source_commit_at_generation": "184ef7aee97a9160b6d2cc7ddd0555b76d6dca4f",
+  "source_commit_at_generation": "7224eec58f612ffa4a140ccb79846230041b396f",
   "source_branch_at_generation": "codex/paper-reproduction-demo",
   "working_tree_clean_at_generation": true,
   "hashes_are_authoritative_for_uncommitted_sources": true,
@@ -57,697 +57,813 @@
     {
       "path": ".github/workflows/electrothermal-mvp-verification.yml",
       "role": "implementation",
-      "bytes": 8432,
+      "canonical_bytes": 8432,
+      "hash_mode": "lf_normalized_text",
       "sha256": "90b0f291ce8305e0b7759f4d4d317f70c5060a54c0f27e6c224b32f0f4adeeb7"
     },
     {
       "path": "comsol/Dia60Al40_ElectrothermalMVP.java",
       "role": "implementation",
-      "bytes": 12872,
+      "canonical_bytes": 12872,
+      "hash_mode": "lf_normalized_text",
       "sha256": "26b6b859768ae944220c0d7ea1a24c16258709e0fbb8d06731f23cc537fa76e7"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_1/stage5_contact_property_grid.csv",
       "role": "prepared_input",
-      "bytes": 229775,
-      "sha256": "cb54e1a126d870a7a5c3156f7da78c695c398377659b2e5c1393f59751cb9ec8"
+      "canonical_bytes": 226291,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "3afa5fd8ba9288805a0f346bc8613e997709ff614b40adc27f4001b65e396820"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_2/stage5_contact_property_grid.csv",
       "role": "prepared_input",
-      "bytes": 906496,
-      "sha256": "7b920f5fe31c68e061812adbe7e15a0079c85a0168aabcfcdac52a8dfb92aba7"
+      "canonical_bytes": 892810,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "17c8529988bcde274d90781cce605e9c27dd967b64ff2164050c15ddede426aa"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_3/stage5_contact_property_grid.csv",
       "role": "prepared_input",
-      "bytes": 2176097,
-      "sha256": "b08ec2727ccd098436dd6e5b2775f67e0470a4f9171e0b8090695cee55a6b821"
+      "canonical_bytes": 2145489,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "fca3c8d55b5a4ded085952ff56e5d391b0e5bca2abbfe79bee4115f9f767812d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/multiplier_1/stage5_comsol_interpolation.txt",
       "role": "prepared_input",
-      "bytes": 151560,
-      "sha256": "524826776673ff238fec8434f98fff06a76ca7a597f6e9d2e26ba8b1610e6f08"
+      "canonical_bytes": 148076,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "0bc9d171b0d8feb8feb018844d9b86337049bc494b7b4a59b47648f51432cb76"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/multiplier_1/stage5_contact_property_grid.csv",
       "role": "prepared_input",
-      "bytes": 374487,
-      "sha256": "b2d25b31dcd67784b40725e92908d65149412af8ad26f46a8ea7464697efcb1c"
+      "canonical_bytes": 371003,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "828de5892a1920b5a5bbb10db838779841fb3182eb82c29a81eb2d59a4475605"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/multiplier_10/stage5_comsol_interpolation.txt",
       "role": "prepared_input",
-      "bytes": 159410,
-      "sha256": "d3d99dc4e5d7ea3d8aafb4ee526db3575f6dfed52c48c8db1ec3fefd407d16f2"
+      "canonical_bytes": 155926,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "fcc9d3577b37288301de3fd581c72893cdacf5e40cdac6bb47e67a090e58c5e9"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/multiplier_10/stage5_contact_property_grid.csv",
       "role": "prepared_input",
-      "bytes": 424742,
-      "sha256": "a240bd02914062faa758acf9b479d9b7674d07f9996279d6d38d751f743de8fa"
+      "canonical_bytes": 421258,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "6eb1cfd56c670dd00838bb8397a753865808cfc7aa21e74835f12cf774f42c92"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/multiplier_100/stage5_comsol_interpolation.txt",
       "role": "prepared_input",
-      "bytes": 159404,
-      "sha256": "55d341965e57b95f9f96f0053fa86c87f3386d1f42577bb4a26e75fd245da031"
+      "canonical_bytes": 155920,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "5c7daafef8d46153e9b4805f3d2effbf5bc448817a7c63ac3e8092f614e98d41"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/prepared/loading_mode_sensitivity/multiplier_100/stage5_contact_property_grid.csv",
       "role": "prepared_input",
-      "bytes": 430248,
-      "sha256": "3136e669216cef32b8524df73d0ccc08f4100f89e4826e2d9fbd2694ba9304bf"
+      "canonical_bytes": 426764,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "e0ca7bedf72db844de344e074439d2238c6e60e0b73c10540fb45601bf02eb4c"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/source/dem_fem_handoff_stage5_rho095.csv",
       "role": "source_or_preregistration",
-      "bytes": 7522,
-      "sha256": "21d133371167c860e628db6ef205b0a365f963137b83e993a3b878b95b7cb39c"
+      "canonical_bytes": 7445,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "6a3ae19ab5c5881e6335954fc552ea4358b4d2c5f785d2401032fbfb082720d3"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/source/electrothermal_parameter_set.json",
       "role": "source_or_preregistration",
-      "bytes": 1006,
+      "canonical_bytes": 1006,
+      "hash_mode": "lf_normalized_text",
       "sha256": "bad8c513dcf63f1b8df7fe365d88c88f551156b8bc68794a6ee8b6ec044f27f7"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/source/loading_mode_parameter_set.json",
       "role": "source_or_preregistration",
-      "bytes": 1463,
+      "canonical_bytes": 1463,
+      "hash_mode": "lf_normalized_text",
       "sha256": "5e3e45886afb1e1b4c7995a78746d737e3205798bcfb4885718b7e87a66a3d34"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/source/stage5_rho095_direct_contacts.csv",
       "role": "source_or_preregistration",
-      "bytes": 21896,
-      "sha256": "0be09c111c6ac9c8da5e952dc08550699d0fe105282dfdde21045729b5e9f55b"
+      "canonical_bytes": 21738,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "6d5cb0f9ab92fcc326680a6f56213a3c6d14f7cf1e1b75c97a382a1be6489abd"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comparison/comsol_fvm_loading_comparison.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 133726,
+      "canonical_bytes": 133726,
+      "hash_mode": "raw_binary",
       "sha256": "cde7e1bbc5874bd97809f3325bffdd74789b4df292e7060323b10988305b91b5"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comparison/loading_mode_comparison.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3084,
-      "sha256": "3ecc2d2c245d8708076102ee15c34d8f343300bc263b97ab7ed762470ddb0079"
+      "canonical_bytes": 3077,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "67a810010c04b4ff2a8e71fb7b89f1869a9214893c861f3f0807fa9d894b6d7d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comparison/loading_mode_comparison.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 8706,
-      "sha256": "a3fe81e6cbfb5a1d5facd9fc957daf2c22ce621a8867a5246f723f5159aa1ab2"
+      "canonical_bytes": 8518,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "d9a24aa34973cc822c9edeaa353035da0f5f9114cbca3adff5569f621b379574"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comparison/report.md",
       "role": "solver_or_analysis_evidence",
-      "bytes": 1160,
-      "sha256": "accde6a2554c7e04ad8e19cc02a66e32a3333223492ec871560832c188b5bbd0"
+      "canonical_bytes": 1140,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "2c3ca452f4356949b751bd5fbcf37d58d019ab54377374fc2e517fa7966313c2"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_1/comsol_batch.log",
       "role": "solver_or_analysis_evidence",
-      "bytes": 5728,
-      "sha256": "c285335e579d810308f3a24e74f0c2b9e85729f9b5e64f07d55754b76b8a809c"
+      "canonical_bytes": 5598,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "888231721fdaffb8ca9740390183197cc4e2ea1a739b2cc920fb3e818a66c7ba"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_1/comsol_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 254175,
-      "sha256": "7082d8babd093bf9d31a12d85fc62e2c78fba5ede6d342debede83a3852e9d6a"
+      "canonical_bytes": 252431,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "91f0588db5ca3993686cbca84a3b293c79a946b495f53c3b3440bcd066b9f181"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_1/comsol_joule_heat.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 81580,
+      "canonical_bytes": 81580,
+      "hash_mode": "raw_binary",
       "sha256": "24490014d5440ace458ca374308a3115dc9d45793d6817aef47cad23978b5fee"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_1/comsol_potential.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 99642,
+      "canonical_bytes": 99642,
+      "hash_mode": "raw_binary",
       "sha256": "d8f019f859a70f9105cc5e596d9847857ffb6543a90448122e2de508e35dd09d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_1/comsol_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 468,
+      "canonical_bytes": 468,
+      "hash_mode": "lf_normalized_text",
       "sha256": "4a66ad8e77b9feab30f8de4fddb0d11535bacada7ada1bbfa27d1d6ed0e9cacb"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_1/comsol_temperature.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 101027,
+      "canonical_bytes": 101027,
+      "hash_mode": "raw_binary",
       "sha256": "969d1499a93161038cbc2a6fb17668ee3da76831f7163cbb96fac45c33cec792"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_1/Dia60Al40_ElectrothermalMVP.mph",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3013197,
+      "canonical_bytes": 3013197,
+      "hash_mode": "raw_binary",
       "sha256": "f09ee6307cc1c877b5f79130d3aa93ac3be17f63c1a83e1ea080272703b28f6c"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_10/comsol_batch.log",
       "role": "solver_or_analysis_evidence",
-      "bytes": 5715,
-      "sha256": "586ffc68f1ccd2b72f46351b6f4437bb127d91bb00a42e3ae15fb7aa4d2b2734"
+      "canonical_bytes": 5585,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "52d19fabaea614a14e3dba1edf2ccbeaf5d0212b0abaa00cdb92cb827563b8bd"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_10/comsol_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 258831,
-      "sha256": "4e21f8ada8f379d4b62cde8ceb3a343701924c5c69df6e680dd60232c8dbd652"
+      "canonical_bytes": 257087,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "e15ac11589580dacd985000053186e2f277e576c12ccec599afb7ae41d006973"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_10/comsol_joule_heat.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 89281,
+      "canonical_bytes": 89281,
+      "hash_mode": "raw_binary",
       "sha256": "50d7d5cb96361f9f53a90b7b9f5a60c2cb8548a86c8f156cfb9de9c2cea4ed4d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_10/comsol_potential.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 101428,
+      "canonical_bytes": 101428,
+      "hash_mode": "raw_binary",
       "sha256": "39e3c4e09adba68bfd64e2f07f3f3959f31a5dc142568ac2570633b07f11622c"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_10/comsol_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 467,
+      "canonical_bytes": 467,
+      "hash_mode": "lf_normalized_text",
       "sha256": "f1ba96cdbefe8b4be45d86f8cfe2e24c4155d8ba6bdfecd4da014c64549b7da3"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_10/comsol_temperature.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 100203,
+      "canonical_bytes": 100203,
+      "hash_mode": "raw_binary",
       "sha256": "598f0c793388ebde3d8fe58106966fb914fb24c6a7b594cff6883486705decd6"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_10/Dia60Al40_ElectrothermalMVP.mph",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3021036,
+      "canonical_bytes": 3021036,
+      "hash_mode": "raw_binary",
       "sha256": "c6d56d59115e4f96e6bd3c5ca20169e2110bd6a850711191a7602ce85d569c7b"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_100/comsol_batch.log",
       "role": "solver_or_analysis_evidence",
-      "bytes": 5798,
-      "sha256": "04a31097641c649956725f15c4f536dfc2d42f603e941209e09e345178dabd35"
+      "canonical_bytes": 5664,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "c46c667e2bd8a705c508d4e75176b8905e0666f6a96eefe5c5fc7f8f2dbf9662"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_100/comsol_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 258208,
-      "sha256": "4e98f8e61d41fd8a65a2a47923b24e5af08b173d4a60ec66708252e82e1d4cc8"
+      "canonical_bytes": 256464,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "d86b6c9a75bf2897e038960240d9cf9f9ca84819f84fcdd91a9afeda21c48824"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_100/comsol_joule_heat.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 118683,
+      "canonical_bytes": 118683,
+      "hash_mode": "raw_binary",
       "sha256": "879d0fd33bc210b4705fe1d067d62486b8ad323fae07993d90cd58a2de3332f7"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_100/comsol_potential.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 101996,
+      "canonical_bytes": 101996,
+      "hash_mode": "raw_binary",
       "sha256": "9caa15d419a87940ab6f81e1c5aea4bb18fd01ae6c8abe27f52b8bf5e737dc69"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_100/comsol_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 467,
+      "canonical_bytes": 467,
+      "hash_mode": "lf_normalized_text",
       "sha256": "227ba1ef9a270458f8af118abbc1bdfae49338d8d67bd29499eba8d00cd31e5f"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_100/comsol_temperature.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 94574,
+      "canonical_bytes": 94574,
+      "hash_mode": "raw_binary",
       "sha256": "4b6c6d3be6f131dbdb69386bfeb00b899abcafc3e48628efcb342d1832026a6e"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_current/multiplier_100/Dia60Al40_ElectrothermalMVP.mph",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3021384,
+      "canonical_bytes": 3021384,
+      "hash_mode": "raw_binary",
       "sha256": "29a0b26d3e343b1be91cb2598f99ccdd456ee184c55dd124e2a3e2836fc109bb"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_batch.log",
       "role": "solver_or_analysis_evidence",
-      "bytes": 5873,
-      "sha256": "167eff0e913f24e62b4706305b5135c549b57b9b14a7eefe45211932ac9b9b39"
+      "canonical_bytes": 5738,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "281ca0db1814d0d8141340c959507e3940abb61b40dddf1d239d0c71f5c17389"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 255748,
-      "sha256": "131c962f8795e4b34c0219a0678e45cca5eaef60fe289f98a12ee1b848974545"
+      "canonical_bytes": 254004,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "bf638a2ce06aca7b8ad27e78da60905750f93300583e63f165987bbe4cec128a"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_joule_heat.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 81580,
+      "canonical_bytes": 81580,
+      "hash_mode": "raw_binary",
       "sha256": "24490014d5440ace458ca374308a3115dc9d45793d6817aef47cad23978b5fee"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_potential.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 99642,
+      "canonical_bytes": 99642,
+      "hash_mode": "raw_binary",
       "sha256": "d8f019f859a70f9105cc5e596d9847857ffb6543a90448122e2de508e35dd09d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 467,
+      "canonical_bytes": 467,
+      "hash_mode": "lf_normalized_text",
       "sha256": "3fcc980eed1d9df5dbebf218c636a9c4cd059fd187be5d6e78425d1da69323ac"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/comsol_temperature.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 101027,
+      "canonical_bytes": 101027,
+      "hash_mode": "raw_binary",
       "sha256": "969d1499a93161038cbc2a6fb17668ee3da76831f7163cbb96fac45c33cec792"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_1/Dia60Al40_ElectrothermalMVP.mph",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3013033,
+      "canonical_bytes": 3013033,
+      "hash_mode": "raw_binary",
       "sha256": "038a51abc763ac2c0b0d1b265393a8408bf867e06095f13f9a3cb30330531193"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10/comsol_batch.log",
       "role": "solver_or_analysis_evidence",
-      "bytes": 5684,
-      "sha256": "27da83758fa5c4418d8351361698e645cada68ba65cc4dfcd80304e170a058bd"
+      "canonical_bytes": 5554,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "2e4ce4dec252d8185aaddefa789476929b472b43a307b323635103d4b5c0e08b"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10/comsol_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 258831,
-      "sha256": "a7e268af15bee15af9e473a3b5a5ae9c82a1fe6c26c1596ccfc126a250c16024"
+      "canonical_bytes": 257087,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "e6e11331fb8a07e906b4c32a9784769921857007e1a17c37da0bd4a393d15788"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10/comsol_joule_heat.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 89281,
+      "canonical_bytes": 89281,
+      "hash_mode": "raw_binary",
       "sha256": "50d7d5cb96361f9f53a90b7b9f5a60c2cb8548a86c8f156cfb9de9c2cea4ed4d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10/comsol_potential.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 101428,
+      "canonical_bytes": 101428,
+      "hash_mode": "raw_binary",
       "sha256": "39e3c4e09adba68bfd64e2f07f3f3959f31a5dc142568ac2570633b07f11622c"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10/comsol_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 467,
+      "canonical_bytes": 467,
+      "hash_mode": "lf_normalized_text",
       "sha256": "f1ba96cdbefe8b4be45d86f8cfe2e24c4155d8ba6bdfecd4da014c64549b7da3"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10/comsol_temperature.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 100203,
+      "canonical_bytes": 100203,
+      "hash_mode": "raw_binary",
       "sha256": "598f0c793388ebde3d8fe58106966fb914fb24c6a7b594cff6883486705decd6"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_10/Dia60Al40_ElectrothermalMVP.mph",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3020901,
+      "canonical_bytes": 3020901,
+      "hash_mode": "raw_binary",
       "sha256": "6b8687cb19c5cb7ec47b70fc4011a33ff0c009d6be51fb92ff9938a4d0883b6d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100/comsol_batch.log",
       "role": "solver_or_analysis_evidence",
-      "bytes": 5817,
-      "sha256": "3a03db08249fb9ca209abbf971374b55be1842aa640b42179630d4010a5d4e78"
+      "canonical_bytes": 5684,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "c7d0ed4d7031e35a86095e94a7f8ecd24b8789573e078b3f11934393b418b73e"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100/comsol_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 258923,
-      "sha256": "50f8c37ca8020ee11c3a6584456d249b1f12cc7d032346bf7dd978bb4bffa8f6"
+      "canonical_bytes": 257179,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "481a21ce1c09f24ca3d30a8a4a88de4bccde6d78e45aed07d35bacf59cc306ce"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100/comsol_joule_heat.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 118683,
+      "canonical_bytes": 118683,
+      "hash_mode": "raw_binary",
       "sha256": "879d0fd33bc210b4705fe1d067d62486b8ad323fae07993d90cd58a2de3332f7"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100/comsol_potential.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 101996,
+      "canonical_bytes": 101996,
+      "hash_mode": "raw_binary",
       "sha256": "9caa15d419a87940ab6f81e1c5aea4bb18fd01ae6c8abe27f52b8bf5e737dc69"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100/comsol_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 467,
+      "canonical_bytes": 467,
+      "hash_mode": "lf_normalized_text",
       "sha256": "e0f5a8bc95d1e41f87b081678d14752c8a53df63d1d3326e1bbd50a21598df0f"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100/comsol_temperature.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 94574,
+      "canonical_bytes": 94574,
+      "hash_mode": "raw_binary",
       "sha256": "4b6c6d3be6f131dbdb69386bfeb00b899abcafc3e48628efcb342d1832026a6e"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol/fixed_voltage/multiplier_100/Dia60Al40_ElectrothermalMVP.mph",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3021313,
+      "canonical_bytes": 3021313,
+      "hash_mode": "raw_binary",
       "sha256": "0dea546d310a86e3f6c0cdbe1d70df3a5ef0070c6ea9aa684df659cf84d1891c"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/comsol_run_plan.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3024,
-      "sha256": "95fc97741d447068466df9be0dd2c6e28da70aeb942e2dfb792938f249a80408"
+      "canonical_bytes": 2959,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "020ef74af17a959cd02bfeac655e45be81d8c4e7506bb81917d38b11fb8de4b3"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/failures/fixed_current_multiplier_1_wrapper_timeout/comsol_batch.log",
       "role": "solver_or_analysis_evidence",
-      "bytes": 5720,
-      "sha256": "9f625300f0672869f2ccbf482167afc20737b2013d923032c08b0d2b82a699c7"
+      "canonical_bytes": 5591,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "b3959ba9da260489ab4a633992a224db290d77acd3770c71ff79949c145ac0ca"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/failures/fixed_current_multiplier_1_wrapper_timeout/comsol_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 468,
+      "canonical_bytes": 468,
+      "hash_mode": "lf_normalized_text",
       "sha256": "4a66ad8e77b9feab30f8de4fddb0d11535bacada7ada1bbfa27d1d6ed0e9cacb"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/failures/fixed_current_multiplier_1_wrapper_timeout/README.md",
       "role": "solver_or_analysis_evidence",
-      "bytes": 1020,
+      "canonical_bytes": 1020,
+      "hash_mode": "lf_normalized_text",
       "sha256": "7b7707140ecc93580f0acc6a73e25de4b24ff9e023dde85158662e166e1359f8"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_1/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 130975,
+      "canonical_bytes": 130975,
+      "hash_mode": "raw_binary",
       "sha256": "e82862161957ae857f6285015eb550a42565e860252f40043a5a0e5b3d9e5ff2"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_1/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 498842,
-      "sha256": "9d7596f59e32647247208f44df61510f7dfb2886cc729d809b59daa760118790"
+      "canonical_bytes": 495358,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "ea7496d36cc7f71829f07209136f1567567c9df323cc8d306fb34165d6ed9ba3"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_1/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 564,
-      "sha256": "17e34225f0203b184d0014ce2f80171551a813e8bbb38fec769abf5bc9149c81"
+      "canonical_bytes": 548,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "7b8ce796b3891ff8889ecdd84015f0cd5ffd3ac4c0a2eed572019002287bece9"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_10/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 135711,
+      "canonical_bytes": 135711,
+      "hash_mode": "raw_binary",
       "sha256": "9682b579daffb97bfec7fe946bcadb30dbd3cdb674cc7c627d61c79088d5ecd3"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_10/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 494411,
-      "sha256": "4b01590f1a623a3a33dd56532b1ac5ae038473bb86d5a976692abc704d8f8aeb"
+      "canonical_bytes": 490927,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "08ae7f36f8acb3fb073f9da1d20b42e652e6298cbad8e89ca3942e9dfe3f6253"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_10/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 529,
-      "sha256": "d6b4bfb664161ce59074d7417cafe45d231c5cd8098373aa0b142f5a90ba487f"
+      "canonical_bytes": 513,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "3009df99b02314c44748a38ae008442232e05d76950e28f721df6f095820b27d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_100/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 138592,
+      "canonical_bytes": 138592,
+      "hash_mode": "raw_binary",
       "sha256": "b2ce163df24fea04b28cdbd295f16bc0bfd740eccb60d18d035ab01db3d4c629"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_100/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 492991,
-      "sha256": "33f23e2b17d35c8454a76e93f5e447ea2090929043a4cde461ea691dbba8b09e"
+      "canonical_bytes": 489507,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "998efeccc8ae35ffd75673949a25eef85a27c9b111f539d0ae66fcaa12ab337a"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_current/multiplier_100/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 561,
-      "sha256": "6d0af39ddcb67c300fc4aba1e568c43d54973d42be6bea695cf4cb1d59edf22c"
+      "canonical_bytes": 545,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "2cecc6d583e0d118b0ba25f0063cf36f72edd404eea2ee0ed75ca741b710a040"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_1/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 123565,
+      "canonical_bytes": 123565,
+      "hash_mode": "raw_binary",
       "sha256": "f9a5ae0fae1001e45507cd9ba95826b6616e3b77bda7b9d63d1081d656433ece"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_1/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 495019,
-      "sha256": "9c9a7660571dee3e1a0f68cfbab385c295ac65550b22ff846f62f0c1a66b9de5"
+      "canonical_bytes": 491535,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "8512f4fbd1f1ec5ad7321c5cdc174c06b4003ea695f7ebdb9e29fc98250c197d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_1/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 527,
-      "sha256": "a39321c0edbf2ea911e9e9017a0337fa47d5751bf84c72d7772ef949167f50dd"
+      "canonical_bytes": 511,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "11f04012959e341952f80038f1f1a8e6b642f2e1681339d908bcb909476c6910"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_10/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 135711,
+      "canonical_bytes": 135711,
+      "hash_mode": "raw_binary",
       "sha256": "9682b579daffb97bfec7fe946bcadb30dbd3cdb674cc7c627d61c79088d5ecd3"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_10/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 494411,
-      "sha256": "4b01590f1a623a3a33dd56532b1ac5ae038473bb86d5a976692abc704d8f8aeb"
+      "canonical_bytes": 490927,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "08ae7f36f8acb3fb073f9da1d20b42e652e6298cbad8e89ca3942e9dfe3f6253"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_10/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 529,
-      "sha256": "d6b4bfb664161ce59074d7417cafe45d231c5cd8098373aa0b142f5a90ba487f"
+      "canonical_bytes": 513,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "3009df99b02314c44748a38ae008442232e05d76950e28f721df6f095820b27d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_100/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 137835,
+      "canonical_bytes": 137835,
+      "hash_mode": "raw_binary",
       "sha256": "67e92089309db7b5b4254872402afa86b77a1280c60105b3767a40451879d5c6"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_100/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 493870,
-      "sha256": "cfc24f0db83b5e2e56577fecc568922ead59dee9695cd0434b88142593b8fcc5"
+      "canonical_bytes": 490386,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "b4754ca729c46c378277e8d18c85ead11e4483fbcf0e4a366748ef2743ac9b42"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm/fixed_voltage/multiplier_100/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 529,
-      "sha256": "18928203a8a1f22fb13082b53941eb03e6115c9ea3e20f683e7355a74579d070"
+      "canonical_bytes": 513,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "221a80db93c390ede4e9630402dedd8af6105414b1d7d55a38c914309e0724ea"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/comparison/fvm_refinement_and_hotspot.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 222342,
+      "canonical_bytes": 222342,
+      "hash_mode": "raw_binary",
       "sha256": "f7bd5f402df13c961ab88e7e40065705bbd6771e379ed83cdd34cc8706261522"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/comparison/fvm_refinement_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 3719,
-      "sha256": "c500f4cafed44d68f5626d0b5398233d0521cf4168bb023715048957c982a6ac"
+      "canonical_bytes": 3613,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "aeed7be0299ceb866055548ae5ffd70d8634aebc623414308635669ec24eddc6"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/comparison/report.md",
       "role": "solver_or_analysis_evidence",
-      "bytes": 825,
-      "sha256": "73a3de1455d4edd1cdad990b57fd4bf7b152c29169211609a44336cf1356b43f"
+      "canonical_bytes": 806,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "6cce319665ed7d4caf77c0e91523f3aa77b61a12bed56de604f664e6d65b1f01"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_1/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 123565,
+      "canonical_bytes": 123565,
+      "hash_mode": "raw_binary",
       "sha256": "f9a5ae0fae1001e45507cd9ba95826b6616e3b77bda7b9d63d1081d656433ece"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_1/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 503234,
-      "sha256": "6695f6d44257906b91f10f02d945bd83e27c5f9f63b58d17b91d761efc45896b"
+      "canonical_bytes": 499750,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "3e6270f79326d541a407eaa69f3c4215f3829ade214a6868c376a696711c5611"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_1/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 529,
-      "sha256": "f2d412439aca8f4a86eec988367f6ae65c6dfadb918bff77c7bb4883c7099a7c"
+      "canonical_bytes": 513,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "0f880b5ef005960e1ab4dfb8ddf83e274f43730f4007327a7804c821cfb63bec"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_2/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 163185,
+      "canonical_bytes": 163185,
+      "hash_mode": "raw_binary",
       "sha256": "49f2658f6b7dbe99df8f2d21844a6c3ef8afdbbfaf910dbe2e5bc94704ae13e9"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_2/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 1991002,
-      "sha256": "bac92bc748404fe84cf563e132554dc8f0fef164cd1e78131c494e711161f8bb"
+      "canonical_bytes": 1977316,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "ebd012ce8bd2ab5de8a3865e7d898d6e06e51aa73098cf3b5e107851cb534670"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_2/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 531,
-      "sha256": "0b63cdb8d0a11f0afc3955dbc1246fbd08a9e72cba244b3e23ff66867da65260"
+      "canonical_bytes": 515,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "1932e96564b13670240cd3eceb363184d133839af9123dc6d6455c294049d112"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_3/fvm_electrothermal_fields.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 485225,
+      "canonical_bytes": 485225,
+      "hash_mode": "raw_binary",
       "sha256": "b2c4fa86db7346c0e1b37354ac4ea1769167c92dc63864333d10b63407c6e867"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_3/fvm_fields.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 4603689,
-      "sha256": "4985bd2a3d0033298a46d48fe6a362e7bd25dea7928d902ac50e0b49de22ee68"
+      "canonical_bytes": 4573081,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "8f600be2a7092d3aba8ee75c207518d0154c11b4d4e2cd069ea5eb07b96e43fe"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/fvm_refinement/multiplier_1/factor_3/fvm_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 530,
-      "sha256": "0da3e17f6fa54b873568481605c6b3f7baf88298be6020ec416bf35a64ea9767"
+      "canonical_bytes": 514,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "cdd197472be44a839c49bdc6dcaaefbb42ce0c4eceacd3a9158a5b585b39af6f"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/loading_mode_sensitivity.png",
       "role": "solver_or_analysis_evidence",
-      "bytes": 120912,
+      "canonical_bytes": 120912,
+      "hash_mode": "raw_binary",
       "sha256": "864e10c7d3dee9ce2f85c67d5b322ae49795cec0a1404fa6184a9205afd56ddc"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/loading_mode_summary.csv",
       "role": "solver_or_analysis_evidence",
-      "bytes": 2404,
-      "sha256": "16f462814a3b9e0c23049abd2493aa9237a903a1d9dc3cc0a46cc4fb9fa75526"
+      "canonical_bytes": 2397,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "fc4b207d66c5b9038ce8b5f5159b3402cbff646c42b75287f06f5f32feb2bdb0"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/evidence/loading_mode_sensitivity/loading_mode_summary.json",
       "role": "solver_or_analysis_evidence",
-      "bytes": 7065,
-      "sha256": "b2edfb5908fb32993bff01065e1d759990e13d0f194661d4efb9a59c358d510a"
+      "canonical_bytes": 6897,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "87a090d98bd432dfe08d611e6bea20f56603157fb7dd4e4e6cf6d7aececcc88e"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/fvm_refinement_preregistration.md",
       "role": "source_or_preregistration",
-      "bytes": 2224,
+      "canonical_bytes": 2224,
+      "hash_mode": "lf_normalized_text",
       "sha256": "e9b7e2c0f87b6d452ae6d38643f00bb045052c31aed7eaeff164e70b2957fe46"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/loading_mode_preregistration.md",
       "role": "source_or_preregistration",
-      "bytes": 3213,
+      "canonical_bytes": 3213,
+      "hash_mode": "lf_normalized_text",
       "sha256": "4433ae2029fc4333f8cf39ab2e3c622b6dca5c7ba0f2d8174972c093212ca913"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/model_spec.md",
       "role": "source_or_preregistration",
-      "bytes": 9230,
-      "sha256": "4f1a1e46655101874610b3c1cbe9b041390820a31e11d760455a413af4c66453"
+      "canonical_bytes": 9349,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "8499809a538a9fda9c55c43ac5d8a2f83bea4d70ac16a59a675a94487ff4315d"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/README.md",
       "role": "source_or_preregistration",
-      "bytes": 6724,
+      "canonical_bytes": 6724,
+      "hash_mode": "lf_normalized_text",
       "sha256": "4c9c65b18ab10cb2e35432ec9bb0926edbc4f6bd1bf36cb6e562fafc76024a3b"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/report.md",
       "role": "source_or_preregistration",
-      "bytes": 8777,
-      "sha256": "ddbc0151fe5240c87499a681f28b4dc45cdd878fe8539f5671051eadd052854e"
+      "canonical_bytes": 8898,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "f74b3c8fec12016037703860cb233d8f8c567510e5f744b2d94c1002abafdbd8"
     },
     {
       "path": "scripts/analyze_electrothermal_fvm_refinement.py",
       "role": "implementation",
-      "bytes": 12638,
+      "canonical_bytes": 12638,
+      "hash_mode": "lf_normalized_text",
       "sha256": "428fb6b8c66e23416c71d114be66efc2c12e50c8fbe8781232be2877882f48ee"
     },
     {
       "path": "scripts/analyze_electrothermal_loading_comsol.py",
       "role": "implementation",
-      "bytes": 12199,
+      "canonical_bytes": 12199,
+      "hash_mode": "lf_normalized_text",
       "sha256": "b3ffc88b2a02e07a104efa591b0127e77afe81b81d2773dba2e724c3c25e054e"
     },
     {
       "path": "scripts/build_electrothermal_loading_manifest.py",
       "role": "implementation",
-      "bytes": 12564,
-      "sha256": "c59238edfc2d5edcc1d2b61149517fc750348e7a10411f0dc81801bc73c19d70"
+      "canonical_bytes": 13150,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "82faa3d9abe583585a8cc7c46a01be659e4db9f178ebf9e5da972ce918257b46"
     },
     {
       "path": "scripts/electrothermal_contact_model.py",
       "role": "implementation",
-      "bytes": 12593,
+      "canonical_bytes": 12593,
+      "hash_mode": "lf_normalized_text",
       "sha256": "fe92f57f36b838e6183a5b095077aaf1e6d449f22d9980f2293eb441453cb0c4"
     },
     {
       "path": "scripts/run_comsol_electrothermal_loading_sensitivity.ps1",
       "role": "implementation",
-      "bytes": 3941,
+      "canonical_bytes": 3941,
+      "hash_mode": "lf_normalized_text",
       "sha256": "8b2b683893e762461dd2ca21a8784c0df9220d04d383df5c2c827b35c483c51a"
     },
     {
       "path": "scripts/run_comsol_electrothermal_mvp.ps1",
       "role": "implementation",
-      "bytes": 6068,
+      "canonical_bytes": 6068,
+      "hash_mode": "lf_normalized_text",
       "sha256": "6e8d0b7efa775be6d120fdc07ddbd6c783acd171974463fd252051831dc35f7c"
     },
     {
       "path": "scripts/run_electrothermal_loading_sensitivity.py",
       "role": "implementation",
-      "bytes": 14225,
+      "canonical_bytes": 14225,
+      "hash_mode": "lf_normalized_text",
       "sha256": "602a059cdacccc0a3cf65ecd58fa0a71db448e0777698ea08ac107a9b4d1c2be"
     },
     {
       "path": "scripts/solve_electrothermal_fvm.py",
       "role": "implementation",
-      "bytes": 9033,
+      "canonical_bytes": 9033,
+      "hash_mode": "lf_normalized_text",
       "sha256": "7c57881766f90e588b193e219dac127b745a556e0661fb2ebd64cea76a0a820f"
     },
     {
       "path": "tests/test_comsol_electrothermal_mvp.py",
       "role": "implementation",
-      "bytes": 7765,
+      "canonical_bytes": 7765,
+      "hash_mode": "lf_normalized_text",
       "sha256": "6062c57d17818a6c598fc9a3f6e32d30692aab29c2c1f09ffce8a4635f7a4e3e"
     },
     {
       "path": "tests/test_electrothermal_fvm_refinement.py",
       "role": "implementation",
-      "bytes": 1882,
+      "canonical_bytes": 1882,
+      "hash_mode": "lf_normalized_text",
       "sha256": "34f8240c8f741dc6398fa36a4d8edab582a075c1dce9d8c2c70ef215f89f4dd2"
     },
     {
       "path": "tests/test_electrothermal_loading_comsol.py",
       "role": "implementation",
-      "bytes": 2676,
+      "canonical_bytes": 2676,
+      "hash_mode": "lf_normalized_text",
       "sha256": "7f3b7fce02c042d28a290a65e95b02a0b4b9624062ea0b95c79fbe2f09ceae24"
     },
     {
       "path": "tests/test_electrothermal_loading_manifest.py",
       "role": "implementation",
-      "bytes": 2172,
-      "sha256": "be1548a1fa8786a3ce9275841ea521566e89d76a90364dd3d3fd270e5ba5e60b"
+      "canonical_bytes": 2644,
+      "hash_mode": "lf_normalized_text",
+      "sha256": "6cbfea79e860ff60a3be03ff8fdd6274915b88c5554ad012199630504d235512"
     },
     {
       "path": "tests/test_electrothermal_loading_sensitivity.py",
       "role": "implementation",
-      "bytes": 3874,
+      "canonical_bytes": 3874,
+      "hash_mode": "lf_normalized_text",
       "sha256": "d81d1190396a19fa89943a528729e5e455cb858978a7cdc20d4ec87a3f877f84"
     }
   ]
