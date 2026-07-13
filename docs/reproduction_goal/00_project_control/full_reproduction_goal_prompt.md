@@ -101,7 +101,9 @@
 - 第一次恒流倍率 1 的 PowerShell 包装器超时已作为失败证据保留；COMSOL 物理解实际
   完成，根因是 Windows PowerShell 5.1 对 UTF-8 中文日志终止行的解码不稳定。
 - GitHub Actions 已能在无 COMSOL 许可证环境中重建输入、重跑开源验证器并复核
-  已归档 COMSOL 证据。
+  已归档 COMSOL 证据。run `29244185796` 用时 1m 5s，重现原六组 `review`、
+  FVM 加密 `pass` 和 116 个 manifest 记录，artifact digest 为
+  `sha256:91507872a9f33454abbe3dc2500d3db1bd0c88b92bd9a6155632c0de4f96e804`。
 
 使用 `stage_status.csv` 和最新 Git 历史确认这些状态；若文档与数据冲突，以原始
 CSV、JSON、日志、哈希和真实运行结果为准，并修正文档。
@@ -201,10 +203,9 @@ Stage 03 Zhang 多尺度不均匀性：
 
 Stage 04 COMSOL 电热场：
 - 网格、材料感知接触筛查和恒压/恒流机制验证已有证据，不得重复。
-- 当前先完成六组 COMSOL、六组 FVM、FVM 加密、失败日志和图片的 manifest、报告、
-  状态表与 GitHub 无许可证重放验证。
-- 归档完成后，在“Al 氧化膜接触电阻标定”与“三维电流贯通性”中只选择一个风险
-  作为下一小目标；选择依据必须是哪个问题阻止 Stage 06 获得可信热输入。
+- 六组 COMSOL、六组 FVM、FVM 加密、失败日志、manifest 和 GitHub 无许可证重放
+  已完成。当前优先解决“三维电流贯通性”，因为二维 handoff 不含 z 且活跃网络不贯通，
+  在未知是否存在电极通路前精细标定 Al 氧化膜电阻没有可解释的网络基础。
 - 验收：参数来源完整；固定网格；能量守恒；控制模式趋势正确；跨求解器差异在
   预注册门槛内；原始 review 与后续复核并列保留；明确二维均匀化边界。
 
@@ -357,17 +358,19 @@ docs/reproduction_goal/<stage>/
 </do_not_do>
 
 <current_next_task>
-从仓库当前状态继续，唯一下一小目标是完成 Stage 04 恒压/恒流研究的证据封装：
-1. 不重跑六组本地 COMSOL，也不改变原始 5% 门槛；
-2. 为源参数、脚本、六组 COMSOL/FVM、失败记录和 FVM 加密结果生成哈希 manifest；
-3. 更新 Stage 04 `README.md`、`report.md`、`model_spec.md`、总 README 和状态表；
-4. 更新 GitHub workflow，在无 COMSOL 许可证环境中重跑开源 FVM、解析归档的 COMSOL
-   证据，并同时断言原六组比较为 `review`、加密复核为 `pass`；
-5. 本地全量测试和 workflow 通过后提交、推送，归档 run ID、时长和 artifact digest；
-6. 完成上述归档后停止，评估下一轮应优先解决三维贯通还是 Al 氧化膜标定。
-
-不得提前进入 Stage 06。Stage 04 尚未提供真实三维贯通和实验标定的接触电阻，当前
-温度场只能证明数值路线与控制模式机制，不能代表实际电阻烧结温升。
+从仓库当前状态继续，唯一下一小目标是 Stage 04 三维直接接触贯通性 pilot：
+1. 先审计现有 LIGGGHTS dump、`pair/gran/local` 和转换脚本是否保存粒子 z、接触法向 z
+   与接触点 z；不得先启动新的 DEM 长算。
+2. 若原 artifact 含 z，扩展 handoff/contact schema 保留 z，保持旧二维输入兼容，
+   并从既有 artifact 重建三维直接接触图。
+3. 若原 artifact 不含足够 z 证据，预注册一个 GitHub 轻量三维 DEM pilot，固定材料、
+   接触律、颗粒组成、seed、加载路径、最大运行时间和停止条件。
+4. 贯通算法只能使用直接接触；输出电极节点、活跃材料边、连通分量、最短跨越路径、
+   瓶颈接触、路径总电阻和可审计 3D 网络图，不得用距离推断边补出通路。
+5. 验收必须分别报告：z 数据完整性、节点/边守恒、上下电极定义、是否贯通、结果对
+   电活跃阈值的有界敏感性，以及该 pilot 能否支持后续氧化膜电阻标定。
+6. 只在三维通路证据成立后预注册 Al 氧化膜标定；不重跑已有 COMSOL 网格或六组
+   恒压/恒流，不提前进入 Stage 06。
 </current_next_task>
 
 <final_request>
@@ -389,7 +392,7 @@ docs/reproduction_goal/<stage>/
 用以下问题检查代理是否正确理解 Prompt：
 
 1. 代理是否先读 `stage_status.csv`，并拒绝重复 2x Zhang 或三档 COMSOL 网格？
-2. 代理是否把下一步识别为 Stage 04 恒压/恒流证据封装，而不是重跑六组 COMSOL？
+2. 代理是否把下一步识别为恢复 z 并验证三维直接接触贯通，而不是重跑六组 COMSOL？
 3. 代理是否明确 GitHub 不能运行本地许可 COMSOL，只能复核归档证据？
 4. 代理是否保留原六组 `review`，同时把 FVM 加密 `pass` 作为独立复核证据？
 5. 代理是否把“电热数值路线可运行”和“真实三维接触电阻已标定”分开？

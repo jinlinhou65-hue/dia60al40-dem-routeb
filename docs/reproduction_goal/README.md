@@ -81,6 +81,7 @@ flowchart TD
 | COMSOL 网格无关性 | 1512/3316/8390 三档真实求解通过；中/细网格 Joule 功率差 0.0277%、最大温升差 0.0187%，十项门槛全通过 |
 | 材料感知接触筛查 | 157 条接触完成 Hertz/电热阻分类；活跃 Al-Al 网络不贯通；电阻倍率 1/10/100 的条件 FVM 功率和温升单调下降 |
 | 恒压/恒流机制 | 六组固定 3316 单元 COMSOL 与 FVM 趋势一致；原比较保留 `review`，预注册 FVM 加密 `pass`；恒压降热、恒流升热 |
+| 恒压/恒流 GitHub 重放 | run `29244185796` success，`1m 5s`；116 个 manifest 记录通过；artifact digest `sha256:91507872...f96e804` |
 | 接触筛查 GitHub demo | workflow run `29240835995` success，41 s，artifact digest `sha256:8e3a90b0...8470f885` |
 
 ## 仍未完成的边界
@@ -122,7 +123,11 @@ Stage 04 已完成 smoke、三档网格、材料感知接触筛查和六组恒�
 倍率 1 的 `5.0737%` 功率/电流差保留为 `review`；预注册 FVM 1x/2x/3x 加密把
 同一 case 的功率差降至 `0.6823%`，判定 `fvm_refinement_pass`，但不覆盖原 review。
 
-当前唯一小目标是让 GitHub 在无 COMSOL 许可证环境中重跑六组开源 FVM、解析已归档
-COMSOL、复现原 review 和加密 pass，并核验 116 个证据哈希。归档 workflow 后，
-Stage 04 只在三维贯通性和 Al 氧化膜接触电阻标定中选择一个主风险；未通过可信度
-评估前不把绝对温升送入 Stage 06 作实验预测。Zhang 继续保持 `review`。
+GitHub run `29244185796` 已在无 COMSOL 许可证的 Ubuntu runner 上重跑六组开源 FVM、
+解析归档 COMSOL、复现原 `review` 和加密 `pass`，并核验 116 个证据哈希。前一 run
+`29243918541` 的 CRLF/LF 哈希失败也已保留，证明修复针对 CI 可移植性而非数值结果。
+
+下一唯一小目标是三维电流贯通性 pilot。当前 handoff 只有 `x/y` 和接触点 `x/y`，先
+审计原 LIGGGHTS dump/local 是否可恢复 `z` 与接触点 `z`；能恢复则在不重跑 DEM 的
+前提下构建三维直接接触图，不能恢复才设计轻量三维 DEM workflow。三维通路证据形成
+前不做氧化膜精细标定，也不把绝对温升送入 Stage 06。Zhang 继续保持 `review`。
