@@ -7,6 +7,9 @@
 每个阶段都有自己的文件夹。阶段完成后的数据、图、workflow 证据、报告都应放
 回对应阶段文件夹，便于查找、复查和继续分析。
 
+可直接交给工程代理执行的完整任务合同见
+[`00_project_control/full_reproduction_goal_prompt.md`](00_project_control/full_reproduction_goal_prompt.md)。
+
 ## 总目标
 
 建立一条可复现的开源 DEM + COMSOL/FEM 多物理场路线：

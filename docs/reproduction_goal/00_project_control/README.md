@@ -13,6 +13,13 @@
 应归档到 `docs/reproduction_goal/<stage>/` 下，避免数据散落在 workflow 页面、
 临时输出目录或口头描述里。
 
+## 总目标 Prompt
+
+后续工程代理统一使用
+[`full_reproduction_goal_prompt.md`](full_reproduction_goal_prompt.md) 作为任务合同。
+该 Prompt 记录当前已验证状态、八个复现阶段、科学边界、归档规范、验收门槛和
+完整电阻烧结闭环的可视化目标。
+
 ## 总控规则
 
 1. 一个阶段只解决一个主要问题。
@@ -51,4 +58,3 @@
 - 一个可读表格，说明关键数值。
 - 至少一张图或 Mermaid 图，说明数据流、压力曲线、网络结构或温度分布。
 - 一个验收表，列出 `pass/review/fail`。
-
