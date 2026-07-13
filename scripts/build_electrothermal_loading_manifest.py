@@ -46,13 +46,30 @@ EXPECTED_REVIEW_CASES = (
     "fixed_voltage_multiplier_1",
 )
 
+TEXT_EXTENSIONS = {
+    ".csv",
+    ".java",
+    ".json",
+    ".log",
+    ".md",
+    ".ps1",
+    ".py",
+    ".txt",
+    ".yml",
+    ".yaml",
+}
+
+
+def canonical_file_bytes(path: Path) -> tuple[bytes, str]:
+    data = path.read_bytes()
+    if path.suffix.lower() in TEXT_EXTENSIONS:
+        return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n"), "lf_normalized_text"
+    return data, "raw_binary"
+
 
 def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    data, _ = canonical_file_bytes(path)
+    return hashlib.sha256(data).hexdigest()
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -62,11 +79,13 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _record(path: Path, repo_root: Path, role: str) -> dict[str, Any]:
     resolved = path.resolve()
     relative = resolved.relative_to(repo_root.resolve())
+    canonical, hash_mode = canonical_file_bytes(resolved)
     return {
         "path": relative.as_posix(),
         "role": role,
-        "bytes": resolved.stat().st_size,
-        "sha256": sha256_file(resolved),
+        "canonical_bytes": len(canonical),
+        "hash_mode": hash_mode,
+        "sha256": hashlib.sha256(canonical).hexdigest(),
     }
 
 
@@ -247,8 +266,11 @@ def verify_records(manifest: dict[str, Any], repo_root: Path) -> list[str]:
         if not path.is_file():
             errors.append(f"missing: {record['path']}")
             continue
-        if path.stat().st_size != int(record["bytes"]):
-            errors.append(f"size mismatch: {record['path']}")
+        canonical, hash_mode = canonical_file_bytes(path)
+        if len(canonical) != int(record["canonical_bytes"]):
+            errors.append(f"canonical size mismatch: {record['path']}")
+        if hash_mode != str(record["hash_mode"]):
+            errors.append(f"hash mode mismatch: {record['path']}")
         if sha256_file(path) != str(record["sha256"]):
             errors.append(f"sha256 mismatch: {record['path']}")
     return errors

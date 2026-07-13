@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from build_electrothermal_loading_manifest import (  # noqa: E402
     EXPECTED_REVIEW_CASES,
+    canonical_file_bytes,
     sha256_file,
     validate_decision_snapshot,
     verify_records,
@@ -27,7 +28,8 @@ class ElectrothermalLoadingManifestTest(unittest.TestCase):
                 "records": [
                     {
                         "path": "evidence.txt",
-                        "bytes": path.stat().st_size,
+                        "canonical_bytes": len(canonical_file_bytes(path)[0]),
+                        "hash_mode": "lf_normalized_text",
                         "sha256": sha256_file(path),
                     }
                 ]
@@ -35,6 +37,15 @@ class ElectrothermalLoadingManifestTest(unittest.TestCase):
             self.assertEqual(verify_records(manifest, root), [])
             path.write_text("changed", encoding="utf-8")
             self.assertIn("sha256 mismatch: evidence.txt", verify_records(manifest, root))
+
+    def test_text_hash_is_platform_independent(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            lf = root / "lf.txt"
+            crlf = root / "crlf.txt"
+            lf.write_bytes(b"a\nb\n")
+            crlf.write_bytes(b"a\r\nb\r\n")
+            self.assertEqual(sha256_file(lf), sha256_file(crlf))
 
     def test_decision_contract_preserves_review_and_refinement_pass(self) -> None:
         snapshot = {

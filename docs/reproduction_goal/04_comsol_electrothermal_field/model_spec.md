@@ -204,6 +204,7 @@ cases, the preserved wrapper failure, and the three refinement levels. Verificat
 3. exactly the two multiplier-1 cases failing the original gate;
 4. every non-case global loading gate passing;
 5. `fvm_refinement_pass` while `original_loading_decision` remains `review`;
-6. every recorded byte count and SHA-256 matching the repository file.
+6. every recorded canonical byte count and SHA-256 matching the repository file. Text files use
+   LF-normalized bytes for Windows/Linux portability; binary `.mph` and images use raw bytes.
 
 This contract proves provenance and file integrity, not physical calibration.
