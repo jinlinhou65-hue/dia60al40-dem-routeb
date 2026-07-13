@@ -77,7 +77,31 @@ jobs:
       - name: Run unit tests
         run: |
           set -euxo pipefail
-          python3 -m unittest discover -s tests -p "test_*.py"
+          mkdir -p outputs/ci_diagnostics
+          set +e
+          python3 -m unittest discover -s tests -p "test_*.py" \
+            > >(tee outputs/ci_diagnostics/unit_tests.log) 2>&1
+          test_status=$?
+          set -e
+          if [ "$test_status" -ne 0 ]; then
+            python3 - <<'PY'
+          from pathlib import Path
+
+          log = Path("outputs/ci_diagnostics/unit_tests.log").read_text(
+              encoding="utf-8", errors="replace"
+          )
+          tail = log[-50000:].replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+          print(f"::error file=tests,title=Python unit-test failure::{tail}")
+          PY
+            exit "$test_status"
+          fi
+
+      - name: Upload CI diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-algorithm-ci-diagnostics
+          path: outputs/ci_diagnostics/**
 
       - name: Generate paper reproduction outputs
         run: |
