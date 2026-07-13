@@ -1,5 +1,8 @@
 # 03 Zhang Particle Scale
 
+统一阶段结论、证据含义和电阻烧结可视化边界见：
+[`stage_assessment.md`](stage_assessment.md)。
+
 ## 阶段目的
 
 解决 Zhang 论文的 DEM 校准问题：当前轻量 DEM 已经能输出真实接触力和力链指标，
