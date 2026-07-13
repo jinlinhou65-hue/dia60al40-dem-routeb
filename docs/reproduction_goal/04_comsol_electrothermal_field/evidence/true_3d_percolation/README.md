@@ -40,7 +40,9 @@ resistance is `0.0353279646 ohm`; the largest edge resistance on the path is
 - `run_29246532552/`: accepted raw DEM, exported particles/contacts, analysis tables, 3D figure,
   frozen inputs, logs, runtime gate, and solver provenance.
 - `run_29246371198_failure/`: failed rendered deck, log tail, runtime gate, and provenance.
-- `archive_manifest.csv`: SHA-256 and byte size for every archived file.
+- `archive_manifest.csv`: SHA-256 and canonical byte size for every archived file except the
+  manifest itself. UTF-8 text uses LF-normalized bytes; PNG uses raw binary bytes, so verification
+  is stable across Windows and Linux checkouts.
 
 This evidence proves that the frozen smoke geometry can form a true-3D Al direct-contact path. It
 does not prove an oxide-film resistance, experimental current, calibrated pressure-density law,
