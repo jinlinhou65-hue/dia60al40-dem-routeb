@@ -74,6 +74,12 @@ jobs:
             scripts/process_stage_series.py \
             .github/scripts/validate_paper_reproduction_content.py
 
+      - name: Install scientific test dependencies
+        run: |
+          set -euxo pipefail
+          python3 -m pip install --user --only-binary=:all: numpy matplotlib
+          python3 -c 'import matplotlib, numpy; print(matplotlib.__version__, numpy.__version__)'
+
       - name: Run unit tests
         run: |
           set -euxo pipefail
