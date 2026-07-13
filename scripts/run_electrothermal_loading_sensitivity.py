@@ -31,12 +31,20 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def canonical_text_sha256(path: Path) -> str:
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def load_loading_parameters(path: Path, base_parameter_path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schema_version") != 1:
         raise ValueError("unsupported loading-mode parameter schema")
-    expected_hash = str(data["base_parameter_set"]["sha256"])
-    actual_hash = file_sha256(base_parameter_path)
+    base_reference = data["base_parameter_set"]
+    if base_reference.get("hash_mode") != "lf_normalized_text":
+        raise ValueError("base parameter hash mode must be lf_normalized_text")
+    expected_hash = str(base_reference["sha256"])
+    actual_hash = canonical_text_sha256(base_parameter_path)
     if actual_hash != expected_hash:
         raise ValueError(f"base parameter hash mismatch: expected {expected_hash}, got {actual_hash}")
     if data["loading_modes"] != ["fixed_voltage", "fixed_current"]:

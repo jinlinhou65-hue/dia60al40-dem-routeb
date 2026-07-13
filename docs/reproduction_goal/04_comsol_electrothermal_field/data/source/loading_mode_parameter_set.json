@@ -2,6 +2,7 @@
   "schema_version": 1,
   "base_parameter_set": {
     "path": "data/source/electrothermal_parameter_set.json",
+    "hash_mode": "lf_normalized_text",
     "sha256": "bad8c513dcf63f1b8df7fe365d88c88f551156b8bc68794a6ee8b6ec044f27f7"
   },
   "paper_loading_evidence": {

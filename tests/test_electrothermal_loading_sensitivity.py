@@ -57,6 +57,19 @@ class ElectrothermalLoadingSensitivityTest(unittest.TestCase):
         self.assertFalse(data["comsol_mesh"]["repeat_mesh_study"])
         self.assertIn("not_paper_boundary_condition", data["paper_loading_evidence"]["classification"])
 
+    def test_loading_parameter_hash_is_line_ending_independent(self) -> None:
+        source = BASE.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            lf_path = root / "base_lf.json"
+            crlf_path = root / "base_crlf.json"
+            lf_path.write_bytes(source)
+            crlf_path.write_bytes(source.replace(b"\n", b"\r\n"))
+            self.assertEqual(
+                load_loading_parameters(LOADING, lf_path),
+                load_loading_parameters(LOADING, crlf_path),
+            )
+
     def test_fixed_current_voltage_scales_inverse_to_base_conductance(self) -> None:
         self.assertAlmostEqual(fixed_current_voltage(10.0, 20.0, 0.1), 0.05)
         self.assertAlmostEqual(fixed_current_voltage(10.0, 2.0, 0.1), 0.5)

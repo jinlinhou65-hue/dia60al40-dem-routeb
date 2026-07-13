@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-07-13T10:50:19.462898+00:00",
+  "generated_at_utc": "2026-07-13T11:09:46.863285+00:00",
   "stage": "docs/reproduction_goal/04_comsol_electrothermal_field",
-  "source_commit_at_generation": "7224eec58f612ffa4a140ccb79846230041b396f",
+  "source_commit_at_generation": "b07947e9b1ae7780e6afcfede3bb9cac3b9562fe",
   "source_branch_at_generation": "codex/paper-reproduction-demo",
-  "working_tree_clean_at_generation": true,
+  "working_tree_clean_at_generation": false,
   "hashes_are_authoritative_for_uncommitted_sources": true,
   "solver_provenance": {
     "licensed_solver": "COMSOL 6.4",
@@ -148,9 +148,9 @@
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/source/loading_mode_parameter_set.json",
       "role": "source_or_preregistration",
-      "canonical_bytes": 1463,
+      "canonical_bytes": 1502,
       "hash_mode": "lf_normalized_text",
-      "sha256": "5e3e45886afb1e1b4c7995a78746d737e3205798bcfb4885718b7e87a66a3d34"
+      "sha256": "6f8193fb2a0cb5420786d4ff154cac586bf02c4a23debd0e41ae379f46e98fdd"
     },
     {
       "path": "docs/reproduction_goal/04_comsol_electrothermal_field/data/source/stage5_rho095_direct_contacts.csv",
@@ -820,9 +820,9 @@
     {
       "path": "scripts/run_electrothermal_loading_sensitivity.py",
       "role": "implementation",
-      "canonical_bytes": 14225,
+      "canonical_bytes": 14582,
       "hash_mode": "lf_normalized_text",
-      "sha256": "602a059cdacccc0a3cf65ecd58fa0a71db448e0777698ea08ac107a9b4d1c2be"
+      "sha256": "a3ee9bfe3aa2e50de9a861750283cf9992cc4a32388f75c593dff85305f496bc"
     },
     {
       "path": "scripts/solve_electrothermal_fvm.py",
@@ -862,9 +862,9 @@
     {
       "path": "tests/test_electrothermal_loading_sensitivity.py",
       "role": "implementation",
-      "canonical_bytes": 3874,
+      "canonical_bytes": 4478,
       "hash_mode": "lf_normalized_text",
-      "sha256": "d81d1190396a19fa89943a528729e5e455cb858978a7cdc20d4ec87a3f877f84"
+      "sha256": "fab0f35f9eba74d600e21acd1d261a887c247e10d22431c6cd75338389c8a451"
     }
   ]
 }
