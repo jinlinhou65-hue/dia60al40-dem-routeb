@@ -104,6 +104,9 @@
   已归档 COMSOL 证据。run `29244185796` 用时 1m 5s，重现原六组 `review`、
   FVM 加密 `pass` 和 116 个 manifest 记录，artifact digest 为
   `sha256:91507872a9f33454abbe3dc2500d3db1bd0c88b92bd9a6155632c0de4f96e804`。
+- 三维就绪性审计已证明当前 route-B deck 虽输出 z 和三维 contactPoint，却由 zlock 和
+  三次 z=0 归零保持严格准二维；旧 Stage 04 CSV 不含 z，不能恢复真实三维网络。
+  handoff/contact 导出器现已保留 z、vz、nz、force_z 和 contact_point_z，并保持二维兼容。
 
 使用 `stage_status.csv` 和最新 Git 历史确认这些状态；若文档与数据冲突，以原始
 CSV、JSON、日志、哈希和真实运行结果为准，并修正文档。
@@ -358,13 +361,12 @@ docs/reproduction_goal/<stage>/
 </do_not_do>
 
 <current_next_task>
-从仓库当前状态继续，唯一下一小目标是 Stage 04 三维直接接触贯通性 pilot：
-1. 先审计现有 LIGGGHTS dump、`pair/gran/local` 和转换脚本是否保存粒子 z、接触法向 z
-   与接触点 z；不得先启动新的 DEM 长算。
-2. 若原 artifact 含 z，扩展 handoff/contact schema 保留 z，保持旧二维输入兼容，
-   并从既有 artifact 重建三维直接接触图。
-3. 若原 artifact 不含足够 z 证据，预注册一个 GitHub 轻量三维 DEM pilot，固定材料、
-   接触律、颗粒组成、seed、加载路径、最大运行时间和停止条件。
+从仓库当前状态继续，唯一下一小目标是实现并运行 Stage 04 真三维直接接触贯通 pilot：
+1. 保留已接受的准二维 deck，不在其上删除 zlock；新增独立真三维 deck/renderer/workflow。
+2. 按预注册固定非零厚度、前后壁、材料体积分数、颗粒数、seed、接触律、加载路径、
+   时间步、运行预算和停止条件；首次 GitHub 运行必须是 10 分钟内的轻量 pilot。
+3. 使用已扩展的 handoff/contact exporter，硬性检查粒子 z 与接触点 z span 均大于 0，
+   且直接接触完整率为 1.0。
 4. 贯通算法只能使用直接接触；输出电极节点、活跃材料边、连通分量、最短跨越路径、
    瓶颈接触、路径总电阻和可审计 3D 网络图，不得用距离推断边补出通路。
 5. 验收必须分别报告：z 数据完整性、节点/边守恒、上下电极定义、是否贯通、结果对

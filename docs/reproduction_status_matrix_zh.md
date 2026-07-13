@@ -49,7 +49,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 | 应力分布模拟 | 已从 DEM contact force 计算 virial stress 和 fabric tensor | `series_network_metrics.csv`，`dem_evidence_report.md` | 校准 Zhang 局部应力 D2 与论文测量圆方法 |
 | 颗粒接触状态 | 已导出 LIGGGHTS `pair/gran/local` 直接接触力并转换为 stage contact CSV | `liggghts/DEM/contact_forces/*_contacts.csv` | 继续校准强接触阈值、力链角度和最小链长 |
 | 拱桥结构形成 | 已有强接触连通图 arch candidate、强度、方向、buckling 输出 | `stage_details/*_arches.csv`，`yuan/yuan_arch_bridge_metrics.csv` | 增加非球形颗粒或 MPFEM，复现 Yuan 的圆/六边形/条形差异 |
-| 电流和温度场 | smoke、网格、接触筛查及恒压/恒流六组 COMSOL/FVM 已完成；原比较 review、加密复核和 GitHub 重放 pass | `04_comsol_electrothermal_field/evidence/github_run_29244185796.md` | 优先恢复 z 坐标并做直接接触三维贯通 pilot，再决定氧化膜标定 |
+| 电流和温度场 | 恒压/恒流与 GitHub 重放已验证；z schema 已补齐，现有 deck 被审计为严格准二维 | `04_comsol_electrothermal_field/three_dimensional_readiness_audit.md` | 按预注册实现独立轻量真三维 DEM 贯通 pilot，再决定氧化膜标定 |
 | 致密化链条 | 已有压力-密度曲线、Heckel/Kawakita/Huang fit、neck-growth proxy | `pressure_density_curve.csv`，`series_compaction_fits.csv` | 加入材料扩散常数、活化能和烧结时间标定 |
 
 ## 分论文复现矩阵

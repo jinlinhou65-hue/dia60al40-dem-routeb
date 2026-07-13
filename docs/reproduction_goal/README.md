@@ -82,6 +82,7 @@ flowchart TD
 | 材料感知接触筛查 | 157 条接触完成 Hertz/电热阻分类；活跃 Al-Al 网络不贯通；电阻倍率 1/10/100 的条件 FVM 功率和温升单调下降 |
 | 恒压/恒流机制 | 六组固定 3316 单元 COMSOL 与 FVM 趋势一致；原比较保留 `review`，预注册 FVM 加密 `pass`；恒压降热、恒流升热 |
 | 恒压/恒流 GitHub 重放 | run `29244185796` success，`1m 5s`；116 个 manifest 记录通过；artifact digest `sha256:91507872...f96e804` |
+| 三维就绪性审计 | 原 deck 请求 z/三维 contactPoint，但由 zlock 和 3 次 z=0 归零严格限制为准二维；判定 `true_3d_pilot_required` |
 | 接触筛查 GitHub demo | workflow run `29240835995` success，41 s，artifact digest `sha256:8e3a90b0...8470f885` |
 
 ## 仍未完成的边界
@@ -127,7 +128,11 @@ GitHub run `29244185796` 已在无 COMSOL 许可证的 Ubuntu runner 上重跑�
 解析归档 COMSOL、复现原 `review` 和加密 `pass`，并核验 116 个证据哈希。前一 run
 `29243918541` 的 CRLF/LF 哈希失败也已保留，证明修复针对 CI 可移植性而非数值结果。
 
-下一唯一小目标是三维电流贯通性 pilot。当前 handoff 只有 `x/y` 和接触点 `x/y`，先
-审计原 LIGGGHTS dump/local 是否可恢复 `z` 与接触点 `z`；能恢复则在不重跑 DEM 的
-前提下构建三维直接接触图，不能恢复才设计轻量三维 DEM workflow。三维通路证据形成
-前不做氧化膜精细标定，也不把绝对温升送入 Stage 06。Zhang 继续保持 `review`。
+三维就绪性审计已经完成：原 LIGGGHTS deck 会输出粒子 z 和 contactPoint 第三分量，
+但 `fix zlock`、三次 `set group all z 0.0` 和窄插入区使物理状态严格准二维；归档
+Stage 04 CSV 也没有 z，不能从旧 artifact 恢复真实三维网络。导出 schema 现已保留
+`z/vz/nz/force_z/contact_point_z`，并保持旧二维输入兼容。
+
+下一唯一小目标是按 `three_dimensional_percolation_preregistration.md` 实现独立的轻量
+三维 DEM deck/workflow，不修改已接受准二维基线，不运行 COMSOL。三维直接接触通路
+形成前不做氧化膜精细标定，也不把绝对温升送入 Stage 06。Zhang 保持 `review`。

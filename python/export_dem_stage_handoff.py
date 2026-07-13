@@ -37,10 +37,12 @@ FIELDNAMES = [
     "material",
     "x_um",
     "y_um",
+    "z_um",
     "r_um",
     "rotation_rad",
     "vx_cm_s",
     "vy_cm_s",
+    "vz_cm_s",
     "contact_count",
 ]
 
@@ -78,10 +80,12 @@ def export_stage(input_path: Path, stage_id: str, output_path: Path, contact_gap
                     "material": particle_material(row),
                     "x_um": fmt(float(row["x"]) * UM_PER_CM),
                     "y_um": fmt(float(row["y"]) * UM_PER_CM),
+                    "z_um": fmt(float(row.get("z", 0.0)) * UM_PER_CM),
                     "r_um": fmt(float(row["radius"]) * UM_PER_CM),
                     "rotation_rad": "0.0",
                     "vx_cm_s": fmt(float(row.get("vx", 0.0))),
                     "vy_cm_s": fmt(float(row.get("vy", 0.0))),
+                    "vz_cm_s": fmt(float(row.get("vz", 0.0))),
                     "contact_count": counts.get(particle_id, 0),
                 }
             )

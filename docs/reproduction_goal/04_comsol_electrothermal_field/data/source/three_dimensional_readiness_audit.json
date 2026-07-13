@@ -1,0 +1,59 @@
+{
+  "decision": "true_3d_pilot_required",
+  "deck_classification": "strict_quasi_2d",
+  "raw_output_capability": {
+    "particle_dump_requests_z": true,
+    "contact_compute_requests_contact_point": true,
+    "contact_dump_requests_13_components": true
+  },
+  "dimensional_constraints": {
+    "zlock_setforce_present": true,
+    "set_all_z_zero_count": 3
+  },
+  "archived_stage04_source": {
+    "particle_columns": [
+      "stage_id",
+      "target_rho_total",
+      "actual_rho_total",
+      "current_height_um",
+      "particle_id",
+      "type",
+      "shape",
+      "material",
+      "x_um",
+      "y_um",
+      "r_um",
+      "rotation_rad",
+      "vx_cm_s",
+      "vy_cm_s",
+      "contact_count"
+    ],
+    "contact_columns": [
+      "stage_id",
+      "i",
+      "j",
+      "nx",
+      "ny",
+      "gap_um",
+      "overlap_um",
+      "force_x",
+      "force_y",
+      "normal_force",
+      "contact_point_x_um",
+      "contact_point_y_um",
+      "source",
+      "force_unit"
+    ],
+    "has_3d_schema": false,
+    "particle_z_span_um": null,
+    "contact_point_z_span_um": null,
+    "has_nonzero_depth_evidence": false
+  },
+  "source_hashes": {
+    "liggghts_deck": "46afbed2d502b4a59fa7835d2bc65c00fd1f07905ee962f42c26ff1b1b47fe16",
+    "particle_csv": "21d133371167c860e628db6ef205b0a365f963137b83e993a3b878b95b7cb39c",
+    "contact_csv": "0be09c111c6ac9c8da5e952dc08550699d0fe105282dfdde21045729b5e9f55b"
+  },
+  "interpretation": "The solver deck can write z and the thirteenth contact component, but it explicitly zeros particle z force and positions. The archived Stage 04 CSVs also omit z. No three-dimensional electrical-percolation claim can be recovered from these files.",
+  "next_action": "Keep z in future handoff/contact exports and run a preregistered true-3D lightweight DEM pilot before oxide-resistance calibration or Stage 06 coupling."
+}

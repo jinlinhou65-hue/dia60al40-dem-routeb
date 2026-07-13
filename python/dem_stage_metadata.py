@@ -89,14 +89,16 @@ def contact_counts(rows: list[dict[str, str]], gap_tol_um: float) -> dict[str, i
     for i, a in enumerate(rows):
         ax = float(a["x"]) * UM_PER_CM
         ay = float(a["y"]) * UM_PER_CM
+        az = float(a.get("z", 0.0)) * UM_PER_CM
         ar = float(a["radius"]) * UM_PER_CM
         aid = str(a.get("id", i + 1))
         for j, b in enumerate(rows[i + 1 :], start=i + 1):
             bx = float(b["x"]) * UM_PER_CM
             by = float(b["y"]) * UM_PER_CM
+            bz = float(b.get("z", 0.0)) * UM_PER_CM
             br = float(b["radius"]) * UM_PER_CM
             bid = str(b.get("id", j + 1))
-            gap = math.hypot(ax - bx, ay - by) - (ar + br)
+            gap = math.sqrt((ax - bx) ** 2 + (ay - by) ** 2 + (az - bz) ** 2) - (ar + br)
             if gap <= gap_tol_um:
                 counts[aid] += 1
                 counts[bid] += 1

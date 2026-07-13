@@ -15,13 +15,16 @@ FIELDNAMES = [
     "j",
     "nx",
     "ny",
+    "nz",
     "gap_um",
     "overlap_um",
     "force_x",
     "force_y",
+    "force_z",
     "normal_force",
     "contact_point_x_um",
     "contact_point_y_um",
+    "contact_point_z_um",
     "source",
     "force_unit",
 ]
@@ -49,6 +52,7 @@ def read_particles(path: Path) -> dict[int, dict[str, float]]:
         particles[pid] = {
             "x_um": float(row["x_um"]),
             "y_um": float(row["y_um"]),
+            "z_um": float(row.get("z_um", 0.0)),
             "r_um": float(row["r_um"]),
         }
     return particles
@@ -83,16 +87,20 @@ def contact_row(
         return None
     dx = b["x_um"] - a["x_um"]
     dy = b["y_um"] - a["y_um"]
-    distance = math.hypot(dx, dy)
+    dz = b["z_um"] - a["z_um"]
+    distance = math.sqrt(dx * dx + dy * dy + dz * dz)
     if distance == 0.0:
         return None
     nx = dx / distance
     ny = dy / distance
+    nz = dz / distance
     force_x = values[3]
     force_y = values[4]
+    force_z = values[5]
     normal_x = values[6]
     normal_y = values[7]
-    normal_force = math.hypot(normal_x, normal_y)
+    normal_z = values[8]
+    normal_force = math.sqrt(normal_x * normal_x + normal_y * normal_y + normal_z * normal_z)
     overlap_um = max(0.0, values[9] * UM_PER_CM)
     gap_um = distance - (a["r_um"] + b["r_um"])
     return {
@@ -101,13 +109,16 @@ def contact_row(
         "j": j,
         "nx": format_float(nx),
         "ny": format_float(ny),
+        "nz": format_float(nz),
         "gap_um": format_float(gap_um),
         "overlap_um": format_float(overlap_um),
         "force_x": format_float(force_x),
         "force_y": format_float(force_y),
+        "force_z": format_float(force_z),
         "normal_force": format_float(normal_force),
         "contact_point_x_um": format_float(values[10] * UM_PER_CM),
         "contact_point_y_um": format_float(values[11] * UM_PER_CM),
+        "contact_point_z_um": format_float(values[12] * UM_PER_CM),
         "source": "liggghts_pair_gran_local",
         "force_unit": "dyne",
     }

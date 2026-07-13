@@ -20,6 +20,7 @@ from paper_reproduction import (
     validate_stage_series,
 )
 from export_liggghts_contact_forces import export_contacts
+from export_dem_stage_handoff import export_stage
 
 
 class DirectContactMetricsTest(unittest.TestCase):
@@ -53,6 +54,56 @@ class DirectContactMetricsTest(unittest.TestCase):
             self.assertEqual(contacts[0].source, "liggghts_pair_gran_local")
             self.assertAlmostEqual(contacts[0].overlap_um, 2.0)
             self.assertEqual(metrics["direct_contact_force_fraction"], 1.0)
+            exported = read_csv(contacts_path)
+            self.assertEqual(float(exported[0]["force_z"]), 0.0)
+            self.assertEqual(float(exported[0]["contact_point_z_um"]), 0.0)
+
+    def test_contact_export_preserves_true_3d_components(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            particles_path = root / "particles.csv"
+            local_dump = root / "contacts.local"
+            output = root / "contacts.csv"
+            particles_path.write_text(
+                "particle_id,x_um,y_um,z_um,r_um,material\n"
+                "1,0,0,0,10,Al\n"
+                "2,0,0,18,10,Al\n",
+                encoding="utf-8",
+            )
+            local_dump.write_text(
+                "ITEM: TIMESTEP\n0\nITEM: NUMBER OF ENTRIES\n1\n"
+                "ITEM: ENTRIES c[1] c[2] c[3] c[4] c[5] c[6] c[7] c[8] c[9] "
+                "c[10] c[11] c[12] c[13]\n"
+                "1 2 0 0 0 20 0 0 20 0.0002 0 0 0.0009\n",
+                encoding="utf-8",
+            )
+
+            export_contacts(local_dump, particles_path, "stage3d", output)
+            row = read_csv(output)[0]
+
+            self.assertAlmostEqual(float(row["nz"]), 1.0)
+            self.assertAlmostEqual(float(row["force_z"]), 20.0)
+            self.assertAlmostEqual(float(row["normal_force"]), 20.0)
+            self.assertAlmostEqual(float(row["contact_point_z_um"]), 9.0)
+            self.assertAlmostEqual(float(row["gap_um"]), -2.0)
+
+    def test_stage_handoff_preserves_particle_z_and_vz(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dump = root / "stage0_preload_1.dump"
+            output = root / "handoff.csv"
+            dump.write_text(
+                "ITEM: TIMESTEP\n1\nITEM: NUMBER OF ATOMS\n1\n"
+                "ITEM: ATOMS id type x y z vx vy vz radius\n"
+                "1 1 0.001 0.002 0.003 1 2 3 0.0013\n",
+                encoding="utf-8",
+            )
+
+            export_stage(dump, "stage0_preload", output, contact_gap_um=0.5)
+            row = read_csv(output)[0]
+
+            self.assertAlmostEqual(float(row["z_um"]), 30.0)
+            self.assertAlmostEqual(float(row["vz_cm_s"]), 3.0)
 
     def test_direct_contact_force_snapshot_pipeline(self):
         with tempfile.TemporaryDirectory() as tmp:
