@@ -50,6 +50,11 @@ COMSOL 自由三角形网格：
 证据见 `evidence/mesh_convergence/comparison/`。该结论只证明固定 smoke 模型的
 离散收敛，不代表电导率、热导率或接触电阻已经物理标定。
 
+GitHub Actions run `29236808994` 在无 COMSOL 许可证的 Ubuntu runner 上重新解析
+三档日志、重建属性网格、重跑开源 FVM，并同时要求 `smoke_pass` 与 `mesh_pass`。
+run 用时 29 秒，artifact digest 为
+`sha256:cde235df4e9c7f5973e7c5b9cb744cd592a9ca886fd19cf090b194169a1cb601`。
+
 ## 科学含义
 
 接触力较强、接触更密集的位置形成更高的均匀化电导率，电流密度和 Joule 热点

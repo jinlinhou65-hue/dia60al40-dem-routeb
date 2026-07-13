@@ -26,6 +26,7 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | COMSOL 网格 | `1512 / 3316 / 8390` 个三角形单元 |
 | 中/细网格 Joule 功率差 | `0.0277%` |
 | 中/细网格最大温升差 | `0.0187%` |
+| GitHub mesh verifier | run `29236808994`, success, 29 s |
 | 阶段判定 | `smoke_pass + mesh_pass` |
 
 ## 代码入口
@@ -55,6 +56,7 @@ evidence/fvm_smoke/     # 开源 FVM 场、摘要和图
 evidence/comparison/    # 九项验收、跨求解器报告和对比图
 evidence/mesh_convergence/  # 三档网格场、日志、摘要和收敛图
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
+evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
 ```
 
 ## 证据边界
