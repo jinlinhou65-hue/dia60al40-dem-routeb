@@ -1,0 +1,69 @@
+{
+  "decision": "mesh_pass",
+  "mesh_levels": [
+    {
+      "level": "coarse",
+      "mesh_hmax_um": 12.0,
+      "mesh_hmin_um": 1.5,
+      "element_count": 1512,
+      "minimum_element_quality": 0.7193,
+      "dof_count": 6258,
+      "integrated_joule_2d_w_per_m_depth": 396.307677199,
+      "max_temperature_k": 293.790088731,
+      "max_temperature_rise_k": 0.6400887310000485,
+      "solve_status": "success",
+      "log_error": false,
+      "summary_sha256": "deb303a4f4c4e675013224aa6ea980a7e6116ea03267d9fcb1d85b696b18f4e5",
+      "log_sha256": "0f44839f500f869904e26bed4d2949651bbf2597a80bffdd1f6d4f7b72ab03fc"
+    },
+    {
+      "level": "medium",
+      "mesh_hmax_um": 8.0,
+      "mesh_hmin_um": 1.0,
+      "element_count": 3316,
+      "minimum_element_quality": 0.6652,
+      "dof_count": 13570,
+      "integrated_joule_2d_w_per_m_depth": 396.328060919,
+      "max_temperature_k": 293.789814445,
+      "max_temperature_rise_k": 0.6398144450000132,
+      "solve_status": "success",
+      "log_error": false,
+      "summary_sha256": "d532acb87103be41e99f9f9f078b726e28821bb5da4501ecb1906ccde1ab00ff",
+      "log_sha256": "77083f7e24d1169af5da4abe9602aa32b11df43f973b53a26c2d4f3676f1a33f"
+    },
+    {
+      "level": "fine",
+      "mesh_hmax_um": 5.0,
+      "mesh_hmin_um": 0.625,
+      "element_count": 8390,
+      "minimum_element_quality": 0.6694,
+      "dof_count": 34050,
+      "integrated_joule_2d_w_per_m_depth": 396.218159958,
+      "max_temperature_k": 293.789694659,
+      "max_temperature_rise_k": 0.6396946590000425,
+      "solve_status": "success",
+      "log_error": false,
+      "summary_sha256": "c795ab3fec8dbb3259f3d5bdde9532ca58004d2c84624ce80873d7c6803f0c73",
+      "log_sha256": "2e455ea5631e337829da50dd7bec8aebd3e600ede90b23f44b73445e0e8124fa"
+    }
+  ],
+  "comparisons": {
+    "medium_fine_power_relative_difference": 0.00027733640790913593,
+    "medium_fine_temperature_rise_relative_difference": 0.0001872374328500909,
+    "coarse_fine_power_relative_difference": 0.0002259036533651245,
+    "coarse_fine_temperature_rise_relative_difference": 0.0006158417167860488
+  },
+  "gates": {
+    "all_solve_success_gate": true,
+    "clean_log_gate": true,
+    "finite_positive_result_gate": true,
+    "refinement_order_gate": true,
+    "element_growth_gate": true,
+    "minimum_quality_gate": true,
+    "medium_fine_power_gate": true,
+    "medium_fine_temperature_gate": true,
+    "coarse_fine_power_gate": true,
+    "coarse_fine_temperature_gate": true
+  },
+  "interpretation_boundary": "Mesh convergence is evaluated for the fixed homogenized smoke model only; it does not calibrate contact resistance or material properties."
+}

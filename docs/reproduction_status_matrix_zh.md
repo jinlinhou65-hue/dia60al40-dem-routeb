@@ -108,7 +108,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
 3. Zhang 轻量 pscale=2 路线已完成当前可解释的单变量筛查：C 低侧壁/低粒间摩擦被否决，E pressure-lift 达到部分覆盖但无共同 Emax 窗口。阶段保持 `review`，禁止无依据映射阻尼 `0.2`，也不启动 4x/8x。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
-5. COMSOL 单阶段电热 smoke 已完成：157 条直接接触进入属性场，COMSOL/FVM Joule 功率差 1.202%、最大温升差 0.568%，九项门槛通过。下一步为材料/接触参数标定和网格验证。
+5. COMSOL 单阶段电热 smoke 与三档网格验证已完成：157 条直接接触进入属性场，COMSOL/FVM Joule 功率差 1.202%、最大温升差 0.568%；1512/3316/8390 单元下中/细网格功率差 0.0277%、温升差 0.0187%。下一步为材料/接触参数标定和加载敏感性。
 6. Liu 下一步把已验证温度场接入烧结颈增长、扩散和致密化指标。
 7. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。
 8. COMSOL 继续使用 Windows 本地许可证；GitHub workflow 运行开源 FVM 和证据复核。DEM 参数迭代变频繁时再部署 WSL2。

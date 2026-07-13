@@ -1,0 +1,10 @@
+{
+  "solver": "COMSOL 6.4",
+  "model": "homogenized_contact_network_electrothermal_mvp",
+  "mesh_hmax_um": 5.00000000000,
+  "mesh_hmin_um": 0.625000000000,
+  "ambient_temperature_k": 293.15,
+  "max_temperature_k": 293.789694659,
+  "integrated_joule_2d_w_per_m_depth": 396.218159958,
+  "solve_status": "success"
+}

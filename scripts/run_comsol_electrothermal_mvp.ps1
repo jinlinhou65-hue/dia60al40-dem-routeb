@@ -1,16 +1,30 @@
 param(
     [string]$ComsolRoot = 'D:\Program Files\COMSOL\COMSOL64\Multiphysics',
-    [string]$ApplicationDir = "$env:USERPROFILE\.comsol\v64\applications\files\user\dia60al40_electrothermal_mvp"
+    [string]$ApplicationDir = "$env:USERPROFILE\.comsol\v64\applications\files\user\dia60al40_electrothermal_mvp",
+    [ValidateRange(0.000001, 1000000.0)]
+    [double]$MeshHmaxUm = 8.0,
+    [ValidateRange(0.000001, 1000000.0)]
+    [double]$MeshHminUm = 1.0,
+    [string]$EvidenceSubpath = 'comsol_smoke'
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $stage = Join-Path $repo 'docs\reproduction_goal\04_comsol_electrothermal_field'
 $prepared = Join-Path $stage 'data\prepared'
-$evidence = Join-Path $stage 'evidence\comsol_smoke'
+$evidenceRoot = [System.IO.Path]::GetFullPath((Join-Path $stage 'evidence'))
+$evidence = [System.IO.Path]::GetFullPath((Join-Path $evidenceRoot $EvidenceSubpath))
 $javaSource = Join-Path $repo 'comsol\Dia60Al40_ElectrothermalMVP.java'
 $compile = Join-Path $ComsolRoot 'bin\win64\comsolcompile.exe'
 $batch = Join-Path $ComsolRoot 'bin\win64\comsolbatch.exe'
+
+if ($MeshHminUm -gt $MeshHmaxUm) {
+    throw 'MeshHminUm must not exceed MeshHmaxUm'
+}
+$evidencePrefix = $evidenceRoot.TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+if (-not $evidence.StartsWith($evidencePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'EvidenceSubpath must resolve inside the stage evidence directory'
+}
 
 foreach ($required in @($javaSource, $compile, $batch, (Join-Path $prepared 'stage5_contact_property_grid.csv'), (Join-Path $prepared 'stage5_comsol_interpolation.txt'))) {
     if (-not (Test-Path -LiteralPath $required)) {
@@ -48,7 +62,9 @@ $batchProcess = Start-Process -FilePath $batch -ArgumentList @(
     '-batchlog', $logFile,
     '-stoptime', '180',
     $gridFile,
-    $resultDir
+    $resultDir,
+    $MeshHmaxUm.ToString([System.Globalization.CultureInfo]::InvariantCulture),
+    $MeshHminUm.ToString([System.Globalization.CultureInfo]::InvariantCulture)
 ) -WindowStyle Hidden -Wait -PassThru
 if ($batchProcess.ExitCode -ne 0) {
     throw "comsolbatch launcher failed with exit code $($batchProcess.ExitCode)"

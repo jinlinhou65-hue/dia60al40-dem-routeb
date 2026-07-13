@@ -12,6 +12,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from prepare_comsol_electrothermal_input import prepare_inputs  # noqa: E402
 from analyze_electrothermal_mvp import relative_difference  # noqa: E402
+from analyze_comsol_mesh_convergence import analyze as analyze_mesh_convergence  # noqa: E402
+from analyze_comsol_mesh_convergence import parse_comsol_log  # noqa: E402
 from solve_electrothermal_fvm import solve_fvm  # noqa: E402
 
 
@@ -90,6 +92,45 @@ class ComsolElectrothermalMvpTest(unittest.TestCase):
         self.assertIn('"ec.Qh"', source)
         self.assertNotIn('"SolidMechanics"', source)
         self.assertNotIn("static class", source)
+
+    def test_comsol_builder_accepts_parameterized_mesh_sizes(self) -> None:
+        source = (ROOT / "comsol" / "Dia60Al40_ElectrothermalMVP.java").read_text(encoding="utf-8")
+        self.assertIn("meshHmaxUm", source)
+        self.assertIn("meshHminUm", source)
+        self.assertIn("mesh_hmax_um", source)
+
+    def test_mesh_analyzer_parses_chinese_comsol_log_and_passes_refinement(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for level, hmax, hmin, elements, dof, power, max_temp in (
+                ("coarse", 12.0, 1.5, 1500, 6200, 397.0, 293.7910),
+                ("medium", 8.0, 1.0, 3300, 13600, 396.3, 293.7898),
+                ("fine", 5.0, 0.625, 8200, 33200, 396.1, 293.7894),
+            ):
+                directory = root / level
+                directory.mkdir()
+                (directory / "comsol_summary.json").write_text(
+                    json.dumps(
+                        {
+                            "mesh_hmax_um": hmax,
+                            "mesh_hmin_um": hmin,
+                            "ambient_temperature_k": 293.15,
+                            "max_temperature_k": max_temp,
+                            "integrated_joule_2d_w_per_m_depth": power,
+                            "solve_status": "success",
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                (directory / "comsol_batch.log").write_text(
+                    f"单元数：{elements}\n最小单元质量：0.65\n求解的自由度数：{dof}（加上 10 个内部自由度）。\n",
+                    encoding="utf-8",
+                )
+            result = analyze_mesh_convergence(root, root / "comparison")
+            self.assertEqual(result["decision"], "mesh_pass")
+            self.assertTrue((root / "comparison" / "mesh_convergence.png").is_file())
+            parsed = parse_comsol_log((root / "fine" / "comsol_batch.log").read_text(encoding="utf-8"))
+            self.assertEqual(parsed["element_count"], 8200)
 
     def test_cross_solver_relative_difference_is_symmetric(self) -> None:
         self.assertAlmostEqual(relative_difference(396.0, 392.0), relative_difference(392.0, 396.0))

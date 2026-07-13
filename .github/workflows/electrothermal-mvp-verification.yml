@@ -9,10 +9,12 @@ on:
       - .github/workflows/electrothermal-mvp-verification.yml
       - comsol/Dia60Al40_ElectrothermalMVP.java
       - scripts/analyze_electrothermal_mvp.py
+      - scripts/analyze_comsol_mesh_convergence.py
       - scripts/prepare_comsol_electrothermal_input.py
       - scripts/solve_electrothermal_fvm.py
       - tests/test_comsol_electrothermal_mvp.py
       - docs/reproduction_goal/04_comsol_electrothermal_field/data/source/**
+      - docs/reproduction_goal/04_comsol_electrothermal_field/evidence/mesh_convergence/**
 
 permissions:
   contents: read
@@ -60,6 +62,13 @@ jobs:
             outputs/electrothermal_mvp/fvm/fvm_fields.csv \
             outputs/electrothermal_mvp/comparison
           python -c "import json; data=json.load(open('outputs/electrothermal_mvp/comparison/comparison_summary.json')); assert data['decision']=='smoke_pass', data"
+
+      - name: Verify archived COMSOL mesh convergence
+        run: |
+          python scripts/analyze_comsol_mesh_convergence.py \
+            docs/reproduction_goal/04_comsol_electrothermal_field/evidence/mesh_convergence \
+            outputs/electrothermal_mvp/mesh_convergence
+          python -c "import json; data=json.load(open('outputs/electrothermal_mvp/mesh_convergence/mesh_convergence_summary.json')); assert data['decision']=='mesh_pass', data"
 
       - name: Upload verification evidence
         uses: actions/upload-artifact@v7

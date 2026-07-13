@@ -43,7 +43,7 @@ flowchart TD
 | 01 | [01_pdf_algorithm_layer](01_pdf_algorithm_layer/README.md) | 已完成基础层 | PDF 机制映射和四篇论文算法层复现 |
 | 02 | [02_dem_backend_light_demo](02_dem_backend_light_demo/README.md) | 已完成轻量层 | 开源 DEM 后端选择和 LIGGGHTS workflow demo |
 | 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | review | Zhang C/D/E 参数校准和 2x 粒子数升级 |
-| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | smoke 完成 | COMSOL 电流场、温度场、Joule heat 主线 |
+| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | smoke + 网格验证完成 | COMSOL 电流场、温度场、Joule heat 主线 |
 | 05 | [05_yuan_shape_arch_bridge](05_yuan_shape_arch_bridge/README.md) | 待启动 | Yuan 非球形颗粒、拱桥结构和 MPFEM 路线 |
 | 06 | [06_liu_sintering_coupling](06_liu_sintering_coupling/README.md) | 待启动 | Liu 压制-热场-烧结耦合 |
 | 07 | [07_li_core_shell_fem](07_li_core_shell_fem/README.md) | 待启动 | Li Cu@Fe 包覆颗粒 core-shell FEM/MPFEM |
@@ -75,6 +75,7 @@ flowchart TD
 | Zhang E pressure-lift result | 五 seed 已运行并导入；trend 4/5、双门槛 3/5，但均值 644.331 MPa，停止 Emax-only 分支 |
 | D 组失败诊断 | 已确认旧 verifier 半径阈值误判，已修复 |
 | COMSOL 电热 smoke | COMSOL 6.4 真实求解成功；与开源 FVM 的 Joule 功率差 1.202%、最大温升差 0.568%，九项门槛全通过；GitHub verifier run `28793218330` success |
+| COMSOL 网格无关性 | 1512/3316/8390 三档真实求解通过；中/细网格 Joule 功率差 0.0277%、最大温升差 0.0187%，十项门槛全通过 |
 
 ## 仍未完成的边界
 
@@ -114,6 +115,7 @@ COMSOL 单阶段电热 smoke 已完成：stage5 的 157 条 LIGGGHTS 直接接�
 空间电导率/热导率，COMSOL 6.4 和开源 FVM 均得到非空电势、电流、Joule heat
 和温度场，九项交叉门槛全部通过。该结果只证明软件与数据路线，不是实验标定。
 
+三档 COMSOL 网格验证已经完成，原 3316 单元网格对 Joule 功率和最大温升已收敛。
 下一小目标进入参数可信度升级：为 Al、diamond 和接触电阻补充论文/材料来源，
-执行至少三档网格验证，再把粒子/空间温度输出接入阶段 06 的 Liu 烧结颈增长与
+完成参数与加载敏感性，再把粒子/空间温度输出接入阶段 06 的 Liu 烧结颈增长与
 致密化指标。Zhang 阶段继续保持 `review`，不恢复已被证据否决的单变量扫描。

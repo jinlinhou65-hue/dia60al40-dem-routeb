@@ -12,15 +12,26 @@ public class Dia60Al40_ElectrothermalMVP {
     private Model model;
     private double widthUm;
     private double heightUm;
+    private double meshHmaxUm = 8.0;
+    private double meshHminUm = 1.0;
     private String interpolationPath;
     private String outputDir;
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 2) {
-            throw new IllegalArgumentException("usage: <property-grid.csv> <output-directory>");
+        if (args.length != 2 && args.length != 4) {
+            throw new IllegalArgumentException(
+                "usage: <property-grid.csv> <output-directory> [mesh-hmax-um mesh-hmin-um]"
+            );
         }
         Dia60Al40_ElectrothermalMVP app = new Dia60Al40_ElectrothermalMVP();
         app.outputDir = args[1];
+        if (args.length == 4) {
+            app.meshHmaxUm = Double.parseDouble(args[2]);
+            app.meshHminUm = Double.parseDouble(args[3]);
+        }
+        if (app.meshHmaxUm <= 0.0 || app.meshHminUm <= 0.0 || app.meshHminUm > app.meshHmaxUm) {
+            throw new IllegalArgumentException("mesh sizes must satisfy 0 < hmin <= hmax");
+        }
         app.readGrid(args[0]);
         app.buildAndSolve();
     }
@@ -170,8 +181,8 @@ public class Dia60Al40_ElectrothermalMVP {
     private void defineMeshAndStudy() {
         model.component("comp1").mesh().create("mesh1");
         model.component("comp1").mesh("mesh1").create("ftri1", "FreeTri");
-        model.component("comp1").mesh("mesh1").feature("size").set("hmax", "8[um]");
-        model.component("comp1").mesh("mesh1").feature("size").set("hmin", "1[um]");
+        model.component("comp1").mesh("mesh1").feature("size").set("hmax", meshHmaxUm + "[um]");
+        model.component("comp1").mesh("mesh1").feature("size").set("hmin", meshHminUm + "[um]");
         model.component("comp1").mesh("mesh1").run();
         model.study().create("std1");
         model.study("std1").create("stat", "Stationary");
@@ -208,8 +219,8 @@ public class Dia60Al40_ElectrothermalMVP {
         double integratedJoule = model.result().numerical("intQ").getReal()[0][0];
         FileWriter writer = new FileWriter(new File(directory, "comsol_summary.json"));
         writer.write(String.format(Locale.US,
-            "{\n  \"solver\": \"COMSOL 6.4\",\n  \"model\": \"homogenized_contact_network_electrothermal_mvp\",\n  \"max_temperature_k\": %.12g,\n  \"integrated_joule_2d_w_per_m_depth\": %.12g,\n  \"solve_status\": \"success\"\n}\n",
-            maxTemperature, integratedJoule));
+            "{\n  \"solver\": \"COMSOL 6.4\",\n  \"model\": \"homogenized_contact_network_electrothermal_mvp\",\n  \"mesh_hmax_um\": %.12g,\n  \"mesh_hmin_um\": %.12g,\n  \"ambient_temperature_k\": 293.15,\n  \"max_temperature_k\": %.12g,\n  \"integrated_joule_2d_w_per_m_depth\": %.12g,\n  \"solve_status\": \"success\"\n}\n",
+            meshHmaxUm, meshHminUm, maxTemperature, integratedJoule));
         writer.close();
         log(String.format(Locale.US, "[RESULT] maxT_K=%.9g intQ_W_per_m=%.9g", maxTemperature, integratedJoule));
     }

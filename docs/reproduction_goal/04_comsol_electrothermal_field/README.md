@@ -8,7 +8,7 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 
 ## 当前完成状态
 
-单阶段均匀化电热 smoke model 已完成并通过九项门槛：
+单阶段均匀化电热 smoke model 已完成，并通过跨求解器和三档网格门槛：
 
 | 项目 | 结果 |
 |---|---:|
@@ -23,7 +23,10 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | 电势场归一化 RMSE | 0.293% |
 | 温度场归一化 RMSE | 0.765% |
 | GitHub verifier | run `28793218330`, success, 27 s |
-| 阶段判定 | `smoke_pass` |
+| COMSOL 网格 | `1512 / 3316 / 8390` 个三角形单元 |
+| 中/细网格 Joule 功率差 | `0.0277%` |
+| 中/细网格最大温升差 | `0.0187%` |
+| 阶段判定 | `smoke_pass + mesh_pass` |
 
 ## 代码入口
 
@@ -34,6 +37,8 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 - `scripts/solve_electrothermal_fvm.py`：开源有限体积平行求解器。
 - `scripts/analyze_electrothermal_mvp.py`：COMSOL/FVM 场和能量交叉验证。
 - `scripts/run_comsol_electrothermal_mvp.ps1`：Windows COMSOL 受控目录批处理入口。
+- `scripts/run_comsol_electrothermal_mesh_study.ps1`：三档 COMSOL 网格研究入口。
+- `scripts/analyze_comsol_mesh_convergence.py`：解析 COMSOL 日志并执行收敛门槛。
 - `.github/workflows/electrothermal-mvp-verification.yml`：不依赖 COMSOL 许可证的
   GitHub 轻量复核。
 
@@ -48,6 +53,7 @@ data/prepared/     # 属性网格、COMSOL 插值文件、哈希 manifest
 evidence/comsol_smoke/  # MPH、原始 COMSOL CSV、图和 batch log
 evidence/fvm_smoke/     # 开源 FVM 场、摘要和图
 evidence/comparison/    # 九项验收、跨求解器报告和对比图
+evidence/mesh_convergence/  # 三档网格场、日志、摘要和收敛图
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 ```
 
@@ -58,10 +64,11 @@ evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边�
 
 - 颗粒分辨的 Al/diamond 几何与接触电阻；
 - 电导率、热导率和接触半径已经由论文或实验标定；
-- 网格独立性和电压/电流加载路径独立性；
+- 电压/电流加载路径独立性；
 - 多压制阶段热历史、扩散和烧结颈增长已经闭环。
 
 ## 下一门槛
 
-阶段 04 下一步不是重复 smoke run，而是引入论文/材料来源的电热参数和接触电阻，
-完成至少三档网格验证，再把粒子温度输出交给阶段 06 的 Liu 烧结模型。
+三档网格已经通过。阶段 04 下一步不是重复 smoke 或继续加密网格，而是引入论文/
+材料来源的电热参数和接触电阻，完成参数敏感性，再把粒子温度输出交给阶段 06 的
+Liu 烧结模型。

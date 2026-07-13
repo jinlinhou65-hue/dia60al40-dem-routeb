@@ -1,0 +1,2 @@
+all_solve_success_gate,clean_log_gate,finite_positive_result_gate,refinement_order_gate,element_growth_gate,minimum_quality_gate,medium_fine_power_gate,medium_fine_temperature_gate,coarse_fine_power_gate,coarse_fine_temperature_gate,decision
+pass,pass,pass,pass,pass,pass,pass,pass,pass,pass,mesh_pass

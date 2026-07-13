@@ -62,7 +62,7 @@ Q = sigma |grad(V)|^2
 
 | Implementation | Discretization | Role |
 |---|---|---|
-| COMSOL 6.4 | 3316 quadratic triangular elements, 13570 DOF | Licensed main field solver |
+| COMSOL 6.4 | 1512/3316/8390 quadratic triangular elements | Licensed main field solver and mesh study |
 | Open verifier | Structured finite volume, `81 x 43` nodes | Conservation and cross-solver check |
 
 ## Smoke Acceptance Gates
@@ -77,5 +77,23 @@ Q = sigma |grad(V)|^2
 8. Temperature-field normalized RMSE is at most 10%.
 
 Passing these gates proves the software and data route. Experimental calibration,
-particle-resolved contact resistance, mesh independence, and multi-stage thermal history
-remain later requirements.
+particle-resolved contact resistance, and multi-stage thermal history remain later requirements.
+
+## Mesh Convergence Gates
+
+The physical inputs, interpolation grid, voltage, temperature boundaries, material fields,
+and solver study are frozen. Only the free-triangle size changes:
+
+| Level | hmax (um) | hmin (um) | Elements | DOF |
+|---|---:|---:|---:|---:|
+| Coarse | 12.0 | 1.5 | 1512 | 6258 |
+| Medium | 8.0 | 1.0 | 3316 | 13570 |
+| Fine | 5.0 | 0.625 | 8390 | 34050 |
+
+All solves and logs must be clean, element count must increase, minimum element quality must
+remain at least `0.2`, and both Joule power and maximum temperature rise must differ by at most
+`1%` between the medium and fine meshes. A secondary coarse/fine gate is fixed at `3%`.
+
+The observed medium/fine differences are `0.0277%` for Joule power and `0.0187%` for maximum
+temperature rise, so the original medium mesh is sufficient for these global smoke-model outputs.
+This is a discretization result, not a material or contact-resistance calibration.
