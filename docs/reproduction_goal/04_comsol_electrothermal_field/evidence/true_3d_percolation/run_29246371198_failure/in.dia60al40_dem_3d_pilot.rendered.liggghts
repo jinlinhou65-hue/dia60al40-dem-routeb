@@ -1,0 +1,123 @@
+# Dia60/Al40 true-3D direct-contact percolation pilot
+# Render only with python/render_dem_3d_pilot.py and the frozen Stage 04 parameter JSON.
+# This deck is independent of the accepted quasi-2D staged baseline.
+
+atom_style      granular
+atom_modify     map array
+boundary        f f f
+newton          off
+communicate     single vel yes
+units           cgs
+
+variable        Tcm equal 0.009
+variable        Wcm equal 0.04
+variable        Hcm equal 0.022
+variable        finalHcm equal 0.0105
+variable        topVel equal 50
+variable        dt equal 2e-10
+
+region          simreg block -0.002 0.042 -0.004 0.024 -0.0045 0.0045 units box
+create_box      4 simreg
+neighbor        0.00012 bin
+neigh_modify    delay 0
+timestep        ${dt}
+
+hard_particles  yes
+fix             mprop all property/global youngsModulus peratomtype 50000000000 3e+12 6e+12 2e+12
+fix             pprop all property/global poissonsRatio peratomtype 0.33 0.1 0.31 0.3
+fix             cor all property/global coefficientRestitution peratomtypepair 4 &
+                0.2 0.15 0.15 0.15 &
+                0.15 0.1 0.10 0.10 &
+                0.15 0.10 0.10 0.10 &
+                0.15 0.10 0.10 0.10
+fix             cof all property/global coefficientFriction peratomtypepair 4 &
+                0.3 0.3 0.08 0.08 &
+                0.3 0.1 0.08 0.08 &
+                0.08 0.08 0.08 0.08 &
+                0.08 0.08 0.08 0.08
+
+pair_style      gran model hertz tangential history
+pair_coeff      * *
+compute         pairContacts all pair/gran/local id force force_normal delta contactPoint
+
+fix             grav all gravity 98000 vector 0.0 -1.0 0.0
+fix             integr all nve/sphere
+fix             left all mesh/surface/stress file meshes/DieLeft.stl type 4 scale 1.0 stress on
+fix             right all mesh/surface/stress file meshes/DieRight.stl type 4 scale 1.0 stress on
+fix             bottom all mesh/surface/stress file meshes/DieBottom.stl type 4 scale 1.0 stress on
+fix             frontback all mesh/surface file meshes/DieFrontBack.stl type 4 scale 1.0
+fix             top all mesh/surface/stress file meshes/TopPlate.stl type 3 scale 1.0 stress on
+fix             walls all wall/gran model hertz tangential history mesh n_meshes 5 meshes left right bottom frontback top
+
+variable        topForceAbsDyn equal abs(f_top[2])
+variable        bottomForceAbsDyn equal abs(f_bottom[2])
+variable        topAreaCm2 equal v_Wcm*v_Tcm
+variable        topPressureMPa equal v_topForceAbsDyn/v_topAreaCm2*1.0e-7
+variable        bottomPressureMPa equal v_bottomForceAbsDyn/v_topAreaCm2*1.0e-7
+
+# No z-force lock and no z-position reset are permitted in this true-3D deck.
+fix             ptsAl all particletemplate/sphere 15485863 atom_type 1 density constant 2.7 radius constant 0.0013
+fix             ptsDS all particletemplate/sphere 15485867 atom_type 2 density constant 3.52 radius constant 0.0018
+fix             ptsDL all particletemplate/sphere 49979693 atom_type 2 density constant 3.52 radius constant 0.003
+fix             pddAl all particledistribution/discrete/numberbased 32452843 1 ptsAl 1.0
+fix             pddDS all particledistribution/discrete/numberbased 32452867 1 ptsDS 1.0
+fix             pddDL all particledistribution/discrete/numberbased 67867967 1 ptsDL 1.0
+
+region          insertDL block 0.003 0.037 0.003 0.019 -0.0015 0.0015 units box
+region          insertDS block 0.0018 0.0382 0.0018 0.0202 -0.0027 0.0027 units box
+region          insertAl block 0.0013 0.0387 0.0013 0.0207 -0.0032 0.0032 units box
+fix             insDL all insert/pack seed 49979687 distributiontemplate pddDL maxattempt 50000 insert_every once overlapcheck yes all_in yes particles_in_region 8 region insertDL ntry_mc 50000
+run             1
+unfix           insDL
+fix             insDS all insert/pack seed 67867979 distributiontemplate pddDS maxattempt 50000 insert_every once overlapcheck yes all_in yes particles_in_region 16 region insertDS ntry_mc 50000
+run             1
+unfix           insDS
+fix             insAl all insert/pack seed 86028121 distributiontemplate pddAl maxattempt 100000 insert_every once overlapcheck yes all_in yes particles_in_region 96 region insertAl ntry_mc 100000
+run             1
+unfix           insAl
+
+thermo_style    custom step atoms ke f_top[2] f_bottom[2] v_topPressureMPa v_bottomPressureMPa
+thermo          25000
+dump            trace all custom 250000 DEM/true3d_trace_*.dump id type x y z vx vy vz radius
+
+print           "parameter,value,unit" file DEM/model_parameters.csv screen no
+print           "pilot_id,stage04_true3d_seed0,text" append DEM/model_parameters.csv screen no
+print           "stage_ids,pilot_final,text" append DEM/model_parameters.csv screen no
+print           "domain_width_um,400,um" append DEM/model_parameters.csv screen no
+print           "domain_thickness_um,90,um" append DEM/model_parameters.csv screen no
+print           "initial_height_um,220,um" append DEM/model_parameters.csv screen no
+print           "height_um_pilot_final,105,um" append DEM/model_parameters.csv screen no
+print           "rho_total_pilot_final,0.48582874244,1" append DEM/model_parameters.csv screen no
+print           "solid_volume_total_um3,1836432.64642,um3" append DEM/model_parameters.csv screen no
+print           "Al_volume_fraction,0.400897777453,1" append DEM/model_parameters.csv screen no
+print           "diamond_volume_fraction,0.599102222547,1" append DEM/model_parameters.csv screen no
+print           "Al_count,80,1" append DEM/model_parameters.csv screen no
+print           "diamond_count_DS,8,1" append DEM/model_parameters.csv screen no
+print           "diamond_count_DL,8,1" append DEM/model_parameters.csv screen no
+print           "particle_count_total,96,1" append DEM/model_parameters.csv screen no
+print           "time_step_seconds,2e-10,s" append DEM/model_parameters.csv screen no
+print           "top_velocity_cm_s,50,cm/s" append DEM/model_parameters.csv screen no
+print           "initial_settle_steps,100000,step" append DEM/model_parameters.csv screen no
+print           "load_steps,1150000,step" append DEM/model_parameters.csv screen no
+print           "final_settle_steps,150000,step" append DEM/model_parameters.csv screen no
+print           "dimensionality,true_3d,text" append DEM/model_parameters.csv screen no
+print           "contact_source,liggghts_pair_gran_local,text" append DEM/model_parameters.csv screen no
+
+run             100000
+fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
+run             1150000
+unfix           topMove
+run             150000
+
+print           "pilot_final,0.48582874244,105,${topForceAbsDyn},${topPressureMPa},${bottomForceAbsDyn},${bottomPressureMPa}" file DEM/pilot_final_state.csv screen no
+dump            finalParticles all custom 1 DEM/pilot_final_*.dump id type x y z vx vy vz radius
+dump            finalContacts all local 1 DEM/pilot_final_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
+run             0
+undump          finalParticles
+undump          finalContacts
+write_restart   DEM/pilot_final.restart
+undump          trace

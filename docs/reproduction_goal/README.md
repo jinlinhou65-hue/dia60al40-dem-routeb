@@ -46,7 +46,7 @@ flowchart TD
 | 01 | [01_pdf_algorithm_layer](01_pdf_algorithm_layer/README.md) | 已完成基础层 | PDF 机制映射和四篇论文算法层复现 |
 | 02 | [02_dem_backend_light_demo](02_dem_backend_light_demo/README.md) | 已完成轻量层 | 开源 DEM 后端选择和 LIGGGHTS workflow demo |
 | 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | review | Zhang C/D/E 参数校准和 2x 粒子数升级 |
-| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 恒压/恒流机制已验证，物理标定 review | COMSOL 电流场、温度场、Joule heat 主线 |
+| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 真三维贯通 smoke pass，氧化膜标定 review | COMSOL 电流场、温度场、Joule heat 主线 |
 | 05 | [05_yuan_shape_arch_bridge](05_yuan_shape_arch_bridge/README.md) | 待启动 | Yuan 非球形颗粒、拱桥结构和 MPFEM 路线 |
 | 06 | [06_liu_sintering_coupling](06_liu_sintering_coupling/README.md) | 待启动 | Liu 压制-热场-烧结耦合 |
 | 07 | [07_li_core_shell_fem](07_li_core_shell_fem/README.md) | 待启动 | Li Cu@Fe 包覆颗粒 core-shell FEM/MPFEM |
@@ -83,6 +83,7 @@ flowchart TD
 | 恒压/恒流机制 | 六组固定 3316 单元 COMSOL 与 FVM 趋势一致；原比较保留 `review`，预注册 FVM 加密 `pass`；恒压降热、恒流升热 |
 | 恒压/恒流 GitHub 重放 | run `29244185796` success，`1m 5s`；116 个 manifest 记录通过；artifact digest `sha256:91507872...f96e804` |
 | 三维就绪性审计 | 原 deck 请求 z/三维 contactPoint，但由 zlock 和 3 次 z=0 归零严格限制为准二维；判定 `true_3d_pilot_required` |
+| 真三维直接接触贯通 | run `29246532552` success；96 颗粒/115 直接接触守恒，三档阈值均得到同一五节点 Al 路径；clean-contact 电阻仍未标定 |
 | 接触筛查 GitHub demo | workflow run `29240835995` success，41 s，artifact digest `sha256:8e3a90b0...8470f885` |
 
 ## 仍未完成的边界
@@ -91,7 +92,7 @@ flowchart TD
 
 - Zhang 还没有论文级 3000 颗粒、600 MPa、力链图像一比一复现。
 - Yuan 还没有真实非球形颗粒或 MPFEM 形状模型。
-- Liu 已有 COMSOL 单阶段均匀化电流/温度场、材料感知接触筛查和恒压/恒流机制验证，但二维活跃网络不贯通，尚无 Al 氧化膜标定、三维接触和扩散/烧结闭环。
+- Liu 已有 COMSOL 单阶段均匀化电流/温度场、恒压/恒流机制和真三维贯通 smoke 证据，但尚无 Al 氧化膜标定、扩散/烧结颈和致密化反馈闭环。
 - Li 还没有 Cu@Fe core-shell 多颗粒 FEM/MPFEM 模型。
 - 当前轻量 DEM 和温度/烧结代理模型只能证明路线可行，不能替代最终论文级复现。
 
@@ -128,11 +129,10 @@ GitHub run `29244185796` 已在无 COMSOL 许可证的 Ubuntu runner 上重跑�
 解析归档 COMSOL、复现原 `review` 和加密 `pass`，并核验 116 个证据哈希。前一 run
 `29243918541` 的 CRLF/LF 哈希失败也已保留，证明修复针对 CI 可移植性而非数值结果。
 
-三维就绪性审计已经完成：原 LIGGGHTS deck 会输出粒子 z 和 contactPoint 第三分量，
-但 `fix zlock`、三次 `set group all z 0.0` 和窄插入区使物理状态严格准二维；归档
-Stage 04 CSV 也没有 z，不能从旧 artifact 恢复真实三维网络。导出 schema 现已保留
-`z/vz/nz/force_z/contact_point_z`，并保持旧二维输入兼容。
+真三维 pilot 已按预注册完成。run `29246532552` 在 140 秒内输出 96 个颗粒和 115 条
+直接接触，颗粒/接触点 z span 均为正；三档导纳阈值均得到同一条五节点 Al 贯通路径。
+首次插入失败 run `29246371198`、修复理由、接受日志、3D 图和哈希已并列归档。
 
-下一唯一小目标是按 `three_dimensional_percolation_preregistration.md` 实现独立的轻量
-三维 DEM deck/workflow，不修改已接受准二维基线，不运行 COMSOL。三维直接接触通路
-形成前不做氧化膜精细标定，也不把绝对温升送入 Stage 06。Zhang 保持 `review`。
+下一唯一小目标是在该归档接触图上预注册 Al 氧化膜接触电阻：检索权威参数来源，
+冻结膜厚/电阻模型与范围，离线评估路径稳定性和 Joule 分配。不重跑 DEM、COMSOL
+网格或六组恒压/恒流，也不把未标定绝对温升送入 Stage 06。Zhang 保持 `review`。

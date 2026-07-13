@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "decision": "percolating_all_thresholds",
+  "inputs": {
+    "pilot_final_particles.csv": "a65ce68b8f407b15a28fa4b307ddf76f655b4811fb4ad3d7696cb580eb5deaf2",
+    "pilot_final_direct_contacts.csv": "c14f72b320f5a26749b9f82591bd9baab4cd9a641c5c72252d373a0e0d2bbfbb",
+    "pilot_final_1400003.dump": "96ee56e83c1ee414c39b49f04bb7bda0de6af2a0b6dde58c9f9240230013b541",
+    "pilot_final_contacts_1400003.local": "52af5c76752fa585302ccfc4a9c10ad5da4426cc5fe3bd26ee8fb1e3246028e0",
+    "dem_3d_pilot_parameters.json": "55265c0495c1acd8f5caa69d14681ba85433f729ff69465023b054b9500daebc",
+    "electrothermal_parameter_set.json": "bad8c513dcf63f1b8df7fe365d88c88f551156b8bc68794a6ee8b6ec044f27f7"
+  },
+  "outputs": {
+    "contact_physics.csv": "20a17cae4d89f15f7095aa1b783bc60b3d46a7d7f5165d49f2e19936b44cf49f",
+    "gate_table.csv": "9edbf6a1f980df7aab4fc60479a8e8d3b28aed6a8c608dcf61472c2a30c45581",
+    "network_3d.png": "8bc4cf7935dc5270dcfcb6df8d61c849404e1fdb2200d2f1471c467ae1702211",
+    "path_edges.csv": "2af86b0f22142cac33d0ccf224a6d1189c21196a5a5c3009f94ea62294e26d16",
+    "path_nodes.csv": "df00a8eea911fde165993a780ae2ff0f9623879cac7a8dea1acd69e6071ce8c2",
+    "percolation_summary.json": "2f14ee538af1de60991760a7c41759ac6d5e8972b3943e1520d177e84523fb93",
+    "threshold_results.csv": "1881cc39e78f4b2fbe42673d73addc754d948f39f66873009a5d7792841159bb"
+  }
+}

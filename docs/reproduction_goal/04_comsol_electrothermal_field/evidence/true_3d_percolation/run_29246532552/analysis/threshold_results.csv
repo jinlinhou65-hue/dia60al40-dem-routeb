@@ -1,0 +1,4 @@
+relative_threshold,conductance_cutoff_s,active_edge_count,component_count,largest_component_particle_count,bottom_reachable_particle_count,percolates_bottom_to_top,shortest_path_resistance_ohm,shortest_path_node_count
+1e-12,1.7389058087852232e-10,50,56,30,51,True,0.03532796455236851,5
+1e-09,1.7389058087852231e-07,50,56,30,51,True,0.03532796455236851,5
+1e-06,0.00017389058087852232,50,56,30,51,True,0.03532796455236851,5

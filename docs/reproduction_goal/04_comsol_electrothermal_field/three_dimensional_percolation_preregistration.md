@@ -71,3 +71,16 @@ contacts, or a direct-contact completeness fraction below 1.0 is a hard failure.
 - If no path exists at all three thresholds, preserve `nonpercolating` and diagnose geometry or
   material connectivity before contact-resistance calibration.
 - Do not run the existing six COMSOL loading cases or start Stage 06 during this pilot.
+
+## Post-Run Outcome
+
+This section records the result without altering the preregistered controls or gates. GitHub run
+`29246532552` completed in 140 seconds and produced `percolating_all_thresholds`. Raw and exported
+counts agree at 96 particles and 115 direct contacts; particle and contact-point z spans are
+`66.1922 um` and `65.4849 um`. All three thresholds retain the same five-node Al path with an
+uncalibrated clean-contact resistance of `0.0353279646 ohm`.
+
+The preceding run `29246371198` failed at insertion because a center-safe region and `all_in yes`
+double-applied the particle-radius exclusion. That failure and the one-line semantic correction are
+preserved under `evidence/true_3d_percolation/`. The next gate is oxide-contact-resistance evidence
+and preregistration on this archived graph, not another DEM or COMSOL rerun.

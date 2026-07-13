@@ -1,0 +1,25 @@
+{
+  "pilot_id": "stage04_true3d_seed0",
+  "decision": "rendered_true_3d_pilot",
+  "source_classification": "project_smoke_assumption_not_paper_calibration",
+  "derived": {
+    "al_volume_um3": 736221.7663932561,
+    "diamond_volume_um3": 1100210.8800283743,
+    "solid_volume_um3": 1836432.6464216304,
+    "al_volume_fraction": 0.4008977774533776,
+    "diamond_volume_fraction": 0.5991022225466224,
+    "initial_geometric_density": 0.23187280889162,
+    "final_geometric_density": 0.48582874243958474,
+    "load_steps": 1150000,
+    "total_count": 96
+  },
+  "parameter_sha256": "55265c0495c1acd8f5caa69d14681ba85433f729ff69465023b054b9500daebc",
+  "template_sha256": "858d27c54fbcef90c6c8e5757c4eb699904b246ea2b6aab409b4500f3ad63689",
+  "rendered_deck_sha256": "b187687f1f9c4bdbb17d6bf2db99c87c7a2421287e63e0c20875ed6a0a913e8a",
+  "solver": {
+    "repository": "https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git",
+    "commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+    "units": "cgs",
+    "contact_law": "gran model hertz tangential history"
+  }
+}

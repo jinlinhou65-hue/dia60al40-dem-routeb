@@ -1,0 +1,8 @@
+gate_id,metric,threshold,value,status,evidence_path,interpretation
+particle_z_span,particle_z_span,> 0 um,66.1922,pass,percolation_summary.json,hard data-contract gate
+contact_point_z_span,contact_point_z_span,> 0 um,65.4849,pass,percolation_summary.json,hard data-contract gate
+direct_contact_completeness,direct_contact_completeness,= 1,1.0,pass,percolation_summary.json,hard data-contract gate
+raw_particle_count_match,raw_particle_count_match,exported = raw,96,pass,percolation_summary.json,hard data-contract gate
+raw_contact_count_match,raw_contact_count_match,exported = raw,115,pass,percolation_summary.json,hard data-contract gate
+electrode_sets_nonempty,electrode_sets_nonempty,bottom > 0 and top > 0,22/23,pass,percolation_summary.json,hard data-contract gate
+thresholds_recorded,thresholds_recorded,= 3,3,pass,percolation_summary.json,hard data-contract gate

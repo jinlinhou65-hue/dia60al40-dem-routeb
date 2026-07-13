@@ -1,0 +1,2 @@
+metric,threshold,value,status
+github_job_elapsed_seconds,<=600,134,pass

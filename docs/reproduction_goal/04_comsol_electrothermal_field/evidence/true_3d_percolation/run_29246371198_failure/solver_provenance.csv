@@ -1,0 +1,6 @@
+field,value
+repository,https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git
+requested_commit,3d5c00f20519e6bb6eb6756f51f1ad36564e649d
+build_mode,serial
+runner,ubuntu-22.04
+resolved_commit,3d5c00f20519e6bb6eb6756f51f1ad36564e649d

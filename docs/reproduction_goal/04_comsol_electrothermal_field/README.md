@@ -8,8 +8,9 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 
 ## 当前完成状态
 
-单阶段均匀化电热 smoke、跨求解器、三档网格、材料感知接触筛查和恒压/恒流
-机制验证均已完成。恒压/恒流结果保留“原比较 review、加密诊断 pass”两层判定：
+单阶段均匀化电热 smoke、跨求解器、三档网格、材料感知接触筛查、恒压/恒流机制
+验证和真三维直接接触贯通 pilot 均已完成。恒压/恒流结果保留“原比较 review、加密
+诊断 pass”两层判定；三维结果保留“贯通 smoke pass、氧化膜物理标定 review”：
 
 | 项目 | 结果 |
 |---|---:|
@@ -35,7 +36,11 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | 3x FVM/COMSOL 功率差 | `0.6823%` |
 | 3x FVM/COMSOL温升差 | `0.4508%` |
 | Joule 热 top-1% 质心距离 | `6.156 um < 24 um` |
-| 阶段判定 | `loading_mode_verified_with_refined_open_solver`，物理标定仍为 `review` |
+| 真三维 DEM | 96 颗粒，115 条直接接触，z span `66.1922 um` |
+| 真三维活跃网络 | 50 条 Al-Al 边；三档阈值均贯通 |
+| 最短贯通路径 | 5 个 Al 颗粒，clean-contact `0.0353279646 ohm` |
+| GitHub 3D pilot | run `29246532552`, success, 140 s |
+| 阶段判定 | `3d_percolation_smoke_pass`，氧化膜/实验标定仍为 `review` |
 
 ## 代码入口
 
@@ -62,6 +67,12 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
   预注册 1x/2x/3x 开源网格诊断，不重跑 COMSOL。
 - `scripts/build_electrothermal_loading_manifest.py`：验证 116 个输入、实现、模型、
   日志和结果文件的大小、SHA-256、结构与三层判定。
+- `python/render_dem_3d_pilot.py` 与 `liggghts/in.dia60al40_dem_3d_pilot.template.liggghts`：
+  生成独立真三维球形颗粒轻量算例，不改动准二维基线。
+- `scripts/analyze_dem_3d_percolation.py`：只接收 `pair/gran/local` 直接接触，执行 z、
+  数量守恒、电极、三档阈值、最短电阻路径和瓶颈 gate。
+- `.github/workflows/dem-3d-percolation-pilot.yml`：固定 10 分钟预算的无许可证真三维
+  GitHub 运行入口。
 
 详细公式、边界条件和验收条件见 [model_spec.md](model_spec.md)。阶段结果见
 [report.md](report.md)。
@@ -77,6 +88,7 @@ evidence/comparison/    # 九项验收、跨求解器报告和对比图
 evidence/mesh_convergence/  # 三档网格场、日志、摘要和收敛图
 evidence/contact_sensitivity/  # 接触物理表、网络图、三档 FVM 场和敏感性判定
 evidence/loading_mode_sensitivity/  # 六组 COMSOL/FVM、原 review、加密 pass、失败证据和 manifest
+evidence/true_3d_percolation/  # 首次失败、接受 run、原始接触、3D 网络图和哈希 manifest
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
 evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 artifact digest
@@ -109,9 +121,22 @@ COMSOL/FVM 功率和电流差，略超预注册 5% 门槛。后续预注册的 F
 Joule 热质心距离达到 `6.156 um`，说明原超限来自粗开源网格离散误差；该诊断不
 覆盖原判定。完整哈希证据见 `evidence/loading_mode_sensitivity/evidence_manifest.json`。
 
+独立真三维 pilot 进一步证明：96 个颗粒和 115 条 LIGGGHTS 直接接触在非零厚度中
+保持完整，颗粒与接触点 z span 分别为 `66.1922/65.4849 um`。三档预注册导纳阈值
+均保留 50 条 Al-Al 活跃边，并得到同一条 `95→41→36→27→33` 五颗粒贯通路径。
+clean-contact Hertz/Holm 路径电阻为 `0.0353279646 ohm`。该值没有包含 Al 氧化膜，
+仅证明网络拓扑和分析链可用，不是实验电阻。
+
+首次 run `29246371198` 因中心安全插入区与 `all_in yes` 二次缩小而在动力学前失败；
+只把三条插入命令改为 `all_in no` 后，run `29246532552` 在 140 秒内成功。失败日志、
+接受结果、artifact digest 和 27 个归档文件哈希均保存在
+`evidence/true_3d_percolation/`。
+
+可视化入口：[真三维材料-电极-直接接触-最短路径网络图](figures/true_3d_percolation_network.png)。
+
 ## 下一门槛
 
-本轮先完成 GitHub 无许可证重放并归档 run ID 和 artifact digest。之后只在“Al 粉
-氧化膜/压制电阻标定”和“三维接触网络贯通性”中选择一个主风险，不重复 smoke、
-六组恒压/恒流或 COMSOL 网格。两项物理风险至少解决一项并重新评估 Stage 06 输入
-可信度前，不把当前温度绝对值交给烧结闭环作实验预测。
+唯一下一门槛是基于已归档的真三维图预注册 Al 氧化膜/压制接触电阻模型。先建立
+可追溯的膜厚、电阻率/隧穿或击穿参数范围和电阻方程，再离线评估 50 条 Al-Al 边的
+路径稳定性与 Joule 功率分配；本门槛不重跑 DEM、COMSOL 网格或六组恒压/恒流。
+氧化膜参数未标定且尚未接入烧结反馈前，不把当前温度绝对值交给 Stage 06 作实验预测。

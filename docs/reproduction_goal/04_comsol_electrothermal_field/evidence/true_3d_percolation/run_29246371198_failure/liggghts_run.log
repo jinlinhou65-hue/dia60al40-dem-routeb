@@ -1,0 +1,32 @@
+LIGGGHTS (Version LIGGGHTS-PUBLIC 3.8.0, compiled 2026-07-13-11:28:50 by runner, git commit 3d5c00f20519e6bb6eb6756f51f1ad36564e649d)
+Created orthogonal box = (-0.002 -0.004 -0.0045) to (0.042 0.024 0.0045)
+  1 by 1 by 1 MPI processor grid
+
+Reading STL file 'meshes/DieLeft.stl' (mesh processing step 1/3) 
+
+Reading STL file 'meshes/DieRight.stl' (mesh processing step 1/3) 
+
+Reading STL file 'meshes/DieBottom.stl' (mesh processing step 1/3) 
+
+Reading STL file 'meshes/DieFrontBack.stl' (mesh processing step 1/3) 
+
+Reading STL file 'meshes/TopPlate.stl' (mesh processing step 1/3) 
+Fix particledistribution/discrete (id pddAl): distribution based on number%:
+    ptsAl: d=2.600000e-03 (max. bounding sphere) number%=100.000000%
+Fix particledistribution/discrete (id pddDS): distribution based on number%:
+    ptsDS: d=3.600000e-03 (max. bounding sphere) number%=100.000000%
+Fix particledistribution/discrete (id pddDL): distribution based on number%:
+    ptsDL: d=6.000000e-03 (max. bounding sphere) number%=100.000000%
+Setting up run at Mon Jul 13 11:30:20 2026
+
+Import and parallelization of mesh left containing 2 triangle(s) successful
+Import and parallelization of mesh right containing 2 triangle(s) successful
+Import and parallelization of mesh bottom containing 2 triangle(s) successful
+Import and parallelization of mesh frontback containing 4 triangle(s) successful
+Import and parallelization of mesh top containing 12 triangle(s) successful
+INFO: Resetting random generator for region insertDL
+ERROR: Unable to calculate region volume. Possible sources of error: 
+   (a) region volume is too small or out of domain (you may want to decrease the 'volume_limit' in the input script)
+   (b) particles for insertion are too large when using all_in yes
+   (c) region is 2d, but should be 3d
+ (../region.cpp:694)
