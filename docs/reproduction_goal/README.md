@@ -80,6 +80,7 @@ flowchart TD
 | COMSOL 电热 smoke | COMSOL 6.4 真实求解成功；与开源 FVM 的 Joule 功率差 1.202%、最大温升差 0.568%，九项门槛全通过；GitHub verifier run `28793218330` success |
 | COMSOL 网格无关性 | 1512/3316/8390 三档真实求解通过；中/细网格 Joule 功率差 0.0277%、最大温升差 0.0187%，十项门槛全通过 |
 | 材料感知接触筛查 | 157 条接触完成 Hertz/电热阻分类；活跃 Al-Al 网络不贯通；电阻倍率 1/10/100 的条件 FVM 功率和温升单调下降 |
+| 接触筛查 GitHub demo | workflow run `29240835995` success，41 s，artifact digest `sha256:8e3a90b0...8470f885` |
 
 ## 仍未完成的边界
 

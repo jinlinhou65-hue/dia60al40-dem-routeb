@@ -87,6 +87,11 @@ run 用时 29 秒，artifact digest 为
 解释为实验预测。直接网络图见 `evidence/contact_sensitivity/contact_network_topology.png`，
 倍率响应见 `evidence/contact_sensitivity/contact_resistance_sensitivity.png`。
 
+GitHub Actions run `29240835995` 在独立 Ubuntu runner 上重跑上述开源链，状态为
+`success`，总时长 41 秒；2.38 MB artifact 的 digest 为
+`sha256:8e3a90b077e040acc9b4f1ebc4b65db9c26982f8f87e453a236e2fbe8470f885`。
+workflow 同时断言条件敏感性通过和直接网络不贯通，避免用数值通过掩盖物理门槛失败。
+
 ## 科学含义
 
 接触力较强、接触更密集的位置形成更高的均匀化电导率，电流密度和 Joule 热点

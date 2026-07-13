@@ -27,6 +27,7 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | 中/细网格 Joule 功率差 | `0.0277%` |
 | 中/细网格最大温升差 | `0.0187%` |
 | GitHub mesh verifier | run `29236808994`, success, 29 s |
+| GitHub contact verifier | run `29240835995`, success, 41 s |
 | 阶段判定 | `smoke_pass + mesh_pass + contact_screened` |
 
 ## 代码入口
@@ -62,6 +63,7 @@ evidence/mesh_convergence/  # 三档网格场、日志、摘要和收敛图
 evidence/contact_sensitivity/  # 接触物理表、网络图、三档 FVM 场和敏感性判定
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
+evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 artifact digest
 ```
 
 ## 证据边界
