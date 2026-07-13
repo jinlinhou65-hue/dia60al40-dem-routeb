@@ -100,6 +100,7 @@ evidence/true_3d_percolation/  # 首次失败、接受 run、原始接触、3D �
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
 evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 artifact digest
+evidence/github_run_29248571646.md  # Al 氧化膜预注册 Linux 测试与两个 artifact digest
 ```
 
 ## 证据边界

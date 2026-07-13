@@ -203,3 +203,8 @@ clean-contact 电阻、约 9 MPa 末态压力或任何温升是实验标定值�
 专用测试验证了来源分类、归档哈希、参数网格和声明边界。当前判定更新为
 `oxide_model_preregistered_review`：模型已可审计，但离线 KCL 网络尚未运行，破膜比例
 仍需同批粉末的压力-电阻回线标定。下一步只运行归档图离线网络，不运行 DEM 或 COMSOL。
+
+GitHub run `29248571646` 在 Ubuntu runner 上用时 `38 s`，状态为 `success`。CI 诊断
+和四论文算法产物 digest 分别为 `sha256:da747d0a...939c298` 与
+`sha256:e03f7084...9e126d`。该 run 证明预注册 CSV/JSON 和新增测试可跨平台读取，
+没有运行 DEM、COMSOL 或尚未实现的氧化膜网络计算。
