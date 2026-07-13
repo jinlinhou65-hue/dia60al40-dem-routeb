@@ -2,10 +2,12 @@
 
 Coordinates are CGS centimeters for LIGGGHTS.
 Physical cavity: 400 um wide x 220 um high x 90 um thick.
+The quasi-2D deck locks particle z; the true-3D pilot uses the same physical
+front/back surfaces without a z lock.
 Meshes:
   - DieBox.stl: five fixed walls (left, right, bottom, front, back), open at top
   - DieLeft.stl / DieRight.stl / DieBottom.stl: separate stress-output walls
-  - DieFrontBack.stl: quasi-2D front/back confinement
+  - DieFrontBack.stl: physical front/back confinement
   - TopPlate.stl: moving upper plate at y=220 um
   - InsertFace.stl: injection plane just below the top opening
 """
@@ -15,7 +17,7 @@ from pathlib import Path
 
 UM_TO_CM = 1e-4
 W = 400 * UM_TO_CM      # x width
-T = 90 * UM_TO_CM       # z thickness: quasi-2D single layer with front/back confinement
+T = 90 * UM_TO_CM       # physical z thickness with front/back confinement
 WALL = 20 * UM_TO_CM
 TOP_THICK = 18 * UM_TO_CM
 OUT = Path(__file__).resolve().parents[1] / "liggghts" / "meshes"

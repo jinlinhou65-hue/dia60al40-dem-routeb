@@ -1,0 +1,198 @@
+name: dem-3d-percolation-pilot
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/dem-3d-percolation-pilot.yml'
+      - 'liggghts/in.dia60al40_dem_3d_pilot.template.liggghts'
+      - 'python/dem_stage_metadata.py'
+      - 'python/export_dem_stage_handoff.py'
+      - 'python/export_liggghts_contact_forces.py'
+      - 'python/prepare_meshes.py'
+      - 'python/render_dem_3d_pilot.py'
+      - 'scripts/analyze_dem_3d_percolation.py'
+      - 'scripts/dem_3d_percolation_plot.py'
+      - 'scripts/electrothermal_contact_model.py'
+      - 'tests/test_dem_3d_pilot.py'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/data/source/dem_3d_pilot_parameters.json'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/data/source/electrothermal_parameter_set.json'
+
+concurrency:
+  group: dem-3d-percolation-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  LIGGGHTS_REPOSITORY: https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git
+  LIGGGHTS_COMMIT: 3d5c00f20519e6bb6eb6756f51f1ad36564e649d
+  PILOT_PARAMETERS: docs/reproduction_goal/04_comsol_electrothermal_field/data/source/dem_3d_pilot_parameters.json
+  ELECTROTHERMAL_PARAMETERS: docs/reproduction_goal/04_comsol_electrothermal_field/data/source/electrothermal_parameter_set.json
+
+jobs:
+  true-3d-pilot:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize evidence directory
+        run: |
+          set -euxo pipefail
+          mkdir -p outputs/dem_3d_pilot
+          echo "PILOT_JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+          printf '%s\n' \
+            'field,value' \
+            "repository,$LIGGGHTS_REPOSITORY" \
+            "requested_commit,$LIGGGHTS_COMMIT" \
+            'build_mode,serial' \
+            'runner,ubuntu-22.04' \
+            > outputs/dem_3d_pilot/solver_provenance.csv
+
+      - name: Install plotting dependency
+        run: |
+          set -euxo pipefail
+          python3 -m pip install --user --only-binary=:all: matplotlib==3.10.3
+          python3 -c 'import matplotlib; print(matplotlib.__version__)'
+
+      - name: Run true-3D unit and render tests
+        run: |
+          set -euxo pipefail
+          python3 -m py_compile \
+            python/dem_stage_metadata.py \
+            python/export_dem_stage_handoff.py \
+            python/export_liggghts_contact_forces.py \
+            python/render_dem_3d_pilot.py \
+            scripts/analyze_dem_3d_percolation.py \
+            scripts/dem_3d_percolation_plot.py
+          python3 -m unittest tests.test_dem_3d_pilot -v
+
+      - name: Build pinned LIGGGHTS serial binary
+        run: |
+          set -euxo pipefail
+          git init /tmp/lpub
+          git -C /tmp/lpub remote add origin "$LIGGGHTS_REPOSITORY"
+          git -C /tmp/lpub fetch --depth=1 origin "$LIGGGHTS_COMMIT"
+          git -C /tmp/lpub checkout --detach FETCH_HEAD
+          resolved="$(git -C /tmp/lpub rev-parse HEAD)"
+          test "$resolved" = "$LIGGGHTS_COMMIT"
+          printf 'resolved_commit,%s\n' "$resolved" >> outputs/dem_3d_pilot/solver_provenance.csv
+          cd /tmp/lpub/src
+          (cd STUBS && make 2>&1 | tail -10)
+          make -j"$(nproc)" serial 2>&1 | tee "$GITHUB_WORKSPACE/outputs/dem_3d_pilot/build_serial.log"
+          sudo install -m 0755 lmp_serial /usr/local/bin/liggghts
+          liggghts -h > "$GITHUB_WORKSPACE/outputs/dem_3d_pilot/liggghts_help.txt" 2>&1 || true
+          grep -q LIGGGHTS "$GITHUB_WORKSPACE/outputs/dem_3d_pilot/liggghts_help.txt"
+
+      - name: Prepare mesh and render frozen 3D deck
+        run: |
+          set -euxo pipefail
+          python3 python/prepare_meshes.py --height-um 220
+          python3 python/render_dem_3d_pilot.py \
+            --template liggghts/in.dia60al40_dem_3d_pilot.template.liggghts \
+            --parameters "$PILOT_PARAMETERS" \
+            --output liggghts/in.dia60al40_dem_3d_pilot.rendered.liggghts \
+            --summary outputs/dem_3d_pilot/render_summary.json
+          ! grep -Eq '@@|fix[[:space:]]+zlock|set[[:space:]]+group[[:space:]]+all[[:space:]]+z[[:space:]]+0' \
+            liggghts/in.dia60al40_dem_3d_pilot.rendered.liggghts
+          cp liggghts/in.dia60al40_dem_3d_pilot.rendered.liggghts outputs/dem_3d_pilot/
+
+      - name: Run frozen true-3D DEM pilot
+        working-directory: liggghts
+        run: |
+          set -euxo pipefail
+          mkdir -p DEM
+          set +e
+          timeout --signal=TERM --kill-after=20s 7m \
+            liggghts -in in.dia60al40_dem_3d_pilot.rendered.liggghts \
+            2>&1 | tee ../outputs/dem_3d_pilot/liggghts_run.log
+          dem_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$dem_status" -ne 0 ]; then
+            tail -200 ../outputs/dem_3d_pilot/liggghts_run.log > ../outputs/dem_3d_pilot/failure_tail.log
+            summary="$(tail -80 ../outputs/dem_3d_pilot/liggghts_run.log | tr '\n' ' ' | cut -c1-12000)"
+            summary="${summary//'%'/'%25'}"
+            echo "::error file=liggghts/in.dia60al40_dem_3d_pilot.template.liggghts,title=True-3D DEM failure::$summary"
+            exit "$dem_status"
+          fi
+          if grep -E '^ERROR|Lost atoms|non-numeric|nan' ../outputs/dem_3d_pilot/liggghts_run.log; then
+            echo '::error title=True-3D DEM invalid state::LIGGGHTS reported an error, lost atoms, or non-numeric state'
+            exit 1
+          fi
+          test "$(awk -F, '$1=="particle_count_total"{print int($2)}' DEM/model_parameters.csv)" = 96
+          test "$(awk 'BEGIN{n=0} /^ITEM: NUMBER OF ATOMS/{getline; n=$1} END{print n}' DEM/pilot_final_*.dump)" = 96
+
+      - name: Export and analyze direct 3D contacts
+        run: |
+          set -euxo pipefail
+          particle_dump="$(find liggghts/DEM -maxdepth 1 -name 'pilot_final_*.dump' -type f | sort | tail -1)"
+          contact_dump="$(find liggghts/DEM -maxdepth 1 -name 'pilot_final_contacts_*.local' -type f | sort | tail -1)"
+          test -n "$particle_dump" && test -s "$particle_dump"
+          test -n "$contact_dump" && test -s "$contact_dump"
+          python3 python/export_dem_stage_handoff.py \
+            --input "$particle_dump" \
+            --stage-id pilot_final \
+            --output outputs/dem_3d_pilot/pilot_final_particles.csv \
+            --contact-gap-um 0.0
+          python3 python/export_liggghts_contact_forces.py \
+            --local-dump "$contact_dump" \
+            --particles outputs/dem_3d_pilot/pilot_final_particles.csv \
+            --stage-id pilot_final \
+            --output outputs/dem_3d_pilot/pilot_final_direct_contacts.csv
+          python3 scripts/analyze_dem_3d_percolation.py \
+            --particles outputs/dem_3d_pilot/pilot_final_particles.csv \
+            --contacts outputs/dem_3d_pilot/pilot_final_direct_contacts.csv \
+            --raw-dump "$particle_dump" \
+            --raw-local "$contact_dump" \
+            --pilot-parameters "$PILOT_PARAMETERS" \
+            --electrothermal-parameters "$ELECTROTHERMAL_PARAMETERS" \
+            --output-dir outputs/dem_3d_pilot/analysis
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          summary = json.loads(Path("outputs/dem_3d_pilot/analysis/percolation_summary.json").read_text())
+          assert summary["hard_gate_pass"] is True, summary
+          assert summary["particle_z_span_um"] > 0, summary
+          assert summary["contact_point_z_span_um"] > 0, summary
+          assert summary["decision"] in {
+              "percolating_all_thresholds",
+              "nonpercolating_all_thresholds",
+              "threshold_sensitive_percolation",
+          }, summary
+          PY
+          cp "$particle_dump" outputs/dem_3d_pilot/
+          cp "$contact_dump" outputs/dem_3d_pilot/
+          cp liggghts/DEM/model_parameters.csv outputs/dem_3d_pilot/
+          cp liggghts/DEM/pilot_final_state.csv outputs/dem_3d_pilot/
+
+      - name: Record runtime gate
+        if: always()
+        run: |
+          set -euxo pipefail
+          elapsed="$(( $(date +%s) - PILOT_JOB_START_EPOCH ))"
+          status=pass
+          if [ "$elapsed" -gt 600 ]; then status=fail; fi
+          printf '%s\n' \
+            'metric,threshold,value,status' \
+            "github_job_elapsed_seconds,<=600,$elapsed,$status" \
+            > outputs/dem_3d_pilot/workflow_runtime_gate.csv
+          test "$status" = pass
+
+      - name: Collect partial failure evidence
+        if: always()
+        run: |
+          set -euxo pipefail
+          mkdir -p outputs/dem_3d_pilot/partial_dem
+          find liggghts/DEM -maxdepth 1 -type f -size -20M -exec cp -f {} outputs/dem_3d_pilot/partial_dem/ \; || true
+          find outputs/dem_3d_pilot -maxdepth 3 -type f -ls | sort -k11
+
+      - name: Upload true-3D pilot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dem-3d-percolation-pilot
+          path: outputs/dem_3d_pilot/**
+          if-no-files-found: error

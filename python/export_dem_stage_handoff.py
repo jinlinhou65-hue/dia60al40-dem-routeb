@@ -20,9 +20,11 @@ from dem_stage_metadata import (
     contact_counts,
     particle_material,
     particle_shape,
+    read_model_parameters,
     read_liggghts_dump,
     stages_from_model_parameters,
     total_particle_area_um2,
+    total_particle_volume_um3,
 )
 
 
@@ -59,7 +61,16 @@ def export_stage(input_path: Path, stage_id: str, output_path: Path, contact_gap
 
     _, target_rho, current_height_um, _, _ = stage_by_id[stage_id]
     rows = read_liggghts_dump(input_path)
-    actual_rho = total_particle_area_um2(rows) / (400.0 * current_height_um)
+    parameters_path = input_path.parent / "model_parameters.csv"
+    parameters = read_model_parameters(parameters_path) if parameters_path.exists() else {}
+    if "domain_thickness_um" in parameters:
+        width_um = float(parameters.get("domain_width_um", 400.0))
+        thickness_um = float(parameters["domain_thickness_um"])
+        actual_rho = total_particle_volume_um3(rows) / (
+            width_um * current_height_um * thickness_um
+        )
+    else:
+        actual_rho = total_particle_area_um2(rows) / (400.0 * current_height_um)
     counts = contact_counts(rows, contact_gap_um)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

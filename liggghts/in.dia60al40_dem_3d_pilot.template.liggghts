@@ -1,0 +1,123 @@
+# Dia60/Al40 true-3D direct-contact percolation pilot
+# Render only with python/render_dem_3d_pilot.py and the frozen Stage 04 parameter JSON.
+# This deck is independent of the accepted quasi-2D staged baseline.
+
+atom_style      granular
+atom_modify     map array
+boundary        f f f
+newton          off
+communicate     single vel yes
+units           cgs
+
+variable        Tcm equal @@THICKNESS_CM@@
+variable        Wcm equal @@WIDTH_CM@@
+variable        Hcm equal @@INITIAL_HEIGHT_CM@@
+variable        finalHcm equal @@FINAL_HEIGHT_CM@@
+variable        topVel equal @@TOP_VELOCITY_CM_S@@
+variable        dt equal @@TIME_STEP_S@@
+
+region          simreg block -0.002 0.042 -0.004 0.024 @@SIM_Z_MIN_CM@@ @@SIM_Z_MAX_CM@@ units box
+create_box      4 simreg
+neighbor        0.00012 bin
+neigh_modify    delay 0
+timestep        ${dt}
+
+hard_particles  yes
+fix             mprop all property/global youngsModulus peratomtype @@E_AL_CGS@@ @@E_DIAMOND_CGS@@ @@E_TOOL_CGS@@ @@E_WALL_CGS@@
+fix             pprop all property/global poissonsRatio peratomtype @@NU_AL@@ @@NU_DIAMOND@@ @@NU_TOOL@@ @@NU_WALL@@
+fix             cor all property/global coefficientRestitution peratomtypepair 4 &
+                @@COR_AL_AL@@ @@COR_AL_DIAMOND@@ 0.15 0.15 &
+                @@COR_AL_DIAMOND@@ @@COR_DIAMOND_DIAMOND@@ 0.10 0.10 &
+                0.15 0.10 0.10 0.10 &
+                0.15 0.10 0.10 0.10
+fix             cof all property/global coefficientFriction peratomtypepair 4 &
+                @@MU_AL_AL@@ @@MU_AL_DIAMOND@@ @@MU_AL_TOOL@@ @@MU_AL_WALL@@ &
+                @@MU_AL_DIAMOND@@ @@MU_DIAMOND_DIAMOND@@ @@MU_DIAMOND_TOOL@@ @@MU_DIAMOND_WALL@@ &
+                @@MU_AL_TOOL@@ @@MU_DIAMOND_TOOL@@ 0.08 0.08 &
+                @@MU_AL_WALL@@ @@MU_DIAMOND_WALL@@ 0.08 0.08
+
+pair_style      gran model hertz tangential history
+pair_coeff      * *
+compute         pairContacts all pair/gran/local id force force_normal delta contactPoint
+
+fix             grav all gravity @@GRAVITY_CM_S2@@ vector 0.0 -1.0 0.0
+fix             integr all nve/sphere
+fix             left all mesh/surface/stress file meshes/DieLeft.stl type 4 scale 1.0 stress on
+fix             right all mesh/surface/stress file meshes/DieRight.stl type 4 scale 1.0 stress on
+fix             bottom all mesh/surface/stress file meshes/DieBottom.stl type 4 scale 1.0 stress on
+fix             frontback all mesh/surface file meshes/DieFrontBack.stl type 4 scale 1.0
+fix             top all mesh/surface/stress file meshes/TopPlate.stl type 3 scale 1.0 stress on
+fix             walls all wall/gran model hertz tangential history mesh n_meshes 5 meshes left right bottom frontback top
+
+variable        topForceAbsDyn equal abs(f_top[2])
+variable        bottomForceAbsDyn equal abs(f_bottom[2])
+variable        topAreaCm2 equal v_Wcm*v_Tcm
+variable        topPressureMPa equal v_topForceAbsDyn/v_topAreaCm2*1.0e-7
+variable        bottomPressureMPa equal v_bottomForceAbsDyn/v_topAreaCm2*1.0e-7
+
+# No z-force lock and no z-position reset are permitted in this true-3D deck.
+fix             ptsAl all particletemplate/sphere @@PTS_AL_SEED@@ atom_type 1 density constant @@AL_DENSITY@@ radius constant @@AL_RADIUS_CM@@
+fix             ptsDS all particletemplate/sphere @@PTS_DS_SEED@@ atom_type 2 density constant @@DIAMOND_DENSITY@@ radius constant @@DS_RADIUS_CM@@
+fix             ptsDL all particletemplate/sphere @@PTS_DL_SEED@@ atom_type 2 density constant @@DIAMOND_DENSITY@@ radius constant @@DL_RADIUS_CM@@
+fix             pddAl all particledistribution/discrete/numberbased @@PDD_AL_SEED@@ 1 ptsAl 1.0
+fix             pddDS all particledistribution/discrete/numberbased @@PDD_DS_SEED@@ 1 ptsDS 1.0
+fix             pddDL all particledistribution/discrete/numberbased @@PDD_DL_SEED@@ 1 ptsDL 1.0
+
+region          insertDL block @@DL_X_MIN_CM@@ @@DL_X_MAX_CM@@ @@DL_Y_MIN_CM@@ @@DL_Y_MAX_CM@@ @@DL_Z_MIN_CM@@ @@DL_Z_MAX_CM@@ units box
+region          insertDS block @@DS_X_MIN_CM@@ @@DS_X_MAX_CM@@ @@DS_Y_MIN_CM@@ @@DS_Y_MAX_CM@@ @@DS_Z_MIN_CM@@ @@DS_Z_MAX_CM@@ units box
+region          insertAl block @@AL_X_MIN_CM@@ @@AL_X_MAX_CM@@ @@AL_Y_MIN_CM@@ @@AL_Y_MAX_CM@@ @@AL_Z_MIN_CM@@ @@AL_Z_MAX_CM@@ units box
+fix             insDL all insert/pack seed @@INSERT_DL_SEED@@ distributiontemplate pddDL maxattempt 50000 insert_every once overlapcheck yes all_in yes particles_in_region @@CUMULATIVE_DL_COUNT@@ region insertDL ntry_mc 50000
+run             1
+unfix           insDL
+fix             insDS all insert/pack seed @@INSERT_DS_SEED@@ distributiontemplate pddDS maxattempt 50000 insert_every once overlapcheck yes all_in yes particles_in_region @@CUMULATIVE_DS_COUNT@@ region insertDS ntry_mc 50000
+run             1
+unfix           insDS
+fix             insAl all insert/pack seed @@INSERT_AL_SEED@@ distributiontemplate pddAl maxattempt 100000 insert_every once overlapcheck yes all_in yes particles_in_region @@CUMULATIVE_AL_COUNT@@ region insertAl ntry_mc 100000
+run             1
+unfix           insAl
+
+thermo_style    custom step atoms ke f_top[2] f_bottom[2] v_topPressureMPa v_bottomPressureMPa
+thermo          25000
+dump            trace all custom 250000 DEM/true3d_trace_*.dump id type x y z vx vy vz radius
+
+print           "parameter,value,unit" file DEM/model_parameters.csv screen no
+print           "pilot_id,stage04_true3d_seed0,text" append DEM/model_parameters.csv screen no
+print           "stage_ids,pilot_final,text" append DEM/model_parameters.csv screen no
+print           "domain_width_um,@@WIDTH_UM@@,um" append DEM/model_parameters.csv screen no
+print           "domain_thickness_um,@@THICKNESS_UM@@,um" append DEM/model_parameters.csv screen no
+print           "initial_height_um,@@INITIAL_HEIGHT_UM@@,um" append DEM/model_parameters.csv screen no
+print           "height_um_pilot_final,@@FINAL_HEIGHT_UM@@,um" append DEM/model_parameters.csv screen no
+print           "rho_total_pilot_final,@@FINAL_GEOMETRIC_DENSITY@@,1" append DEM/model_parameters.csv screen no
+print           "solid_volume_total_um3,@@SOLID_VOLUME_UM3@@,um3" append DEM/model_parameters.csv screen no
+print           "Al_volume_fraction,@@AL_VOLUME_FRACTION@@,1" append DEM/model_parameters.csv screen no
+print           "diamond_volume_fraction,@@DIAMOND_VOLUME_FRACTION@@,1" append DEM/model_parameters.csv screen no
+print           "Al_count,@@AL_COUNT@@,1" append DEM/model_parameters.csv screen no
+print           "diamond_count_DS,@@DS_COUNT@@,1" append DEM/model_parameters.csv screen no
+print           "diamond_count_DL,@@DL_COUNT@@,1" append DEM/model_parameters.csv screen no
+print           "particle_count_total,@@TOTAL_COUNT@@,1" append DEM/model_parameters.csv screen no
+print           "time_step_seconds,@@TIME_STEP_S@@,s" append DEM/model_parameters.csv screen no
+print           "top_velocity_cm_s,@@TOP_VELOCITY_CM_S@@,cm/s" append DEM/model_parameters.csv screen no
+print           "initial_settle_steps,@@INITIAL_SETTLE_STEPS@@,step" append DEM/model_parameters.csv screen no
+print           "load_steps,@@LOAD_STEPS@@,step" append DEM/model_parameters.csv screen no
+print           "final_settle_steps,@@FINAL_SETTLE_STEPS@@,step" append DEM/model_parameters.csv screen no
+print           "dimensionality,true_3d,text" append DEM/model_parameters.csv screen no
+print           "contact_source,liggghts_pair_gran_local,text" append DEM/model_parameters.csv screen no
+
+run             @@INITIAL_SETTLE_STEPS@@
+fix             topMove all move/mesh mesh top linear 0.0 -${topVel} 0.0
+run             @@LOAD_STEPS@@
+unfix           topMove
+run             @@FINAL_SETTLE_STEPS@@
+
+print           "pilot_final,@@FINAL_GEOMETRIC_DENSITY@@,@@FINAL_HEIGHT_UM@@,${topForceAbsDyn},${topPressureMPa},${bottomForceAbsDyn},${bottomPressureMPa}" file DEM/pilot_final_state.csv screen no
+dump            finalParticles all custom 1 DEM/pilot_final_*.dump id type x y z vx vy vz radius
+dump            finalContacts all local 1 DEM/pilot_final_contacts_*.local &
+                c_pairContacts[1] c_pairContacts[2] c_pairContacts[3] &
+                c_pairContacts[4] c_pairContacts[5] c_pairContacts[6] &
+                c_pairContacts[7] c_pairContacts[8] c_pairContacts[9] &
+                c_pairContacts[10] c_pairContacts[11] c_pairContacts[12] c_pairContacts[13]
+run             0
+undump          finalParticles
+undump          finalContacts
+write_restart   DEM/pilot_final.restart
+undump          trace

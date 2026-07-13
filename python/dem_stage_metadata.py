@@ -35,6 +35,18 @@ def stages_from_model_parameters(root) -> list[tuple[str, float, float, float, f
     if not params_path.exists():
         return STAGES
     params = read_model_parameters(params_path)
+    custom_stage_ids = [item.strip() for item in params.get("stage_ids", "").split("|") if item.strip()]
+    if custom_stage_ids:
+        stages = []
+        for stage_id in custom_stage_ids:
+            rho_key = f"rho_total_{stage_id}"
+            height_key = f"height_um_{stage_id}"
+            if rho_key not in params or height_key not in params:
+                raise ValueError(f"custom stage {stage_id!r} lacks rho or height metadata")
+            rho = float(params[rho_key])
+            height = float(params[height_key])
+            stages.append((stage_id, rho, height, rho - 0.02, rho + 0.02))
+        return stages
     stages: list[tuple[str, float, float, float, float]] = []
     for stage_id, fallback_rho, fallback_height, fallback_min, fallback_max in STAGES:
         rho = float(params.get(f"rho_total_{stage_id}", fallback_rho))
@@ -82,6 +94,15 @@ def particle_area_um2(row: dict[str, str]) -> float:
 
 def total_particle_area_um2(rows: list[dict[str, str]]) -> float:
     return sum(particle_area_um2(row) for row in rows)
+
+
+def particle_volume_um3(row: dict[str, str]) -> float:
+    radius_um = float(row["radius"]) * UM_PER_CM
+    return 4.0 * math.pi * radius_um**3 / 3.0
+
+
+def total_particle_volume_um3(rows: list[dict[str, str]]) -> float:
+    return sum(particle_volume_um3(row) for row in rows)
 
 
 def contact_counts(rows: list[dict[str, str]], gap_tol_um: float) -> dict[str, int]:

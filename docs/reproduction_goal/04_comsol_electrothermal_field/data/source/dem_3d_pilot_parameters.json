@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "pilot_id": "stage04_true3d_seed0",
+  "purpose": "true_3d_direct_contact_electrical_percolation_pilot",
+  "source_classification": "project_smoke_assumption_not_paper_calibration",
+  "solver": {
+    "repository": "https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git",
+    "commit": "3d5c00f20519e6bb6eb6756f51f1ad36564e649d",
+    "units": "cgs",
+    "contact_law": "gran model hertz tangential history"
+  },
+  "geometry": {
+    "width_um": 400.0,
+    "initial_height_um": 220.0,
+    "final_height_um": 105.0,
+    "thickness_um": 90.0,
+    "front_back_boundary": "fixed_mesh_walls_nonperiodic"
+  },
+  "particles": {
+    "shape": "sphere",
+    "seed_index": 0,
+    "seeds": {
+      "pts_al": 15485863,
+      "pts_ds": 15485867,
+      "pts_dl": 49979693,
+      "pdd_al": 32452843,
+      "pdd_ds": 32452867,
+      "pdd_dl": 67867967,
+      "insert_dl": 49979687,
+      "insert_ds": 67867979,
+      "insert_al": 86028121
+    },
+    "al": {
+      "type": 1,
+      "count": 80,
+      "radius_um": 13.0,
+      "density_g_cm3": 2.70
+    },
+    "diamond_small": {
+      "type": 2,
+      "count": 8,
+      "radius_um": 18.0,
+      "density_g_cm3": 3.52
+    },
+    "diamond_large": {
+      "type": 2,
+      "count": 8,
+      "radius_um": 30.0,
+      "density_g_cm3": 3.52
+    },
+    "target_volume_fraction": {
+      "al": 0.40,
+      "diamond": 0.60
+    }
+  },
+  "mechanics": {
+    "young_modulus_gpa": {
+      "al": 5.0,
+      "diamond": 300.0,
+      "tool": 600.0,
+      "wall": 200.0
+    },
+    "poisson_ratio": {
+      "al": 0.33,
+      "diamond": 0.10,
+      "tool": 0.31,
+      "wall": 0.30
+    },
+    "coefficient_restitution": {
+      "al_al": 0.20,
+      "al_diamond": 0.15,
+      "diamond_diamond": 0.10
+    },
+    "coefficient_friction": {
+      "al_al": 0.30,
+      "al_diamond": 0.30,
+      "al_tool": 0.08,
+      "al_wall": 0.08,
+      "diamond_diamond": 0.10,
+      "diamond_tool": 0.08,
+      "diamond_wall": 0.08
+    },
+    "gravity_cm_s2": 98000.0
+  },
+  "loading": {
+    "time_step_s": 2.0e-10,
+    "top_velocity_cm_s": 50.0,
+    "initial_settle_steps": 100000,
+    "load_steps": 1150000,
+    "final_settle_steps": 150000,
+    "expected_total_steps": 1400003
+  },
+  "electrical_analysis": {
+    "electrode_surface_tolerance_um": 1.0,
+    "active_conductance_relative_thresholds": [1.0e-12, 1.0e-9, 1.0e-6],
+    "resistance_model": "clean_contact_hertz_constriction_uncalibrated",
+    "al_al_resistance_multiplier": 1.0
+  },
+  "acceptance": {
+    "particle_z_span_um_min_exclusive": 0.0,
+    "contact_point_z_span_um_min_exclusive": 0.0,
+    "direct_contact_completeness_fraction_min": 1.0,
+    "particle_count_exact": 96,
+    "github_runtime_minutes_max": 10.0
+  }
+}
