@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-07-13T10:43:04.551536+00:00",
+  "generated_at_utc": "2026-07-13T10:46:06.425409+00:00",
   "stage": "docs/reproduction_goal/04_comsol_electrothermal_field",
-  "source_commit_at_generation": "2bee10e240bbfa6062dabf32ea51882cd61a25a3",
+  "source_commit_at_generation": "184ef7aee97a9160b6d2cc7ddd0555b76d6dca4f",
   "source_branch_at_generation": "codex/paper-reproduction-demo",
-  "working_tree_clean_at_generation": false,
+  "working_tree_clean_at_generation": true,
   "hashes_are_authoritative_for_uncommitted_sources": true,
   "solver_provenance": {
     "licensed_solver": "COMSOL 6.4",
