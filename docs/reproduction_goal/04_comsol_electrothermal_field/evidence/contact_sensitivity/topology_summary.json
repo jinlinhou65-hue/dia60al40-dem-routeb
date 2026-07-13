@@ -1,0 +1,49 @@
+{
+  "particle_count": 76,
+  "contact_count": 157,
+  "contact_type_counts": {
+    "Al-Al": 63,
+    "Al-Diamond": 80,
+    "Diamond-Diamond": 14
+  },
+  "bottom_electrode_particle_ids": [
+    6,
+    18,
+    26,
+    29,
+    33,
+    42,
+    46,
+    59,
+    60,
+    61,
+    62,
+    63,
+    65,
+    68,
+    69
+  ],
+  "top_electrode_particle_ids": [
+    3,
+    5,
+    7,
+    16,
+    17,
+    34,
+    45,
+    49,
+    51,
+    66
+  ],
+  "electrical_active_relative_cutoff": 1e-12,
+  "electrical_active_conductance_cutoff_s": 6.375463634747843e-11,
+  "electrical_active_contact_count": 63,
+  "electrical_active_contact_type_counts": {
+    "Al-Al": 63
+  },
+  "electrical_percolates_bottom_to_top": false,
+  "bottom_reachable_particle_count": 40,
+  "hertz_warning_count": 130,
+  "hertz_warning_fraction": 0.8280254777070064,
+  "max_contact_radius_fraction": 0.6498068704646841
+}

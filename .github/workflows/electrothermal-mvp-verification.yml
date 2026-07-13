@@ -11,9 +11,13 @@ on:
       - scripts/analyze_electrothermal_mvp.py
       - scripts/analyze_comsol_mesh_convergence.py
       - scripts/prepare_comsol_electrothermal_input.py
+      - scripts/electrothermal_contact_model.py
+      - scripts/run_electrothermal_contact_sensitivity.py
       - scripts/solve_electrothermal_fvm.py
       - tests/test_comsol_electrothermal_mvp.py
+      - tests/test_electrothermal_contact_model.py
       - docs/reproduction_goal/04_comsol_electrothermal_field/data/source/**
+      - docs/reproduction_goal/04_comsol_electrothermal_field/evidence/contact_sensitivity/**
       - docs/reproduction_goal/04_comsol_electrothermal_field/evidence/mesh_convergence/**
 
 permissions:
@@ -36,7 +40,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check numpy==2.2.6 scipy==1.15.3 matplotlib==3.10.3
 
       - name: Run focused tests
-        run: python -m unittest tests.test_comsol_electrothermal_mvp -v
+        run: python -m unittest tests.test_comsol_electrothermal_mvp tests.test_electrothermal_contact_model -v
 
       - name: Rebuild direct-contact property grid
         run: |
@@ -69,6 +73,15 @@ jobs:
             docs/reproduction_goal/04_comsol_electrothermal_field/evidence/mesh_convergence \
             outputs/electrothermal_mvp/mesh_convergence
           python -c "import json; data=json.load(open('outputs/electrothermal_mvp/mesh_convergence/mesh_convergence_summary.json')); assert data['decision']=='mesh_pass', data"
+
+      - name: Run material-aware contact sensitivity
+        run: |
+          python scripts/run_electrothermal_contact_sensitivity.py \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/dem_fem_handoff_stage5_rho095.csv \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/stage5_rho095_direct_contacts.csv \
+            docs/reproduction_goal/04_comsol_electrothermal_field/data/source/electrothermal_parameter_set.json \
+            outputs/electrothermal_mvp/contact_sensitivity
+          python -c "import json; data=json.load(open('outputs/electrothermal_mvp/contact_sensitivity/sensitivity_summary.json')); assert data['decision']=='conditional_sensitivity_pass', data; assert data['electrical_network_percolates'] is False, data"
 
       - name: Upload verification evidence
         uses: actions/upload-artifact@v7

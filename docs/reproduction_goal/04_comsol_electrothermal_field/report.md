@@ -2,7 +2,7 @@
 
 ## 判定
 
-`smoke_pass + mesh_pass`。真实 LIGGGHTS 直接接触网络已经经过属性映射进入 COMSOL 6.4，
+`smoke_pass + mesh_pass + contact_screened`。真实 LIGGGHTS 直接接触网络已经经过属性映射进入 COMSOL 6.4，
 Electric Currents、Heat Transfer 和电磁热源完成稳态耦合求解，并由独立有限体积
 实现通过能量与空间场交叉验证。
 
@@ -54,6 +54,38 @@ GitHub Actions run `29236808994` 在无 COMSOL 许可证的 Ubuntu runner 上重
 三档日志、重建属性网格、重跑开源 FVM，并同时要求 `smoke_pass` 与 `mesh_pass`。
 run 用时 29 秒，artifact digest 为
 `sha256:cde235df4e9c7f5973e7c5b9cb744cd592a9ca886fd19cf090b194169a1cb601`。
+
+## 材料与接触参数筛查
+
+参数来源表把数值分成数据库/文献参考、论文复现参数、模型假设和数值正则化四类。
+基于 Stage 5 的 76 个颗粒和 157 条直接接触，材料感知模型得到：
+
+| 指标 | 结果 |
+|---|---:|
+| Al-Al / Al-diamond / diamond-diamond | `63 / 80 / 14` |
+| 电活跃边 | `63`，全部为 Al-Al |
+| 上下电极贯通 | `false` |
+| 底部可达颗粒 | `40 / 76` |
+| Hertz 警戒接触 | `130 / 157` |
+| 最大 `a/min(R)` | `0.6498` |
+
+这说明旧 smoke 把 diamond 接触也当作导电通道的做法只能验证软件链，不能代表当前
+二维颗粒网络的真实电流路径。Hertz 警戒比例为 `82.8%`，也说明 Stage 3 的软化 DEM
+模量不能支持定量接触半径结论。
+
+固定 `81 x 43` 网格、`0.1 V` 和 multiplier-10 归一化基准后，Al-Al 电阻倍率结果为：
+
+| 电阻倍率 | Joule 功率 (W/m depth) | 最大温升 (K) | Joule 热点 (um) |
+|---:|---:|---:|---:|
+| 1 | 209.7702 | 0.86136 | `(85.0, 94.41)` |
+| 10 | 32.5107 | 0.11756 | `(85.0, 203.73)` |
+| 100 | 7.81764 | 0.01872 | `(85.0, 203.73)` |
+
+三组电功率守恒误差均小于 `6e-14`，功率和最大温升随接触电阻升高而单调下降，判定
+`conditional_sensitivity_pass`。热点迁移说明接触状态不仅改变总发热量，也可能改变
+局部发热位置。但由于直接网络不贯通，以上绝对功率和温升依赖均匀化导电背景，不能
+解释为实验预测。直接网络图见 `evidence/contact_sensitivity/contact_network_topology.png`，
+倍率响应见 `evidence/contact_sensitivity/contact_resistance_sensitivity.png`。
 
 ## 科学含义
 

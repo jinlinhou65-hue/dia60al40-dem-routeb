@@ -27,7 +27,7 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | 中/细网格 Joule 功率差 | `0.0277%` |
 | 中/细网格最大温升差 | `0.0187%` |
 | GitHub mesh verifier | run `29236808994`, success, 29 s |
-| 阶段判定 | `smoke_pass + mesh_pass` |
+| 阶段判定 | `smoke_pass + mesh_pass + contact_screened` |
 
 ## 代码入口
 
@@ -42,6 +42,10 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 - `scripts/analyze_comsol_mesh_convergence.py`：解析 COMSOL 日志并执行收敛门槛。
 - `.github/workflows/electrothermal-mvp-verification.yml`：不依赖 COMSOL 许可证的
   GitHub 轻量复核。
+- `scripts/electrothermal_contact_model.py`：Hertz 接触半径、Holm 电收缩电阻、
+  热收缩/界面热阻和电网络贯通性。
+- `scripts/run_electrothermal_contact_sensitivity.py`：冻结归一化下的 `1/10/100`
+  Al-Al 接触电阻倍率重跑、热点和趋势判定。
 
 详细公式、边界条件和验收条件见 [model_spec.md](model_spec.md)。阶段结果见
 [report.md](report.md)。
@@ -55,6 +59,7 @@ evidence/comsol_smoke/  # MPH、原始 COMSOL CSV、图和 batch log
 evidence/fvm_smoke/     # 开源 FVM 场、摘要和图
 evidence/comparison/    # 九项验收、跨求解器报告和对比图
 evidence/mesh_convergence/  # 三档网格场、日志、摘要和收敛图
+evidence/contact_sensitivity/  # 接触物理表、网络图、三档 FVM 场和敏感性判定
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
 ```
@@ -69,8 +74,13 @@ evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact 
 - 电压/电流加载路径独立性；
 - 多压制阶段热历史、扩散和烧结颈增长已经闭环。
 
+材料感知筛查进一步证明：157 条接触中有 `63 Al-Al / 80 Al-diamond /
+14 diamond-diamond`；按未掺杂 diamond 电阻率和相对导纳阈值筛选后，只有 63 条
+Al-Al 边活跃，当前二维截面不形成上下电极贯通路径。`130/157` 个接触还超过
+Hertz 小变形警戒线。因此三档 FVM 的趋势是条件性响应，不是实际电阻烧结温升预测。
+
 ## 下一门槛
 
-三档网格已经通过。阶段 04 下一步不是重复 smoke 或继续加密网格，而是引入论文/
-材料来源的电热参数和接触电阻，完成参数敏感性，再把粒子温度输出交给阶段 06 的
-Liu 烧结模型。
+三档网格和接触倍率筛查已经通过。阶段 04 下一步不是重复 smoke 或继续加密网格，
+而是获得 Al 粉氧化膜/压制电阻标定，或建立能确认贯通性的三维接触网络；随后只在
+已接受的 3316 单元网格上跑选定参数的 COMSOL 场，再把粒子温度输出交给阶段 06。

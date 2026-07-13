@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "temperature_k": 293.15,
+  "materials": {
+    "Al": {
+      "electrical_resistivity_ohm_m": 2.65e-8,
+      "thermal_conductivity_w_mk": 237.0,
+      "young_modulus_pa": 1.2e10,
+      "poisson_ratio": 0.33
+    },
+    "Diamond": {
+      "electrical_resistivity_ohm_m": 1.0e13,
+      "thermal_conductivity_w_mk": 1350.0,
+      "young_modulus_pa": 3.0e11,
+      "poisson_ratio": 0.10
+    }
+  },
+  "contact_model": {
+    "al_al_resistance_multiplier_reference": 10.0,
+    "al_al_resistance_multiplier_sweep": [1.0, 10.0, 100.0],
+    "al_diamond_boundary_conductance_w_m2k": 8.0e7,
+    "electrical_active_relative_cutoff": 1.0e-12,
+    "hertz_contact_radius_warning_fraction": 0.25
+  },
+  "continuum_mapping": {
+    "width_um": 400.0,
+    "nx": 81,
+    "ny": 43,
+    "kernel_um": 12.0,
+    "sigma_floor_s_m": 100.0,
+    "sigma_peak_s_m": 100000.0,
+    "k_floor_w_mk": 20.0,
+    "k_peak_w_mk": 100.0,
+    "voltage_v": 0.1,
+    "normalization": "frozen_reference_scenario_raw_max"
+  }
+}

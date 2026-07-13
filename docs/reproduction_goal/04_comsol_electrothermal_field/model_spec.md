@@ -97,3 +97,40 @@ remain at least `0.2`, and both Joule power and maximum temperature rise must di
 The observed medium/fine differences are `0.0277%` for Joule power and `0.0187%` for maximum
 temperature rise, so the original medium mesh is sufficient for these global smoke-model outputs.
 This is a discretization result, not a material or contact-resistance calibration.
+
+## Material-Aware Contact Screening
+
+The second model layer preserves the smoke regression but replaces the common force weight
+with material-aware contact laws. The source ledger is
+`data/source/material_contact_parameter_sources.csv`; executable values and their
+classification are frozen in `data/source/electrothermal_parameter_set.json`.
+
+For every direct particle pair:
+
+```text
+a = (3 F R* / (4 E*))^(1/3)
+Re_clean = (rho1 + rho2) / (4 a)
+Rth = (1/k1 + 1/k2) / (4 a)
+```
+
+Al-Al electrical resistance is screened at clean-contact multipliers `1/10/100`. The
+Al-diamond thermal resistance additionally contains `1/(h pi a^2)` with the central
+screening value `h=80 MW/(m2 K)`. Diamond is treated as undoped with a conservative
+room-temperature resistivity lower bound. The elastic constants remain the Stage 03 DEM
+values, so Hertz radii are mechanically consistent with that run but are not measurements.
+
+The Gaussian continuum mapping uses one raw maximum frozen from the multiplier-10 reference.
+It does not renormalize each scenario. The `100-100000 S/m` electrical and `20-100 W/(m K)`
+thermal bounds remain numerical regularization values, not measured effective properties.
+
+## Contact-Screening Gates
+
+1. Preserve all 157 direct contacts and classify every pair by material.
+2. Report the fraction with `a/min(R)>0.25`; do not silently accept Hertz small-deformation validity.
+3. Test bottom-to-top connectivity after removing edges below `1e-12` of maximum conductance.
+4. On the frozen `81 x 43` grid and under fixed voltage, Joule power and maximum temperature
+   rise must not increase as the Al-Al resistance multiplier increases.
+5. Every FVM case must satisfy electrical power balance within `1e-8`.
+
+Passing the last two gates is named `conditional_sensitivity_pass`. It does not override a
+failed particle-network percolation gate and therefore is not a calibrated electrothermal pass.

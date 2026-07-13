@@ -49,7 +49,7 @@ workflow 证据应放入对应阶段文件夹，避免证据散落。
 | 应力分布模拟 | 已从 DEM contact force 计算 virial stress 和 fabric tensor | `series_network_metrics.csv`，`dem_evidence_report.md` | 校准 Zhang 局部应力 D2 与论文测量圆方法 |
 | 颗粒接触状态 | 已导出 LIGGGHTS `pair/gran/local` 直接接触力并转换为 stage contact CSV | `liggghts/DEM/contact_forces/*_contacts.csv` | 继续校准强接触阈值、力链角度和最小链长 |
 | 拱桥结构形成 | 已有强接触连通图 arch candidate、强度、方向、buckling 输出 | `stage_details/*_arches.csv`，`yuan/yuan_arch_bridge_metrics.csv` | 增加非球形颗粒或 MPFEM，复现 Yuan 的圆/六边形/条形差异 |
-| 电流和温度场 | 已有接触电导、电流、Joule heat、粒子温度代理场 | `stage_details/*_electrothermal_contacts.csv`，`stage_details/*_electrothermal_particles.csv` | 建立真实热传导/边界散热场，替换 lumped temperature proxy |
+| 电流和温度场 | COMSOL/FVM smoke、网格验证和材料感知接触倍率筛查完成 | `04_comsol_electrothermal_field/evidence/contact_sensitivity/` | 标定 Al 氧化膜接触电阻或建立三维贯通网络，再在固定 3316 单元网格求解 |
 | 致密化链条 | 已有压力-密度曲线、Heckel/Kawakita/Huang fit、neck-growth proxy | `pressure_density_curve.csv`，`series_compaction_fits.csv` | 加入材料扩散常数、活化能和烧结时间标定 |
 
 ## 分论文复现矩阵
@@ -108,7 +108,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 2. 以 LIGGGHTS-PUBLIC 输出为统一数据源，稳定 `pressure_density_curve.csv`、`dem_fem_handoff_*.csv`、`contact_forces/*_contacts.csv` 和 `stage_details/*` 合同。
 3. Zhang 轻量 pscale=2 路线已完成当前可解释的单变量筛查：C 低侧壁/低粒间摩擦被否决，E pressure-lift 达到部分覆盖但无共同 Emax 窗口。阶段保持 `review`，禁止无依据映射阻尼 `0.2`，也不启动 4x/8x。
 4. Yuan 优先做形状后端：先在开源 DEM 里实现 clump/superquadric/polygon，再和现有 arch metric 对接。
-5. COMSOL 单阶段电热 smoke 与三档网格验证已完成：157 条直接接触进入属性场，COMSOL/FVM Joule 功率差 1.202%、最大温升差 0.568%；1512/3316/8390 单元下中/细网格功率差 0.0277%、温升差 0.0187%。下一步为材料/接触参数标定和加载敏感性。
+5. COMSOL 单阶段电热 smoke、三档网格和材料感知接触筛查已完成：157 条直接接触分为 63/80/14 条 Al-Al/Al-diamond/diamond-diamond；活跃 Al-Al 网络不贯通，130 条接触超过 Hertz 小变形警戒线；电阻倍率 1/10/100 条件 FVM 的功率和温升单调下降。下一步为 Al 氧化膜标定或三维贯通网络，不重复网格。
 6. Liu 下一步把已验证温度场接入烧结颈增长、扩散和致密化指标。
 7. Li 优先做 MPFEM/FEM handoff：保留 DEM 随机坐标与接触网络，新增 Cu@Fe core-shell 几何和材料参数。
 8. COMSOL 继续使用 Windows 本地许可证；GitHub workflow 运行开源 FVM 和证据复核。DEM 参数迭代变频繁时再部署 WSL2。
@@ -118,7 +118,7 @@ Zhang 的真实 DEM `review` 不是文件缺失或算法失败，而是科学上
 - 还没有一比一复现四篇论文的全部图表和实验数值。
 - 还没有 Zhang 论文级 3000 粒子 DEM；轻量 demo 已找到 C/D/E 尺寸分组的 572-638 MPa endpoint 候选，但这些仍是低粒子数、简化接触律和简化加载路径下的起始参数。
 - 还没有 Yuan 的真实非球形/MPFEM 颗粒形状模型。
-- Liu 已有单阶段均匀化 COMSOL 温度场 smoke，但还没有材料参数标定、颗粒分辨接触和扩散/烧结闭环。
+- Liu 已有单阶段均匀化 COMSOL 温度场、网格验证和材料感知接触筛查，但尚无 Al 氧化膜标定、三维贯通接触和扩散/烧结闭环。
 - 还没有 Li 的真实 Cu@Fe core-shell MPFEM 变形模型。
 
 因此当前目标仍应保持 active：已经完成的是“可运行的四论文算法复现层 + 真实 DEM 轻量验证层”，下一步是把代理/轻量 demo 逐项升级成论文级物理模型。
