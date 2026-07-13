@@ -120,6 +120,7 @@ class Dem3dPilotTest(unittest.TestCase):
             self.assertIn("region          insertAl", text)
             self.assertIn("-0.0032 0.0032", text)
             self.assertIn("particles_in_region 96", text)
+            self.assertEqual(text.count("overlapcheck yes all_in no"), 3)
 
     def test_handoff_uses_true_3d_volume_density_for_custom_stage(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

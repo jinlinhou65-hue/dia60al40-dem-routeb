@@ -66,13 +66,13 @@ fix             pddDL all particledistribution/discrete/numberbased @@PDD_DL_SEE
 region          insertDL block @@DL_X_MIN_CM@@ @@DL_X_MAX_CM@@ @@DL_Y_MIN_CM@@ @@DL_Y_MAX_CM@@ @@DL_Z_MIN_CM@@ @@DL_Z_MAX_CM@@ units box
 region          insertDS block @@DS_X_MIN_CM@@ @@DS_X_MAX_CM@@ @@DS_Y_MIN_CM@@ @@DS_Y_MAX_CM@@ @@DS_Z_MIN_CM@@ @@DS_Z_MAX_CM@@ units box
 region          insertAl block @@AL_X_MIN_CM@@ @@AL_X_MAX_CM@@ @@AL_Y_MIN_CM@@ @@AL_Y_MAX_CM@@ @@AL_Z_MIN_CM@@ @@AL_Z_MAX_CM@@ units box
-fix             insDL all insert/pack seed @@INSERT_DL_SEED@@ distributiontemplate pddDL maxattempt 50000 insert_every once overlapcheck yes all_in yes particles_in_region @@CUMULATIVE_DL_COUNT@@ region insertDL ntry_mc 50000
+fix             insDL all insert/pack seed @@INSERT_DL_SEED@@ distributiontemplate pddDL maxattempt 50000 insert_every once overlapcheck yes all_in no particles_in_region @@CUMULATIVE_DL_COUNT@@ region insertDL ntry_mc 50000
 run             1
 unfix           insDL
-fix             insDS all insert/pack seed @@INSERT_DS_SEED@@ distributiontemplate pddDS maxattempt 50000 insert_every once overlapcheck yes all_in yes particles_in_region @@CUMULATIVE_DS_COUNT@@ region insertDS ntry_mc 50000
+fix             insDS all insert/pack seed @@INSERT_DS_SEED@@ distributiontemplate pddDS maxattempt 50000 insert_every once overlapcheck yes all_in no particles_in_region @@CUMULATIVE_DS_COUNT@@ region insertDS ntry_mc 50000
 run             1
 unfix           insDS
-fix             insAl all insert/pack seed @@INSERT_AL_SEED@@ distributiontemplate pddAl maxattempt 100000 insert_every once overlapcheck yes all_in yes particles_in_region @@CUMULATIVE_AL_COUNT@@ region insertAl ntry_mc 100000
+fix             insAl all insert/pack seed @@INSERT_AL_SEED@@ distributiontemplate pddAl maxattempt 100000 insert_every once overlapcheck yes all_in no particles_in_region @@CUMULATIVE_AL_COUNT@@ region insertAl ntry_mc 100000
 run             1
 unfix           insAl
 
