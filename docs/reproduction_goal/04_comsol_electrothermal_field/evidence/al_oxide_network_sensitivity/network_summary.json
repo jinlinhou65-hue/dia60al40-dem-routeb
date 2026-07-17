@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "decision": "bounded_oxide_network_sensitivity_pass",
+  "calibrated": false,
+  "archive_run": 29246532552,
+  "particle_count": 96,
+  "direct_contact_count": 115,
+  "al_al_edge_count": 50,
+  "scenario_count": 18,
+  "clean_network_equivalent_resistance_ohm": 0.01467648941428386,
+  "clean_shortest_path_resistance_ohm": 0.03532796455236851,
+  "intact_network_resistance_range_ohm": [
+    2807547216.2830267,
+    4492075546028128.0
+  ],
+  "partial_network_resistance_range_ohm": [
+    0.01467648941428386,
+    3369056659.521087
+  ],
+  "max_relative_kcl_residual": 2.1318434653987784e-15,
+  "max_relative_power_balance_error": 3.96885751537005e-15,
+  "all_gate_pass": true,
+  "claim_boundary": "bounded archived-network sensitivity; metallic bridge fraction and absolute temperature are not calibrated"
+}

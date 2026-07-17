@@ -253,3 +253,30 @@ The immutable preregistration is `al_oxide_contact_preregistration.md`, and the 
 contract is `data/source/al_oxide_contact_preregistered_parameters.json`. Passing the future
 calculation can establish only bounded network sensitivity. Experimental calibration still requires
 oxide-thickness characterization and pressure-resistance-loading histories for the same powder.
+
+## Archived-Graph Oxide-Network Result
+
+The offline solver validates the three preregistered SHA-256 values before reading the graph. Of
+50 Al-Al edges, 39 edges and 30 nodes belong to components touching both electrode sets. Remaining
+one-sided components are retained in `edge_results.csv` with zero transport current; they are not
+silently deleted or allowed to make the KCL matrix singular.
+
+The clean full-network equivalent resistance is `0.0146764894 ohm`, while the weighted shortest
+path is `0.0353279646 ohm`. The full network is therefore about 41.5% of the shortest-path value,
+directly showing why a single path cannot represent parallel transport.
+
+The nine complete-film scenarios span `2.807547216e9-4.492075546e15 ohm`. In the primary rupture
+sweep, equivalent resistance falls from `3.369056660e9 ohm` at `f_m=0` to the clean value at
+`f_m=1`; even `f_m=1e-12` gives `1.467642478e4 ohm`. This is a model sensitivity showing that tiny
+metallic bridges can dominate an insulating film. It is not evidence that the archived powder has
+that rupture fraction.
+
+All 18 scenarios keep shortest path `95->41->36->27->33` and top-five Joule edge IDs
+`43;36;29;34;38`. Uniform `f_m` therefore changes magnitudes but not hotspot topology. Edge-specific
+rupture or sintering feedback is required before claiming hotspot migration. No edge exceeds the
+`4e8 V/m` device-film diagnostic at fixed `0.1 V`; mechanical rupture remains unconstrained.
+
+All eight preregistered gates pass. Maximum relative KCL residual is `2.132e-15`, and maximum
+relative source-to-edge power error is `3.969e-15`. Fixed voltage power rises with bridge fraction;
+normalized fixed-current power falls. The very large fixed-`1 A` intact-film power is only a limiting
+direction check and is not an admissible experimental or thermal prediction.

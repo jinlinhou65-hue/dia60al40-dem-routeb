@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "decision": "bounded_oxide_network_sensitivity_pass",
+  "implementation": {
+    "analyze_al_oxide_contact_network.py": "95aec4e087b0f00c1080ebc51ed8d3cd63b917eea8b13e7c7cbad74655de24d4",
+    "al_oxide_contact_network_plot.py": "8fc964f7ed23b6dd5df894b8c6606b2c4ebcf5e81e76e64ea4c5b5c3936350bb",
+    "numpy": "2.4.5",
+    "matplotlib": "3.10.9"
+  },
+  "inputs": {
+    "al_oxide_contact_preregistered_parameters.json": "580ffca09a50676d384b9bfba29f7891449aedb6c8215cecec7ab0cad7dedf1e",
+    "pilot_final_particles.csv": "a65ce68b8f407b15a28fa4b307ddf76f655b4811fb4ad3d7696cb580eb5deaf2",
+    "pilot_final_direct_contacts.csv": "c14f72b320f5a26749b9f82591bd9baab4cd9a641c5c72252d373a0e0d2bbfbb",
+    "contact_physics.csv": "20a17cae4d89f15f7095aa1b783bc60b3d46a7d7f5165d49f2e19936b44cf49f",
+    "percolation_summary.json": "2f14ee538af1de60991760a7c41759ac6d5e8972b3943e1520d177e84523fb93"
+  },
+  "outputs": {
+    "network_summary.json": "476179766cd54dc8e42da5d10591f338ca133bdf110cf126479c38880cf91024",
+    "scenarios.csv": "311ee4651b3bc303e2b7de3b9c6dbecd61cccb470665820dbe28e4073caefbc6",
+    "edge_results.csv": "116ba69543c7e32d02e13f902ed780602aec3e6a6ec7d45a56f87a4969d3a9d7",
+    "gate_table.csv": "0561fcea843264deed5b5000645a539c0504a3bd302e1e5ab57d4ff1be74731b",
+    "oxide_network_sensitivity.png": "aac7679d51c82fef53e079b59a7b226bf0cc4bbfd132b76845bbe3c3680551f6",
+    "oxide_network_hotspots_3d.png": "8b943aa7b613364d06078490a2268351cc3f0a6fa4bad18b562290c8e96af422"
+  }
+}

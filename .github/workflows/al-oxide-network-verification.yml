@@ -1,0 +1,64 @@
+name: al-oxide-network-verification
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/analyze_al_oxide_contact_network.py'
+      - 'scripts/al_oxide_contact_network_plot.py'
+      - 'scripts/verify_al_oxide_network_results.py'
+      - 'tests/test_al_oxide_contact_network.py'
+      - 'tests/test_al_oxide_contact_preregistration.py'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/al_oxide_contact_preregistration.md'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/data/source/al_oxide_contact_parameter_sources.csv'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/data/source/al_oxide_contact_preregistered_parameters.json'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/evidence/true_3d_percolation/run_29246532552/pilot_final_particles.csv'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/evidence/true_3d_percolation/run_29246532552/pilot_final_direct_contacts.csv'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/evidence/true_3d_percolation/run_29246532552/analysis/contact_physics.csv'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/evidence/true_3d_percolation/run_29246532552/analysis/percolation_summary.json'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/evidence/al_oxide_network_sensitivity/**'
+      - '.github/workflows/al-oxide-network-verification.yml'
+
+jobs:
+  oxide-network:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned numerical dependencies
+        run: |
+          set -euxo pipefail
+          python3 -m pip install --user --only-binary=:all: numpy==2.2.6 matplotlib==3.10.3
+
+      - name: Compile and test the preregistered solver
+        run: |
+          set -euxo pipefail
+          python3 -m py_compile \
+            scripts/analyze_al_oxide_contact_network.py \
+            scripts/al_oxide_contact_network_plot.py \
+            scripts/verify_al_oxide_network_results.py
+          python3 -m unittest \
+            tests.test_al_oxide_contact_preregistration \
+            tests.test_al_oxide_contact_network
+
+      - name: Recompute the archived graph offline
+        run: |
+          set -euxo pipefail
+          python3 scripts/analyze_al_oxide_contact_network.py \
+            --parameters docs/reproduction_goal/04_comsol_electrothermal_field/data/source/al_oxide_contact_preregistered_parameters.json \
+            --archive-dir docs/reproduction_goal/04_comsol_electrothermal_field/evidence/true_3d_percolation/run_29246532552 \
+            --output-dir outputs/al_oxide_network_sensitivity
+
+      - name: Compare with committed machine evidence
+        run: |
+          set -euxo pipefail
+          python3 scripts/verify_al_oxide_network_results.py \
+            --candidate outputs/al_oxide_network_sensitivity \
+            --reference docs/reproduction_goal/04_comsol_electrothermal_field/evidence/al_oxide_network_sensitivity
+
+      - name: Upload license-free evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: al-oxide-network-sensitivity
+          path: outputs/al_oxide_network_sensitivity/**

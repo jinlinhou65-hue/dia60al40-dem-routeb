@@ -10,8 +10,9 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 
 单阶段均匀化电热 smoke、跨求解器、三档网格、材料感知接触筛查、恒压/恒流机制
 验证和真三维直接接触贯通 pilot 均已完成。Al 原生氧化膜来源矩阵、三模型方程、
-参数网格和离线网络验收门槛也已在计算前冻结。恒压/恒流结果保留“原比较 review、
-加密诊断 pass”两层判定；三维结果保留“贯通 smoke pass、氧化膜预注册 review”：
+参数网格和离线网络验收门槛已在计算前冻结，随后完整运行 18 个 KCL 网络场景。
+恒压/恒流结果保留“原比较 review、加密诊断 pass”两层判定；三维结果保留“贯通
+smoke pass、氧化膜有界敏感性 pass、实验标定 review”三层判定：
 
 | 项目 | 结果 |
 |---|---:|
@@ -42,7 +43,10 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
 | 最短贯通路径 | 5 个 Al 颗粒，clean-contact `0.0353279646 ohm` |
 | GitHub 3D pilot | run `29246532552`, success, 140 s |
 | 氧化膜预注册 | `5/6/8 nm`、`1e6/1e9/1e12 ohm m`、8 档金属微桥比例 |
-| 阶段判定 | `oxide_model_preregistered_review`，离线网络计算和实验标定仍未完成 |
+| 氧化膜网络 | 18 场景；30 输运节点、39 输运边；八项 gate 全部通过 |
+| clean 网络/最短路径电阻 | `0.0146764894 / 0.0353279646 ohm` |
+| 完整膜网络范围 | `2.8075e9-4.4921e15 ohm` |
+| 阶段判定 | `bounded_oxide_network_sensitivity_pass_review`，实验标定仍未完成 |
 
 ## 代码入口
 
@@ -81,6 +85,12 @@ COMSOL 求解连续电势、电流密度、Joule heat 和温度场；开源有�
   边界、数值辨识扫描和待实验标定参数。
 - `data/source/al_oxide_contact_preregistered_parameters.json`：供下一步离线网络脚本直接
   读取的机器可读参数合同。
+- `scripts/analyze_al_oxide_contact_network.py`：校验归档哈希，求完整 Dirichlet/KCL
+  网络，生成 18 场景、900 条逐边电热结果、八项 gate 和两张图。
+- `scripts/verify_al_oxide_network_results.py`：以 `1e-10` 数值容差比较独立重算和归档
+  机器证据，保持路径、热点和声明边界一致。
+- `.github/workflows/al-oxide-network-verification.yml`：五分钟预算、无 DEM/COMSOL
+  许可证依赖的 Linux 重算与 artifact 上传入口。
 
 详细公式、边界条件和验收条件见 [model_spec.md](model_spec.md)。阶段结果见
 [report.md](report.md)。
@@ -97,6 +107,7 @@ evidence/mesh_convergence/  # 三档网格场、日志、摘要和收敛图
 evidence/contact_sensitivity/  # 接触物理表、网络图、三档 FVM 场和敏感性判定
 evidence/loading_mode_sensitivity/  # 六组 COMSOL/FVM、原 review、加密 pass、失败证据和 manifest
 evidence/true_3d_percolation/  # 首次失败、接受 run、原始接触、3D 网络图和哈希 manifest
+evidence/al_oxide_network_sensitivity/  # 18 场景、900 条逐边表、gate、manifest 和两张图
 evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边界
 evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
 evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 artifact digest
@@ -145,8 +156,8 @@ clean-contact Hertz/Holm 路径电阻为 `0.0353279646 ohm`。该值没有包含
 
 ## 下一门槛
 
-Al 氧化膜模型已预注册。唯一下一门槛是只读取归档图和机器参数合同，对 50 条 Al-Al
-边求完整 KCL 电阻网络，输出 clean、完整膜和部分破膜场景的等效电阻、最短路径、
-逐边电流/Joule 功率、top-5 热点、单调性和电源功率守恒。本门槛不重跑 DEM、
-COMSOL 网格或六组恒压/恒流。没有压片电阻实验前，结果最高只能是
-`bounded_oxide_network_sensitivity_pass`，不能称为氧化膜标定。
+氧化膜完整网络敏感性已通过。唯一下一门槛是定义可实际采集的压力-压片电阻标定
+数据合同和逆模型接口：必须包含试样几何、压力/保压/卸载历史、电源模式、温度、
+重复试验和电阻，不得用合成数据形成物理参数结论。该接口只负责把未来实验映射到
+`f_m(P, history)` 的可辨识范围，不重跑 DEM/COMSOL，也不提前把未标定电阻送入
+Stage 06。若没有同批粉末实验，Stage 04 继续保持 `review`。

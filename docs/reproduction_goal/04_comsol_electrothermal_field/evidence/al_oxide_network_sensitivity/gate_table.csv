@@ -1,0 +1,9 @@
+gate_id,metric,threshold,value,status,evidence_path,interpretation
+input_contract,input_contract,hashes and 96/115/50,matched,pass,network_summary.json,preregistered numerical gate
+scenario_count,scenario_count,=18,18,pass,network_summary.json,preregistered numerical gate
+kcl_residual,kcl_residual,<=1e-10,2.1318434653987784e-15,pass,network_summary.json,preregistered numerical gate
+power_balance,power_balance,<=1e-10,3.96885751537005e-15,pass,network_summary.json,preregistered numerical gate
+intact_not_below_clean,intact_not_below_clean,all edge R>=clean,104265903892.94418,pass,network_summary.json,preregistered numerical gate
+fixed_voltage_monotonic,fixed_voltage_monotonic,nondecreasing with f_m,checked,pass,network_summary.json,preregistered numerical gate
+fixed_current_monotonic,fixed_current_monotonic,nonincreasing with f_m,checked,pass,network_summary.json,preregistered numerical gate
+network_not_shortest_path,network_not_shortest_path,Req<=shortest path R,0.49596351370335745,pass,network_summary.json,preregistered numerical gate

@@ -46,7 +46,7 @@ flowchart TD
 | 01 | [01_pdf_algorithm_layer](01_pdf_algorithm_layer/README.md) | 已完成基础层 | PDF 机制映射和四篇论文算法层复现 |
 | 02 | [02_dem_backend_light_demo](02_dem_backend_light_demo/README.md) | 已完成轻量层 | 开源 DEM 后端选择和 LIGGGHTS workflow demo |
 | 03 | [03_zhang_particle_scale](03_zhang_particle_scale/README.md) | review | Zhang C/D/E 参数校准和 2x 粒子数升级 |
-| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 氧化膜模型已预注册，实验标定 review | COMSOL 电流场、温度场、Joule heat 主线 |
+| 04 | [04_comsol_electrothermal_field](04_comsol_electrothermal_field/README.md) | 氧化膜网络敏感性 pass，实验标定 review | COMSOL 电流场、温度场、Joule heat 主线 |
 | 05 | [05_yuan_shape_arch_bridge](05_yuan_shape_arch_bridge/README.md) | 待启动 | Yuan 非球形颗粒、拱桥结构和 MPFEM 路线 |
 | 06 | [06_liu_sintering_coupling](06_liu_sintering_coupling/README.md) | 待启动 | Liu 压制-热场-烧结耦合 |
 | 07 | [07_li_core_shell_fem](07_li_core_shell_fem/README.md) | 待启动 | Li Cu@Fe 包覆颗粒 core-shell FEM/MPFEM |
@@ -84,6 +84,7 @@ flowchart TD
 | 恒压/恒流 GitHub 重放 | run `29244185796` success，`1m 5s`；116 个 manifest 记录通过；artifact digest `sha256:91507872...f96e804` |
 | 三维就绪性审计 | 原 deck 请求 z/三维 contactPoint，但由 zlock 和 3 次 z=0 归零严格限制为准二维；判定 `true_3d_pilot_required` |
 | 真三维直接接触贯通 | run `29246532552` success；96 颗粒/115 直接接触守恒，三档阈值均得到同一五节点 Al 路径；clean-contact 电阻仍未标定 |
+| Al 氧化膜完整网络 | 18 个预注册场景、900 条逐边量、八项 gate 通过；完整膜与金属微桥边界已量化，破膜比例仍待实验 |
 | 接触筛查 GitHub demo | workflow run `29240835995` success，41 s，artifact digest `sha256:8e3a90b0...8470f885` |
 
 ## 仍未完成的边界
@@ -133,7 +134,7 @@ GitHub run `29244185796` 已在无 COMSOL 许可证的 Ubuntu runner 上重跑�
 直接接触，颗粒/接触点 z span 均为正；三档导纳阈值均得到同一条五节点 Al 贯通路径。
 首次插入失败 run `29246371198`、修复理由、接受日志、3D 图和哈希已并列归档。
 
-Al 氧化膜来源表、三模型方程、参数网格和验收门槛已经在结果计算前冻结。下一唯一
-小目标是实现并运行归档图的完整 KCL 电阻网络，离线输出等效电阻、路径、瓶颈和
-Joule 热点敏感性。不重跑 DEM、COMSOL 网格或六组恒压/恒流，也不把未标定绝对
-温升送入 Stage 06。Zhang 保持 `review`。
+Al 氧化膜来源、模型预注册和 18 场景完整 KCL 网络已经完成。有界敏感性证明完整膜
+近似绝缘而极小金属微桥可主导传输，但没有给出真实 `f_m`。下一唯一小目标是建立
+压力-电阻实验数据合同和逆模型接口，使未来同批粉末回线能标定 `f_m(P, history)`；
+不使用合成数据宣称标定，不重跑 DEM/COMSOL，也不把绝对温升送入 Stage 06。
