@@ -22,6 +22,9 @@ COMSOL 温度场或实验标定。
 | particles SHA-256 | `a65ce68b8f407b15a28fa4b307ddf76f655b4811fb4ad3d7696cb580eb5deaf2` |
 | direct contacts SHA-256 | `c14f72b320f5a26749b9f82591bd9baab4cd9a641c5c72252d373a0e0d2bbfbb` |
 | contact physics SHA-256 | `20a17cae4d89f15f7095aa1b783bc60b3d46a7d7f5165d49f2e19936b44cf49f` |
+| particles canonical-LF SHA-256 | `d66af5d5e4a70b33ba91790ad8907a5e9637ce88f5039c97361f98a09cd0d089` |
+| direct contacts canonical-LF SHA-256 | `651582908342d0fd993f677b40101e8e4abd5ffbe932d3faf4e39be1d17ac892` |
+| contact physics canonical-LF SHA-256 | `1a37fab8503c5e912de0f6dc565355bd43d775c7e737fc060df3b66d6830b911` |
 | 颗粒/直接接触/Al-Al 边 | `96 / 115 / 50` |
 | 接触来源 | `liggghts_pair_gran_local`，禁止距离推断边 |
 | 接触半径 | 归档 Hertz 半径，不重新拟合 |
@@ -94,7 +97,8 @@ Simmons 非线性隧穿公式暂不进入首轮网络计算，因为它需要逐
 
 ## 6. 预注册验收门槛
 
-1. 三个输入哈希和 `96/115/50` 计数必须完全匹配；否则停止。
+1. 三个输入必须匹配预注册的原始字节哈希，或匹配仅将 CRLF/CR 换行规范化为 LF
+   后的 canonical-LF 哈希；`96/115/50` 计数仍必须完全匹配，否则停止。
 2. 不得新增推断接触，不得更改 Hertz 半径、电极节点或图拓扑。
 3. 内部节点相对 KCL 残差和电源-逐边功率相对误差均不超过 `1e-10`。
 4. 每条 M1 电阻不得低于对应 clean 电阻。
@@ -116,3 +120,14 @@ Simmons 非线性隧穿公式暂不进入首轮网络计算，因为它需要逐
 - 至少三次重复及试样几何，以换算体电阻和接触网络尺度。
 
 本预注册提交后，唯一下一任务才是实现并运行上述归档图离线计算。
+
+## 8. 预注册后工程变更记录
+
+GitHub run `29598918283` 在任何网络求解前失败。日志显示 Ubuntu checkout 将
+`pilot_final_particles.csv` 的 CRLF 换行为 LF，观测哈希
+`d66af5d5...` 与冻结的 Windows 原始字节哈希 `a65ce68b...` 不同。三份
+canonical-LF 哈希因此作为跨平台封装合同追加，原始哈希保持不变。
+
+该变更只允许 CRLF、LF 或 CR 的换行编码差异，不改变 CSV 字段、数值、计数、图拓扑、
+18 场景参数或八项科学 gate。回归测试必须同时证明 LF checkout 可复算，以及添加、
+删除或修改任何内容仍会在求解前被拒绝。

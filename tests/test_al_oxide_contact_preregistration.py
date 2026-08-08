@@ -52,6 +52,18 @@ class AlOxideContactPreregistrationTests(unittest.TestCase):
                 "contact_physics.csv": "20a17cae4d89f15f7095aa1b783bc60b3d46a7d7f5165d49f2e19936b44cf49f",
             },
         )
+        self.assertEqual(
+            contract["canonical_lf_algorithm"],
+            "replace CRLF and bare CR bytes with LF before SHA-256",
+        )
+        self.assertEqual(
+            contract["canonical_lf_files"],
+            {
+                "pilot_final_particles.csv": "d66af5d5e4a70b33ba91790ad8907a5e9637ce88f5039c97361f98a09cd0d089",
+                "pilot_final_direct_contacts.csv": "651582908342d0fd993f677b40101e8e4abd5ffbe932d3faf4e39be1d17ac892",
+                "contact_physics.csv": "1a37fab8503c5e912de0f6dc565355bd43d775c7e737fc060df3b66d6830b911",
+            },
+        )
 
     def test_parameter_grid_and_models_are_frozen_before_calculation(self):
         frozen = self.parameters["frozen_quantities"]

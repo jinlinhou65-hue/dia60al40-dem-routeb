@@ -56,6 +56,23 @@ class AlOxideContactNetworkTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
                 analyze(PARAMETERS, copied, Path(temp) / "result")
 
+    def test_lf_normalized_checkout_is_accepted_without_changing_results(self):
+        with tempfile.TemporaryDirectory() as temp:
+            copied = Path(temp) / "archive"
+            shutil.copytree(ARCHIVE, copied)
+            for path in (
+                copied / "pilot_final_particles.csv",
+                copied / "pilot_final_direct_contacts.csv",
+                copied / "analysis" / "contact_physics.csv",
+            ):
+                path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n"))
+            summary = analyze(PARAMETERS, copied, Path(temp) / "result")
+            self.assertEqual(summary["decision"], "bounded_oxide_network_sensitivity_pass")
+            self.assertAlmostEqual(
+                summary["clean_network_equivalent_resistance_ohm"],
+                0.01467648941428386,
+            )
+
     def test_reference_verifier_accepts_an_independent_rerun(self):
         with tempfile.TemporaryDirectory() as temp:
             candidate = Path(temp) / "candidate"

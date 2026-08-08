@@ -3,6 +3,9 @@
 判定：`bounded_oxide_network_sensitivity_pass`  
 实验标定：`false`
 
+跨平台输入合同同时保留原始 CRLF SHA-256 和 canonical-LF SHA-256。后者只消除
+GitHub Ubuntu checkout 的换行编码差异，不放宽任何数值内容、拓扑或场景门槛。
+
 ## 运行命令
 
 ```powershell

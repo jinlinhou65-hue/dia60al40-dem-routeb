@@ -16,6 +16,13 @@ from al_oxide_contact_network_plot import plot_hotspots, plot_sensitivity
 DIRECT_SOURCE = "liggghts_pair_gran_local"
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def sha256_canonical_lf(path: Path) -> str:
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def read_csv(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8-sig") as handle:
         return list(csv.DictReader(handle))
@@ -37,10 +44,16 @@ def verify_input_contract(
         "contact_physics.csv": physics_path,
     }
     for name, path in paths.items():
-        observed = sha256_file(path)
-        expected = contract["files"][name]
-        if observed != expected:
-            raise ValueError(f"SHA-256 mismatch for {name}: {observed} != {expected}")
+        observed_raw = sha256_file(path)
+        observed_canonical = sha256_canonical_lf(path)
+        expected_raw = contract["files"][name]
+        expected_canonical = contract["canonical_lf_files"][name]
+        if observed_raw != expected_raw and observed_canonical != expected_canonical:
+            raise ValueError(
+                f"SHA-256 mismatch for {name}: raw={observed_raw}, "
+                f"canonical_lf={observed_canonical}; expected raw={expected_raw}, "
+                f"canonical_lf={expected_canonical}"
+            )
     particles = read_csv(particles_path)
     contacts = read_csv(contacts_path)
     physics = read_csv(physics_path)
