@@ -47,7 +47,8 @@ smoke pass、氧化膜有界敏感性 pass、实验标定 review”三层判定�
 | clean 网络/最短路径电阻 | `0.0146764894 / 0.0353279646 ohm` |
 | 完整膜网络范围 | `2.8075e9-4.4921e15 ohm` |
 | 氧化膜网络 GitHub 重放 | run `31264908046`, success, 25 s, 数值差 `0.0` |
-| 阶段判定 | `bounded_oxide_network_sensitivity_pass_review`，实验标定仍未完成 |
+| 压力-电阻合同 CI | run `31265275166`, success, 9 tests, `calibrated=false` |
+| 阶段判定 | `calibration_interface_ready_review`，真实实验标定仍未完成 |
 
 ## 代码入口
 
@@ -92,6 +93,13 @@ smoke pass、氧化膜有界敏感性 pass、实验标定 review”三层判定�
   机器证据，保持路径、热点和声明边界一致。
 - `.github/workflows/al-oxide-network-verification.yml`：五分钟预算、无 DEM/COMSOL
   许可证依赖的 Linux 重算与 artifact 上传入口。
+- `pressure_resistance_calibration_preregistration.md`：冻结试样尺度因子、三重复、CV、
+  接线、置信区间、边界饱和和禁止合成标定规则。
+- `data/source/pressure_resistance_experiment_schema.json` 与 CSV 空模板：32 字段实验合同。
+- `scripts/calibrate_pressure_resistance.py`：校验数据、二线修正、几何归一化、重复统计、
+  bootstrap/尺度不确定度和 `f_m` 反演；无尺度时返回不可辨识。
+- `.github/workflows/pressure-resistance-calibration-contract.yml`：只验证接口和空模板，
+  不制造实验数据。
 
 详细公式、边界条件和验收条件见 [model_spec.md](model_spec.md)。阶段结果见
 [report.md](report.md)。
@@ -115,6 +123,8 @@ evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 
 evidence/github_run_29248571646.md  # Al 氧化膜预注册 Linux 测试与两个 artifact digest
 evidence/github_run_29598918283.md  # 氧化膜网络首次 Linux 换行哈希失败证据
 evidence/github_run_31264908046.md  # 修复后网络重算、参考比较和 artifact digest
+evidence/pressure_resistance_calibration_contract/  # 空模板 no-data 结果和 manifest
+evidence/github_run_31265275166.md  # 标定合同 Linux CI 与 artifact digest
 ```
 
 ## 证据边界
@@ -159,8 +169,7 @@ clean-contact Hertz/Holm 路径电阻为 `0.0353279646 ohm`。该值没有包含
 
 ## 下一门槛
 
-氧化膜完整网络敏感性已通过。唯一下一门槛是定义可实际采集的压力-压片电阻标定
-数据合同和逆模型接口：必须包含试样几何、压力/保压/卸载历史、电源模式、温度、
-重复试验和电阻，不得用合成数据形成物理参数结论。该接口只负责把未来实验映射到
-`f_m(P, history)` 的可辨识范围，不重跑 DEM/COMSOL，也不提前把未标定电阻送入
-Stage 06。若没有同批粉末实验，Stage 04 继续保持 `review`。
+压力-压片电阻合同和逆模型接口已经通过本地与 GitHub 验证。Stage 04 的物理门槛
+现在只接受同批粉末真实实验和独立来源的试样尺度因子；缺任一项均返回
+`not_identifiable`。在外部数据到位前，本阶段保持 `review`，不重跑 DEM/COMSOL，
+也不把未标定电阻送入 Stage 06。当前可执行主线转到 Stage 05 的非球形颗粒与拱桥。

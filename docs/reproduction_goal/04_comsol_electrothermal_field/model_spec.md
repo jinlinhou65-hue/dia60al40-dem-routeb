@@ -280,3 +280,24 @@ All eight preregistered gates pass. Maximum relative KCL residual is `2.132e-15`
 relative source-to-edge power error is `3.969e-15`. Fixed voltage power rises with bridge fraction;
 normalized fixed-current power falls. The very large fixed-`1 A` intact-film power is only a limiting
 direction check and is not an admissible experimental or thermal prediction.
+
+## Pressure-Resistance Inverse Contract
+
+The archived 96-particle network is not a macroscopic specimen. The inverse interface therefore
+requires an independently sourced dimensionless scale `s_R`:
+
+```text
+R_specimen_corrected = s_R R_archived_network(f_m)
+rho_specimen = R_specimen_corrected pi D^2 / (4 H)
+```
+
+Two-wire records must supply removable lead/contact resistance; four-wire records accept only zero
+or blank correction. Every condition requires at least three independent specimen IDs. Replicate CV
+and leave-one-out residual must each be at most 10%. Positive bridge fractions are interpolated in
+log-resistance/log-fraction space; the interval from zero to `1e-12` remains interval-only, and
+out-of-range targets saturate rather than extrapolate.
+
+Bootstrap sampling propagates replicate and instrument standard uncertainty. Scale uncertainty is
+added to the confidence bounds. Only rows explicitly marked `experiment` can produce a calibrated
+status. Synthetic rows can exercise recovery and rejection logic but always return
+`synthetic_validation_only`.
