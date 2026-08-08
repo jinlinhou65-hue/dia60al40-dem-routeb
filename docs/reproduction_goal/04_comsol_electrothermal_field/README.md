@@ -46,6 +46,7 @@ smoke pass、氧化膜有界敏感性 pass、实验标定 review”三层判定�
 | 氧化膜网络 | 18 场景；30 输运节点、39 输运边；八项 gate 全部通过 |
 | clean 网络/最短路径电阻 | `0.0146764894 / 0.0353279646 ohm` |
 | 完整膜网络范围 | `2.8075e9-4.4921e15 ohm` |
+| 氧化膜网络 GitHub 重放 | run `31264908046`, success, 25 s, 数值差 `0.0` |
 | 阶段判定 | `bounded_oxide_network_sensitivity_pass_review`，实验标定仍未完成 |
 
 ## 代码入口
@@ -112,6 +113,8 @@ evidence/github_run_28793218330.md  # GitHub run、artifact digest 和证据边�
 evidence/github_run_29236808994.md  # 三档网格轻量复核 run 与 artifact digest
 evidence/github_run_29240835995.md  # 材料接触敏感性轻量复核 run 与 artifact digest
 evidence/github_run_29248571646.md  # Al 氧化膜预注册 Linux 测试与两个 artifact digest
+evidence/github_run_29598918283.md  # 氧化膜网络首次 Linux 换行哈希失败证据
+evidence/github_run_31264908046.md  # 修复后网络重算、参考比较和 artifact digest
 ```
 
 ## 证据边界
