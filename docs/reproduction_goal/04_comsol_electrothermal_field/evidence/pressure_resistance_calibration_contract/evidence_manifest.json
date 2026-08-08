@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "status": "awaiting_real_experiment_data",
+  "implementation": {
+    "calibrate_pressure_resistance.py": "44d9387879c12091c8bce4026f50f31c37340efe9119f78bacfdb0a98fdc3ac5"
+  },
+  "inputs": {
+    "pressure_resistance_experiment_template.csv": "3015790d06378cebf1825e0eb82feeef5e2a8388bc75b1869a593c2e09b68586",
+    "pressure_resistance_experiment_schema.json": "05ba45673779ccd35d11e723f51bb0beaa06a26e6c763639f03f05d30f1443d2",
+    "pressure_resistance_calibration_config.template.json": "5e8c0715e456bf3eaa8191150946d91c64244a586310f67c979c4c5a121af9e9",
+    "scenarios.csv": "311ee4651b3bc303e2b7de3b9c6dbecd61cccb470665820dbe28e4073caefbc6"
+  },
+  "outputs": {
+    "calibration_summary.json": "47a287961254922b87c8a6e2c051a3c774be02e2b42804e38d669c178fd68f21",
+    "condition_results.csv": "2073ab3caadfad5d84fccb27bd08767f66d11bb10a77a03c4bf31acfad0a45bf",
+    "validation_report.json": "1b2d5b9b5bebc976e94b13325da9c046ff5cd8dd130cef7a7dedacca7c1b7d8b",
+    "report.md": "80f37cb712b4fb1130cf4fb08182c40163b968d78260953fd5543b013fcc495c"
+  }
+}

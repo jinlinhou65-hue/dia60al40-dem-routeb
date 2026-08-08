@@ -1,0 +1,44 @@
+name: pressure-resistance-calibration-contract
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/calibrate_pressure_resistance.py'
+      - 'tests/test_pressure_resistance_calibration.py'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/pressure_resistance_calibration_preregistration.md'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/data/source/pressure_resistance_experiment_schema.json'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/data/source/pressure_resistance_experiment_template.csv'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/data/source/pressure_resistance_calibration_config.template.json'
+      - 'docs/reproduction_goal/04_comsol_electrothermal_field/evidence/pressure_resistance_calibration_contract/**'
+      - '.github/workflows/pressure-resistance-calibration-contract.yml'
+
+jobs:
+  calibration-contract:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile and test the no-fabrication contract
+        run: |
+          set -euxo pipefail
+          python3 -m py_compile scripts/calibrate_pressure_resistance.py
+          python3 -m unittest tests.test_pressure_resistance_calibration
+
+      - name: Validate the empty experiment template
+        run: |
+          set -euxo pipefail
+          python3 scripts/calibrate_pressure_resistance.py \
+            --data docs/reproduction_goal/04_comsol_electrothermal_field/data/source/pressure_resistance_experiment_template.csv \
+            --schema docs/reproduction_goal/04_comsol_electrothermal_field/data/source/pressure_resistance_experiment_schema.json \
+            --config docs/reproduction_goal/04_comsol_electrothermal_field/data/source/pressure_resistance_calibration_config.template.json \
+            --network-scenarios docs/reproduction_goal/04_comsol_electrothermal_field/evidence/al_oxide_network_sensitivity/scenarios.csv \
+            --output-dir outputs/pressure_resistance_calibration_contract
+          python3 -c "import json; d=json.load(open('outputs/pressure_resistance_calibration_contract/calibration_summary.json')); assert d['status']=='awaiting_real_experiment_data' and d['calibrated'] is False and d['row_count']==0"
+
+      - name: Upload contract evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pressure-resistance-calibration-contract
+          path: outputs/pressure_resistance_calibration_contract/**

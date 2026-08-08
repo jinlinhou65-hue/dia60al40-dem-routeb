@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "status": "template_not_calibrated",
+  "network_curve_source": "../evidence/al_oxide_network_sensitivity/scenarios.csv",
+  "network_model": "partial_rupture",
+  "specimen_resistance_scale_factor": null,
+  "scale_factor_definition": "R_specimen_corrected = specimen_resistance_scale_factor * R_archived_network(f_m)",
+  "scale_factor_source": null,
+  "scale_relative_standard_uncertainty": null,
+  "minimum_independent_specimens_per_condition": 3,
+  "maximum_replicate_cv": 0.10,
+  "maximum_leave_one_out_relative_residual": 0.10,
+  "confidence_level": 0.95,
+  "bootstrap_resamples": 2000,
+  "bootstrap_seed": 20260808,
+  "allow_boundary_saturated_result": false,
+  "forbid_synthetic_physical_calibration": true
+}

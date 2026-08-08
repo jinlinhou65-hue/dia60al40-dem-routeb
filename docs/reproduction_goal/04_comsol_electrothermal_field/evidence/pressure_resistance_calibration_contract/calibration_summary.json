@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "status": "awaiting_real_experiment_data",
+  "calibrated": false,
+  "row_count": 0,
+  "accepted_row_count": 0,
+  "condition_count": 0,
+  "data_origins": [],
+  "blockers": [],
+  "network_model": "partial_rupture",
+  "specimen_resistance_scale_factor": null,
+  "claim_boundary": "Only data_origin=experiment may support physical calibration; synthetic_test rows are algorithm tests only."
+}
